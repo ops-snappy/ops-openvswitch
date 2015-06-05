@@ -1,0 +1,13 @@
+
+ipc_packets.o:	../ipc_packets.h ../ipc_packets.c
+		cc -DIPC_PACKETS_TEST -Wall -O3 -c ../ipc_packets.c
+
+app:		app.c ipc_packets.o
+		cc -DIPC_PACKETS_TEST -Wall -O3 app.c ipc_packets.o -o app
+
+server:		server.c ipc_packets.o
+		cc -DIPC_PACKETS_TEST -Wall -O3 server.c ipc_packets.o -o server
+
+all:            app server
+
+
