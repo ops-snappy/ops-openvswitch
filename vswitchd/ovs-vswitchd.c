@@ -113,17 +113,8 @@ main(int argc, char *argv[])
 #ifdef HALON
     subsystem_init();
 
-/* HALON_TODO: Currently in the simulation environment,
- * platform daemons are not brought up.
- * The current implementation of 'cfgd' waits until all
- * the platform daemons are up to give go ahead
- * for other daemons to run. Until this problem is fixed,
- * wait loop is disabled to check for cur_cfg value.
- */
-#ifndef SIM_PROVIDER
     wait_for_config_complete();
 
-#endif
 #endif
 
     free(remote);

@@ -46,9 +46,6 @@
 #include "svec.h"
 #include "openvswitch/vlog.h"
 
-#ifdef SIM_PROVIDER
-#include "netdev-sim.h"
-#endif
 
 VLOG_DEFINE_THIS_MODULE(netdev);
 
@@ -146,9 +143,6 @@ netdev_initialize(void)
         netdev_vport_tunnel_register();
 #endif
 
-#ifdef SIM_PROVIDER
-        netdev_sim_register();
-#endif
 
 #ifndef HALON_TEMP
 

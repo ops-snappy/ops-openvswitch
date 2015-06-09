@@ -21,6 +21,8 @@ ovslibinclude_HEADERS = \
 	lib/coverage.h \
 	lib/daemon.h \
 	lib/dirs.h \
+	lib/dpif.h \
+	lib/dpif-netdev.h \
 	lib/dynamic-string.h \
 	lib/dummy.h \
 	lib/fatal-signal.h \
@@ -37,10 +39,15 @@ ovslibinclude_HEADERS = \
 	lib/match.h \
 	lib/meta-flow.h \
 	lib/netdev.h \
+	lib/netdev-dpdk.h \
 	lib/netdev-provider.h \
+	lib/netdev-vport.h \
 	lib/netflow.h \
+	lib/odp-util.h \
+	lib/ofpbuf.h \
 	lib/ofp-actions.h \
 	lib/ofp-errors.h \
+	lib/ofp-print.h \
 	lib/ofp-util.h \
 	lib/openhalon-idl.h \
 	lib/ovs-atomic.h \
@@ -55,6 +62,8 @@ ovslibinclude_HEADERS = \
         lib/ovs-rcu.h \
 	lib/ovs-thread.h \
 	lib/packets.h \
+	lib/packet-dpif.h \
+	lib/pcap-file.h \
 	lib/poll-loop.h \
 	lib/pvector.h \
         lib/random.h \
@@ -502,12 +511,6 @@ if DPDK_NETDEV
 lib_libopenvswitch_la_SOURCES += \
 	lib/netdev-dpdk.c \
 	lib/netdev-dpdk.h
-endif
-
-if SIM_PROVIDER
-lib_libopenvswitch_la_SOURCES += \
-	lib/netdev-sim.c \
-	lib/netdev-sim.h
 endif
 
 if WIN32

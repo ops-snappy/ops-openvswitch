@@ -9,6 +9,7 @@ ovsofprotolibincludedir = $(includedir)/ovs/ofproto
 ovsofprotolibinclude_HEADERS = \
 	ofproto/bond.h \
 	ofproto/fail-open.h \
+	ofproto/netflow.h \
 	ofproto/ofproto.h \
 	ofproto/ofproto-provider.h \
 	ofproto/tunnel.h
@@ -60,12 +61,6 @@ ofproto_libofproto_la_SOURCES = \
 	ofproto/tunnel.h \
 	ofproto/bundles.c \
 	ofproto/bundles.h
-
-if SIM_PROVIDER
-ofproto_libofproto_la_SOURCES += \
-	ofproto/ofproto-sim-provider.c \
-	ofproto/ofproto-sim-provider.h
-endif
 
 ofproto_libofproto_la_CPPFLAGS = $(AM_CPPFLAGS)
 ofproto_libofproto_la_CFLAGS = $(AM_CFLAGS)

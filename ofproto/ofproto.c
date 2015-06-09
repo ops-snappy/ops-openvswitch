@@ -341,10 +341,6 @@ ofproto_init(const struct shash *iface_hints)
     ofproto_class_register(&ofproto_dpif_class);
 #endif
 
-#ifdef SIM_PROVIDER
-    ofproto_class_register(&ofproto_sim_provider_class);
-#endif
-
     plugins_ofproto_register();
 
     /* Make a local copy, since we don't own 'iface_hints' elements. */

@@ -1707,9 +1707,6 @@ struct ofproto_class {
 
 extern const struct ofproto_class ofproto_dpif_class;
 
-#ifdef SIM_PROVIDER
-extern const struct ofproto_class ofproto_sim_provider_class;
-#endif
 
 int ofproto_class_register(const struct ofproto_class *);
 int ofproto_class_unregister(const struct ofproto_class *);
