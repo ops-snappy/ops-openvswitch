@@ -717,25 +717,66 @@
   </table>
 
   <table name="RIB" title="Routing Information Base">
-    <group title="Routes Configuration">
+    <group title="Global Routes Configuration">
+      <column name="vrf">
+        This entry is a reference to the VRF table, to which this route 
+	belongs.
+      </column>
+      <column name="selected_for_RIB">
+        This column contains a boolean which when set, indicates that
+	this row is a valid RIB entry.  This is to distinguish it from
+	other entries in the table, which may be there for private
+	reasons.
+      </column>
+      <column name="selected_to_FIB">
+        This is selected as the active route installed in in the 
+	forwarding table.
+      </column>
       <column name="prefix">
+        The prefix represents the destination subnet.
+	Example: 10.10.X.X.  The database representation
+	of this is the string of the form 10.10.0.0.
       </column>
-      <column name="nexthop">
+      <column name="prefix_len">
+        This is an integer which represents the netmask for the prefix.
       </column>
-      <column name="origin">
+      <column name="from_protocol">
+        This entry is a string which explains where this RIB table entry
+	came from.  It could have been discovered by BGP, RIP, OSPF etc,
+	or it could have been statically configured by the administrator.
       </column>
-    </group>
-   <group title="Status">
-      <column name="status" >
+      <column name="address_family">
+        This represents what address family the entry is for.  It can
+	be ipv4 or ipv6 etc.
       </column>
-   </group>
-   <group title="Common Columns">
-      The overall purpose of these columns is described under <code>Common
-      Columns</code> at the beginning of this document.
-
-      <column name="other_config">
+      <column name="sub_address_family">
+        This represents more information regarding this entry.  Unicast,
+	multicast, etc.
       </column>
-      <column name="external_ids">
+      <column name="flags">
+      </column>
+      <column name="distance">
+      </column>
+      <column name="metric">
+      </column>
+      <column name="message">
+      </column>
+      <column name="next_num">
+      </column>
+      <column name="ifindex_num">
+      </column>
+      <column name="nexthop_list">
+        This is a list (one or more) of all the nexthops for this entry.
+	It is a list of strings which represent ipv4 or ipv6 addresses.
+      </column>
+      <column name="interface_list">
+        These are references to interfaces in the Interface table.
+	They represent all the interfaces this route can be reached from.
+      </column>
+      <column name="protocol_specific_data">
+        This is opaque to the rib.  Each protocol daemon can store any
+	number of key value pairs specific to that protocol in this cell
+	for any purpose.
       </column>
    </group>
   </table>

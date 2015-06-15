@@ -1,7 +1,7 @@
 {
   "name": "OpenHalon",
   "version": "0.1.8",
-  "cksum": "3005432975 35414",
+  "cksum": "920572841 36807",
   "tables": {
     "Open_vSwitch": {
       "columns": {
@@ -432,22 +432,36 @@
     },
     "RIB": {
       "columns": {
-        "prefix": {
-          "type": "string",
-          "mutable": false
-        },
-        "nexthop": {
+        "vrf": {
           "type": {
             "key": {
               "type": "uuid",
-              "refTable": "Nexthop"
+              "refTable": "VRF"
             },
             "min": 1,
             "max": 1
-          },
-          "mutable": false
+          }
         },
-        "origin": {
+        "selected_for_RIB": {
+           "type": "boolean"
+        },
+        "selected_to_FIB": {
+          "type": {
+            "key": {
+              "type": "uuid",
+              "refTable": "FIB"
+            },
+            "min": 0,
+            "max": 1
+          }
+        },
+        "prefix": {
+          "type": "string"
+        },
+        "prefix_len": {
+          "type": "integer"
+        },
+        "from_protocol": {
           "type": {
             "key": {
               "type": "string",
@@ -464,24 +478,77 @@
             "max": 1
           }
         },
-        "status": {
+        "address_family": {
           "type": {
-            "key": "string",
-            "value": "string",
-            "min": 0,
-            "max": "unlimited"
-          },
-          "ephemeral": true
+            "key": {
+              "type": "string",
+              "enum": [
+                "set",
+                [
+                  "ipv4",
+                  "ipv6"
+                ]
+              ]
+            },
+            "min": 1,
+            "max": 1
+          }
         },
-        "other_config": {
+        "sub_address_family": {
           "type": {
-            "key": "string",
-            "value": "string",
+            "key": {
+              "type": "string",
+              "enum": [
+                "set",
+                [
+                  "unicast",
+                  "multicast",
+                  "vpn"
+                ]
+              ]
+            },
+            "min": 1,
+            "max": 1
+          }
+        },
+        "flags": {
+          "type": "integer"
+        },
+        "distance": {
+          "type": "integer"
+        },
+        "metric": {
+          "type": "integer"
+        },
+        "message": {
+          "type": "integer"
+        },
+        "next_num": {
+          "type": "integer"
+        },
+        "ifindex_num": {
+          "type": "integer"
+        },
+        "nexthop_list": {
+          "type": {
+            "key": {
+              "type": "string"
+            },
             "min": 0,
             "max": "unlimited"
           }
         },
-        "external_ids": {
+        "interface_list": {
+          "type": {
+            "key": {
+              "type": "uuid",
+              "refTable": "Interface"
+            },
+            "min": 0,
+            "max": "unlimited"
+          }
+        },
+        "protocol_specific_data": {
           "type": {
             "key": "string",
             "value": "string",
