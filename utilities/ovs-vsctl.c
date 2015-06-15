@@ -730,7 +730,18 @@ Options:\n\
 VLAN commands:\n\
   list-vlans BRIDGE           print the names of all the VLANs on BRIDGE\n\
   add-vlan BRIDGE VID         add VLAN with VLAN ID (VID) to BRIDGE\n\
-  del-vlan BRIDGE VID         delete VLAN with VLAN ID (VID) from BRIDGE\n");
+  del-vlan BRIDGE VID         delete VLAN with VLAN ID (VID) from BRIDGE\n\
+\n\
+VRF commands:\n\
+  add-vrf VRF                 create a new vrf named VRF\n\
+  del-vrf VRF                 delete VRF and all of its ports\n\
+  list-vrf                    print the names of all the vrfs\n\
+\n\
+VRF Port commands:\n\
+  list-vrf-ports VRF          print the names of all the ports on VRF\n\
+  add-vrf-port VRF PORT       add network device PORT to VRF\n\
+  del-vrf-port [VRF] PORT     delete PORT from VRF\n\
+  port-to-vrf PORT            print name of vrf that contains PORT\n");
 #endif
     vlog_usage();
     printf("\
@@ -795,6 +806,7 @@ struct vsctl_context {
     struct shash ports;     /* Maps from port name to struct vsctl_port. */
     struct shash ifaces;    /* Maps from port name to struct vsctl_iface. */
 #ifdef HALON
+    struct shash vrfs;      /* Maps from vrf name to struct vsctl_vrf. */
     struct shash orphan_ifaces; /* unused interfaces */
                             /* Maps from iface name to struct vsctl_iface. */
     bool subsystems_exist;
@@ -804,6 +816,14 @@ struct vsctl_context {
      * and the caller should wait for something to change and then retry. */
     bool try_again;
 };
+
+#ifdef HALON
+struct vsctl_vrf {
+    struct ovsrec_vrf *vrf_cfg;
+    char *name;
+    struct ovs_list ports;      /* Contains "struct vsctl_port"s. */
+};
+#endif
 
 struct vsctl_bridge {
     struct ovsrec_bridge *br_cfg;
@@ -825,6 +845,10 @@ struct vsctl_port {
     struct ovs_list ifaces;      /* Contains "struct vsctl_iface"s. */
     struct ovsrec_port *port_cfg;
     struct vsctl_bridge *bridge;
+#ifdef HALON
+    enum {BR_PORT, VRF_PORT} port_type;
+    struct vsctl_vrf *vrf;
+#endif
 };
 
 struct vsctl_iface {
@@ -968,19 +992,51 @@ find_vlan_bridge(struct vsctl_bridge *parent, int vlan)
     return NULL;
 }
 
+#ifdef HALON
+static struct vsctl_vrf *
+add_vrf_to_cache(struct vsctl_context *ctx,
+                 struct ovsrec_vrf *vrf_cfg, const char *name)
+{
+    struct vsctl_vrf *vrf = xmalloc(sizeof *vrf);
+    vrf->vrf_cfg = vrf_cfg;
+    vrf->name = xstrdup(name);
+    list_init(&vrf->ports);
+    shash_add(&ctx->vrfs, vrf->name, vrf);
+    return vrf;
+}
+
+static struct vsctl_port *
+add_vrf_port_to_cache(struct vsctl_context *ctx, struct vsctl_vrf *parent_vrf, 
+                      struct ovsrec_port *port_cfg)
+{
+    struct vsctl_port *port;
+
+    port = xmalloc(sizeof *port);
+    list_push_back(&parent_vrf->ports, &port->ports_node);
+    list_init(&port->ifaces);
+    port->port_cfg = port_cfg;
+    port->vrf = parent_vrf;
+    port->port_type = VRF_PORT;
+    shash_add(&ctx->ports, port_cfg->name, port);
+
+    return port;
+}
+#endif
+
 static struct vsctl_port *
 add_port_to_cache(struct vsctl_context *ctx, struct vsctl_bridge *parent,
                   struct ovsrec_port *port_cfg)
 {
     struct vsctl_port *port;
 
+    /* This is a L2 port */
     if (port_cfg->tag
         && *port_cfg->tag >= 0 && *port_cfg->tag <= 4095) {
         struct vsctl_bridge *vlan_bridge;
 
         vlan_bridge = find_vlan_bridge(parent, *port_cfg->tag);
         if (vlan_bridge) {
-            parent = vlan_bridge;
+            parent= vlan_bridge;
         }
     }
 
@@ -989,6 +1045,9 @@ add_port_to_cache(struct vsctl_context *ctx, struct vsctl_bridge *parent,
     list_init(&port->ifaces);
     port->port_cfg = port_cfg;
     port->bridge = parent;
+#ifdef HALON
+    port->port_type = BR_PORT;
+#endif
     shash_add(&ctx->ports, port_cfg->name, port);
 
     return port;
@@ -1076,6 +1135,15 @@ vsctl_context_invalidate_cache(struct vsctl_context *ctx)
     }
     shash_destroy(&ctx->bridges);
 
+#ifdef HALON
+    SHASH_FOR_EACH (node, &ctx->vrfs) {
+        struct vsctl_vrf *vrf = node->data;
+        free(vrf->name);
+        free(vrf);
+    }
+    shash_destroy(&ctx->vrfs);
+#endif
+
     shash_destroy_free_data(&ctx->ports);
     shash_destroy_free_data(&ctx->ifaces);
 #ifdef HALON
@@ -1121,6 +1189,9 @@ vsctl_context_populate_cache(struct vsctl_context *ctx)
 {
     const struct ovsrec_open_vswitch *ovs = ctx->ovs;
     struct sset bridges, ports;
+#ifdef HALON
+    struct sset vrfs;
+#endif
     size_t i;
 
     if (ctx->cache_valid) {
@@ -1132,6 +1203,7 @@ vsctl_context_populate_cache(struct vsctl_context *ctx)
     shash_init(&ctx->ports);
     shash_init(&ctx->ifaces);
 #ifdef HALON
+    shash_init(&ctx->vrfs);
     shash_init(&ctx->orphan_ifaces);
     /* HALON: Use presence of subsystems as an indicator that this
      * is a physical switch instead of a virtual switch.  This may be
@@ -1256,6 +1328,97 @@ vsctl_context_populate_cache(struct vsctl_context *ctx)
 #endif
 
     sset_destroy(&bridges);
+
+#ifdef HALON
+    sset_init(&vrfs);
+    sset_init(&ports);
+    for (i = 0; i < ovs->n_vrfs; i++) {
+        struct ovsrec_vrf *vrf_cfg = ovs->vrfs[i];
+        struct vsctl_vrf *vrf = NULL;
+        size_t j = 0;
+
+        if (!sset_add(&vrfs, vrf_cfg->name)) {
+            VLOG_WARN("%s: database contains duplicate vrf name",
+                      vrf_cfg->name);
+            continue;
+        }
+        vrf = add_vrf_to_cache(ctx, vrf_cfg, vrf_cfg->name);
+        if (!vrf) {
+            continue;
+        }
+
+        for (j = 0; j < vrf_cfg->n_ports; j++) {
+            struct ovsrec_port *port_cfg = vrf_cfg->ports[j];
+
+            if (!sset_add(&ports, port_cfg->name)) {
+                /* Duplicate port name.  (We will warn about that later.) */
+                continue;
+            }
+        }
+    }
+
+    sset_destroy(&vrfs);
+    sset_destroy(&ports);
+
+    sset_init(&vrfs);
+    for (i = 0; i < ovs->n_vrfs; i++) {
+        struct ovsrec_vrf *vrf_cfg = ovs->vrfs[i];
+        struct vsctl_vrf *vrf;
+        size_t j;
+
+        if (!sset_add(&vrfs, vrf_cfg->name)) {
+            continue;
+        }
+        vrf = shash_find_data(&ctx->vrfs, vrf_cfg->name);
+        for (j = 0; j < vrf_cfg->n_ports; j++) {
+            struct ovsrec_port *port_cfg = vrf_cfg->ports[j];
+            struct vsctl_port *port;
+            size_t k;
+
+            port = shash_find_data(&ctx->ports, port_cfg->name);
+            if (port) {
+                if (port_cfg == port->port_cfg) {
+                    VLOG_WARN("%s: port is in multiple vrfs (%s and %s)",
+                              port_cfg->name, vrf->name, port->vrf->name);
+                } else {
+                    /* Log as an error because this violates the database's
+                     * uniqueness constraints, so the database server shouldn't
+                     * have allowed it. */
+                    VLOG_ERR("%s: database contains duplicate port name",
+                             port_cfg->name);
+                }
+                continue;
+            }
+
+            port = add_vrf_port_to_cache(ctx, vrf, port_cfg);
+            for (k = 0; k < port_cfg->n_interfaces; k++) {
+                struct ovsrec_interface *iface_cfg = port_cfg->interfaces[k];
+                struct vsctl_iface *iface;
+
+                iface = shash_find_data(&ctx->ifaces, iface_cfg->name);
+                if (iface) {
+                    if (iface_cfg == iface->iface_cfg) {
+                        VLOG_WARN("%s: interface is in multiple ports "
+                                  "(%s and %s)",
+                                  iface_cfg->name,
+                                  iface->port->port_cfg->name,
+                                  port->port_cfg->name);
+                    } else {
+                        /* Log as an error because this violates the database's
+                         * uniqueness constraints, so the database server
+                         * shouldn't have allowed it. */
+                        VLOG_ERR("%s: database contains duplicate interface "
+                                 "name", iface_cfg->name);
+                    }
+                    continue;
+                }
+
+                add_iface_to_cache(ctx, port, iface_cfg);
+            }
+        }
+    }
+    sset_destroy(&vrfs);
+#endif
 }
 
 static void
@@ -1424,10 +1587,15 @@ cmd_init(struct vsctl_context *ctx OVS_UNUSED)
 {
 }
 
+/*
+ * Modify the size of the columns array if any new column
+ * is added to the open_vswitch table in the cmd_show_tables.
+ * Otherwise the last elements are written beyond the array.
+ */
 struct cmd_show_table {
     const struct ovsdb_idl_table_class *table;
     const struct ovsdb_idl_column *name_column;
-    const struct ovsdb_idl_column *columns[3];
+    const struct ovsdb_idl_column *columns[4];
     bool recurse;
 };
 
@@ -1436,6 +1604,9 @@ static struct cmd_show_table cmd_show_tables[] = {
      NULL,
      {&ovsrec_open_vswitch_col_manager_options,
       &ovsrec_open_vswitch_col_bridges,
+#ifdef HALON
+      &ovsrec_open_vswitch_col_vrfs,
+#endif
 #ifndef HALON_TEMP
       &ovsrec_open_vswitch_col_ovs_version},
 #else
@@ -1456,6 +1627,11 @@ static struct cmd_show_table cmd_show_tables[] = {
      false},
 
 #ifdef HALON
+    {&ovsrec_table_vrf,
+     &ovsrec_vrf_col_name,
+     {&ovsrec_vrf_col_ports},
+     false},
+
     {&ovsrec_table_vlan,
      &ovsrec_vlan_col_name,
      {&ovsrec_vlan_col_id,
@@ -2302,6 +2478,402 @@ cmd_del_vlan(struct vsctl_context *ctx)
 
     bridge_delete_vlan(bridge->br_cfg, vlan);
 }
+
+static void
+pre_get_vrf_info(struct vsctl_context *ctx)
+{
+    ovsdb_idl_add_column(ctx->idl, &ovsrec_open_vswitch_col_vrfs);
+
+    ovsdb_idl_add_column(ctx->idl, &ovsrec_vrf_col_name);
+    ovsdb_idl_add_column(ctx->idl, &ovsrec_vrf_col_ports);
+
+    ovsdb_idl_add_column(ctx->idl, &ovsrec_port_col_name);
+    ovsdb_idl_add_column(ctx->idl, &ovsrec_port_col_interfaces);
+
+    ovsdb_idl_add_column(ctx->idl, &ovsrec_interface_col_name);
+    /* HALON_TODO: We currently use presence of subsystems as an indicator
+     * that this is a physical switch instead of a virtual switch.  This
+     * isn't ideal, and we may want a more direct method of determining
+     * this distinction.
+     */
+    ovsdb_idl_add_column(ctx->idl, &ovsrec_open_vswitch_col_subsystems);
+}
+
+static void
+verify_vrf_ports(struct vsctl_context *ctx)
+{
+    if (!ctx->verified_ports) {
+        const struct ovsrec_vrf *vrf;
+        const struct ovsrec_port *port;
+
+        ovsrec_open_vswitch_verify_vrfs(ctx->ovs);
+        OVSREC_VRF_FOR_EACH (vrf, ctx->idl) {
+            ovsrec_vrf_verify_ports(vrf);
+        }
+        OVSREC_PORT_FOR_EACH (port, ctx->idl) {
+            ovsrec_port_verify_interfaces(port);
+        }
+
+        ctx->verified_ports = true;
+    }
+}
+
+static struct vsctl_iface *
+find_orphan_vrf_iface(struct vsctl_context *ctx, const char *name, bool must_exist)
+{
+    struct vsctl_iface *iface;
+
+    ovs_assert(ctx->cache_valid);
+
+    iface = shash_find_data(&ctx->orphan_ifaces, name);
+    if (must_exist && !iface) {
+        vsctl_fatal("no interface named %s", name);
+    }
+    verify_vrf_ports(ctx);
+    return iface;
+}
+
+static void
+check_vrf_conflicts(struct vsctl_context *ctx, const char *name,
+                    char *msg)
+{
+    verify_vrf_ports(ctx);
+
+    if (shash_find(&ctx->vrfs, name)) {
+        vsctl_fatal("%s because a vrf named %s already exists",
+                    msg, name);
+    }
+
+    free(msg);
+}
+
+static struct vsctl_vrf *
+find_vrf(struct vsctl_context *ctx, const char *name, bool must_exist)
+{
+    struct vsctl_vrf *vrf;
+
+    ovs_assert(ctx->cache_valid);
+
+    vrf = shash_find_data(&ctx->vrfs, name);
+    if (must_exist && !vrf) {
+        vsctl_fatal("no vrf named %s", name);
+    }
+    ovsrec_open_vswitch_verify_vrfs(ctx->ovs);
+    return vrf;
+}
+
+static struct vsctl_port *
+find_vrf_port(struct vsctl_context *ctx, const char *name, bool must_exist)
+{
+    struct vsctl_port *port;
+
+    ovs_assert(ctx->cache_valid);
+
+    port = shash_find_data(&ctx->ports, name);
+    if (must_exist && !port) {
+        vsctl_fatal("no port named %s", name);
+    }
+    verify_vrf_ports(ctx);
+    return port;
+}
+
+static void
+cmd_list_vrf_ports(struct vsctl_context *ctx)
+{
+    struct vsctl_vrf *vrf;
+    struct vsctl_port *port;
+    struct svec ports;
+
+    vsctl_context_populate_cache(ctx);
+    vrf = find_vrf(ctx, ctx->argv[1], true);
+    ovsrec_vrf_verify_ports(vrf->vrf_cfg);
+
+    svec_init(&ports);
+    LIST_FOR_EACH (port, ports_node, &vrf->ports) {
+        if (strcmp(port->port_cfg->name, vrf->name)) {
+            svec_add(&ports, port->port_cfg->name);
+        }
+    }
+    output_sorted(&ports, &ctx->output);
+    svec_destroy(&ports);
+}
+
+static void
+vrf_insert_port(struct ovsrec_vrf *vrf, struct ovsrec_port *port)
+{
+    struct ovsrec_port **ports;
+    size_t i;
+
+    ports = xmalloc(sizeof *vrf->ports * (vrf->n_ports + 1));
+    for (i = 0; i < vrf->n_ports; i++) {
+        ports[i] = vrf->ports[i];
+    }
+    ports[vrf->n_ports] = port;
+    ovsrec_vrf_set_ports(vrf, ports, vrf->n_ports + 1);
+    free(ports);
+}
+
+static void
+add_vrf_port(struct vsctl_context *ctx,
+         const char *vrf_name, const char *port_name,
+         bool may_exist,
+         char *iface_names[], int n_ifaces)
+{
+    struct vsctl_port *vsctl_port;
+    struct vsctl_vrf *vrf = NULL;
+    struct ovsrec_interface **ifaces;
+    struct ovsrec_port *port;
+    size_t i;
+
+    vsctl_context_populate_cache(ctx);
+    if (may_exist) {
+        struct vsctl_port *vsctl_port;
+
+        vsctl_port = find_vrf_port(ctx, port_name, false);
+        if (vsctl_port) {
+            if (vsctl_port->port_type == VRF_PORT &&
+                strcmp(vsctl_port->vrf->name, vrf_name)) {
+                char *command = vsctl_context_to_string(ctx);
+                vsctl_fatal("\"%s\" but %s is actually attached to vrf %s",
+                            command, port_name, vsctl_port->vrf->name);
+            } else if (vsctl_port->port_type == BR_PORT) {
+                char *command = vsctl_context_to_string(ctx);
+                vsctl_fatal("\"%s\" but %s is actually attached to bridge %s",
+                            command, port_name, vsctl_port->bridge->name);
+            }
+            return;
+        }
+    }
+
+    vrf = find_vrf(ctx, vrf_name, true);
+
+    ifaces = xmalloc(n_ifaces * sizeof *ifaces);
+    for (i = 0; i < n_ifaces; i++) {
+        /* find the existing interface in the orphan_ifaces dictionary */
+        if (ctx->subsystems_exist) {
+            struct vsctl_iface *iface;
+            iface = find_orphan_vrf_iface(ctx, iface_names[i], true);
+            ifaces[i] = iface->iface_cfg;
+        } else {
+            ifaces[i] = ovsrec_interface_insert(ctx->txn);
+            ovsrec_interface_set_name(ifaces[i], iface_names[i]);
+            post_db_reload_expect_iface(ifaces[i]);
+        }
+    }
+
+    port = ovsrec_port_insert(ctx->txn);
+    ovsrec_port_set_name(port, port_name);
+    ovsrec_port_set_interfaces(port, ifaces, n_ifaces);
+
+    vrf_insert_port(vrf->vrf_cfg, port);
+
+    vsctl_port = add_vrf_port_to_cache(ctx, vrf, port);
+    for (i = 0; i < n_ifaces; i++) {
+        if (ctx->subsystems_exist) {
+            move_orphan_iface_to_cache(ctx, vsctl_port, ifaces[i]);
+        } else {
+            add_iface_to_cache(ctx, vsctl_port, ifaces[i]);
+        }
+    }
+    free(ifaces);
+}
+
+static void
+cmd_add_vrf_port(struct vsctl_context *ctx)
+{
+    bool may_exist = shash_find(&ctx->options, "--may-exist") != NULL;
+    add_vrf_port(ctx, ctx->argv[1], ctx->argv[2], may_exist, &ctx->argv[2], 1);
+}
+
+static void
+vrf_delete_port(struct ovsrec_vrf *vrf, struct ovsrec_port *port)
+{
+    struct ovsrec_port **ports;
+    size_t i, n;
+
+    ports = xmalloc(sizeof *vrf->ports * vrf->n_ports);
+    for (i = n = 0; i < vrf->n_ports; i++) {
+        if (vrf->ports[i] != port) {
+            ports[n++] = vrf->ports[i];
+        }
+    }
+    ovsrec_vrf_set_ports(vrf, ports, n);
+    free(ports);
+}
+
+static void
+del_vrf_port(struct vsctl_context *ctx, struct vsctl_port *port)
+{
+    struct vsctl_iface *iface, *next_iface;
+
+    vrf_delete_port(port->vrf->vrf_cfg, port->port_cfg);
+
+    LIST_FOR_EACH_SAFE (iface, next_iface, ifaces_node, &port->ifaces) {
+        del_cached_iface(ctx, iface);
+    }
+    del_cached_port(ctx, port);
+}
+
+static void
+cmd_del_vrf_port(struct vsctl_context *ctx)
+{
+    bool must_exist = !shash_find(&ctx->options, "--if-exists");
+    const char *target = ctx->argv[ctx->argc - 1];
+    struct vsctl_port *port;
+
+    vsctl_context_populate_cache(ctx);
+
+    port = find_vrf_port(ctx, target, must_exist);
+
+    if (port) {
+        if (ctx->argc == 3) {
+            struct vsctl_vrf *vrf;
+
+            vrf = find_vrf(ctx, ctx->argv[1], true);
+            if (port->vrf != vrf) {
+                vsctl_fatal("vrf %s does not have a port %s",
+                            ctx->argv[1], ctx->argv[2]);
+            }
+        }
+
+        del_vrf_port(ctx, port);
+    }
+    /* difference in behavior between HALON and standard OVS
+     * (interface automatic deletion) means that we don't know if
+     * the cache is correct or not after deleting a port
+     */
+    vsctl_context_invalidate_cache(ctx);
+}
+
+static void
+cmd_port_to_vrf(struct vsctl_context *ctx)
+{
+    struct vsctl_port *port;
+
+    vsctl_context_populate_cache(ctx);
+
+    port = find_vrf_port(ctx, ctx->argv[1], true);
+    ds_put_format(&ctx->output, "%s\n", port->vrf->name);
+}
+
+static void
+cmd_list_vrf(struct vsctl_context *ctx)
+{
+    struct shash_node *node;
+    struct svec vrfs;
+
+    vsctl_context_populate_cache(ctx);
+
+    svec_init(&vrfs);
+    SHASH_FOR_EACH (node, &ctx->vrfs) {
+        struct vsctl_vrf *vrf = node->data;
+        svec_add(&vrfs, vrf->name);
+    }
+    output_sorted(&vrfs, &ctx->output);
+    svec_destroy(&vrfs);
+}
+
+static void
+ovs_insert_vrf(const struct ovsrec_open_vswitch *ovs,
+               struct ovsrec_vrf *vrf)
+{
+    struct ovsrec_vrf **vrfs;
+    size_t i;
+
+    vrfs = xmalloc(sizeof *ovs->vrfs * (ovs->n_vrfs + 1));
+    for (i = 0; i < ovs->n_vrfs; i++) {
+        vrfs[i] = ovs->vrfs[i];
+    }
+    vrfs[ovs->n_vrfs] = vrf;
+    ovsrec_open_vswitch_set_vrfs(ovs, vrfs, ovs->n_vrfs + 1);
+    free(vrfs);
+}
+
+static void
+cmd_add_vrf(struct vsctl_context *ctx)
+{
+    struct ovsrec_vrf *vrf;
+    const char *vrf_name;
+    bool may_exist = shash_find(&ctx->options, "--may-exist") != NULL;
+
+    vrf_name = ctx->argv[1];
+
+    vsctl_context_populate_cache(ctx);
+    if (may_exist) {
+        struct vsctl_vrf *vrf;
+
+        vrf = find_vrf(ctx, vrf_name, false);
+        if (vrf) {
+            return;
+        }
+    }
+    check_vrf_conflicts(ctx, vrf_name,
+                        xasprintf("cannot create a vrf named %s", vrf_name));
+
+    vrf = ovsrec_vrf_insert(ctx->txn);
+    ovsrec_vrf_set_name(vrf, vrf_name);
+
+    ovs_insert_vrf(ctx->ovs, vrf);
+
+    vsctl_context_invalidate_cache(ctx);
+}
+
+static void
+ovs_delete_vrf(const struct ovsrec_open_vswitch *ovs,
+                  struct ovsrec_vrf *vrf)
+{
+    struct ovsrec_vrf **vrfs;
+    size_t i, n;
+
+    vrfs = xmalloc((sizeof *ovs->vrfs) * ovs->n_vrfs);
+    for (i = n = 0; i < ovs->n_vrfs; i++) {
+        if (ovs->vrfs[i] != vrf) {
+            vrfs[n++] = ovs->vrfs[i];
+        }
+    }
+    ovsrec_open_vswitch_set_vrfs(ovs, vrfs, n);
+    free(vrfs);
+}
+
+static void
+del_cached_vrf(struct vsctl_context *ctx, struct vsctl_vrf *vrf)
+{
+    ovs_assert(list_is_empty(&vrf->ports));
+
+    if (vrf->vrf_cfg) {
+        ovsrec_vrf_delete(vrf->vrf_cfg);
+        ovs_delete_vrf(ctx->ovs, vrf->vrf_cfg);
+    }
+    shash_find_and_delete(&ctx->vrfs, vrf->name);
+    free(vrf->name);
+    free(vrf);
+}
+
+static void
+del_vrf(struct vsctl_context *ctx, struct vsctl_vrf *vrf)
+{
+    struct vsctl_port *port, *next_port;
+
+    LIST_FOR_EACH_SAFE (port, next_port, ports_node, &vrf->ports) {
+        del_vrf_port(ctx, port);
+    }
+
+    del_cached_vrf(ctx, vrf);
+}
+
+static void
+cmd_del_vrf(struct vsctl_context *ctx)
+{
+    struct vsctl_vrf *vrf;
+    bool must_exist = !shash_find(&ctx->options, "--if-exists");
+
+    vsctl_context_populate_cache(ctx);
+    vrf = find_vrf(ctx, ctx->argv[1], must_exist);
+    if (vrf) {
+        del_vrf(ctx, vrf);
+    }
+}
+
 #endif
 
 static void
@@ -2364,11 +2936,24 @@ add_port(struct vsctl_context *ctx,
             }
             svec_sort(&have_names);
 
+#ifdef HALON
+            if (vsctl_port->port_type == BR_PORT && 
+                strcmp(vsctl_port->bridge->name, br_name)) {
+                char *command = vsctl_context_to_string(ctx);
+                vsctl_fatal("\"%s\" but %s is actually attached to bridge %s",
+                            command, port_name, vsctl_port->bridge->name);
+            } else if (vsctl_port->port_type == VRF_PORT) {
+                char *command = vsctl_context_to_string(ctx);
+                vsctl_fatal("\"%s\" but %s is actually attached to vrf %s",
+                            command, port_name, vsctl_port->vrf->name);
+            }
+#else
             if (strcmp(vsctl_port->bridge->name, br_name)) {
                 char *command = vsctl_context_to_string(ctx);
                 vsctl_fatal("\"%s\" but %s is actually attached to bridge %s",
                             command, port_name, vsctl_port->bridge->name);
             }
+#endif
 
             if (!svec_equal(&want_names, &have_names)) {
                 char *have_names_string = svec_join(&have_names, ", ", "");
@@ -2997,6 +3582,9 @@ static const struct vsctl_table_class tables[] = {
      {NULL, NULL, NULL}}},
     {&ovsrec_table_vlan,
      {{&ovsrec_table_vlan, &ovsrec_vlan_col_name, NULL},
+     {NULL, NULL, NULL}}},
+    {&ovsrec_table_vrf,
+     {{&ovsrec_table_vrf, &ovsrec_vrf_col_name, NULL},
      {NULL, NULL, NULL}}},
 #endif
     {&ovsrec_table_interface,
@@ -4750,6 +5338,22 @@ static const struct vsctl_command_syntax all_commands[] = {
      "--may-exist", RW},
     {"del-vlan", 2, 2, pre_get_vlan_info, cmd_del_vlan, NULL, "--if-exists",
      RW},
+
+    /* VRF commands */
+    {"list-vrf", 0, 0, pre_get_vrf_info, cmd_list_vrf, NULL, "", RO},
+    {"add-vrf", 1, 1, pre_get_vrf_info, cmd_add_vrf, NULL,
+     "--may-exist", RW},
+    {"del-vrf", 1, 1, pre_get_vrf_info, cmd_del_vrf, NULL, "--if-exists",
+     RW},
+
+    /* VRF Port commands. */
+    {"list-vrf-ports", 1, 1, pre_get_vrf_info, cmd_list_vrf_ports,
+     NULL, "", RO},
+    {"add-vrf-port", 2, INT_MAX, pre_get_vrf_info, cmd_add_vrf_port,
+     NULL, "--may-exist", RW},
+    {"del-vrf-port", 1, 2, pre_get_vrf_info, cmd_del_vrf_port, NULL,
+     "--if-exists", RW},
+    {"port-to-vrf", 1, 1, pre_get_vrf_info, cmd_port_to_vrf, NULL, "", RO},
 
 #endif
     /* Port commands. */
