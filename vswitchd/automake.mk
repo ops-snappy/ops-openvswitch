@@ -8,6 +8,8 @@ vswitchd_ovs_vswitchd_SOURCES = \
 	vswitchd/bridge.h \
 	vswitchd/ovs-vswitchd.c \
 	vswitchd/subsystem.c \
+	vswitchd/vrf.c \
+	vswitchd/vrf.h \
 	vswitchd/system-stats.c \
 	vswitchd/system-stats.h \
 	vswitchd/xenserver.c \
