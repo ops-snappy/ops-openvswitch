@@ -218,17 +218,68 @@ vrf_port_delete_ip(struct vrf *vrf, char *ip_address,
 }
 
 static void
-vrf_port_update_network_address(struct vrf *vrf, struct port *port, 
-                                struct ovsrec_port *cfg)
+vrf_port_update_secondary_ipv6_address(struct vrf *vrf, struct port *port,
+                                       struct ovsrec_port *cfg)
 {
-    struct shash new_ip_list;
     struct shash new_ip6_list;
     struct net_address *addr, *next;
     struct shash_node *addr_node;
     int i;
 
-    shash_init(&new_ip_list);
     shash_init(&new_ip6_list);
+
+    /*
+     * Collect the interested network addresses
+     */
+    for (i = 0; i < cfg->n_ip6_address_secondary; i++) {
+        if(!shash_add_once(&new_ip6_list, cfg->ip6_address_secondary[i],
+                           cfg->ip6_address_secondary[i])) {
+            VLOG_WARN("Duplicate address in secondary list %s\n",
+                      cfg->ip6_address_secondary[i]);
+        }
+    }
+
+    /*
+     * Parse the existing list of addresses and remove obsolete ones
+     */
+    HMAP_FOR_EACH_SAFE (addr, next, addr_node, &port->secondary_ip6addr) {
+        if (!shash_find_data(&new_ip6_list, addr->address)) {
+            hmap_remove(&port->secondary_ip6addr, &addr->addr_node);
+            vrf_port_delete_ip(vrf, addr->address, port);
+            free(addr->address);
+            free(addr);
+        }
+    }
+
+    /*
+     * Add the newly added addresses to the list
+     */
+    SHASH_FOR_EACH (addr_node, &new_ip6_list) {
+        struct net_address *addr;
+        const char *address = addr_node->data;
+        if(!ip6_address_lookup(port, address)) {
+            /*
+             * Add the new address to the list
+             */
+            addr = xzalloc(sizeof *addr);
+            addr->address = xstrdup(address);
+            hmap_insert(&port->secondary_ip6addr, &addr->addr_node,
+                        hash_string(addr->address, 0));
+            vrf_port_configure_ip(vrf, addr->address, port);
+        }
+    }
+}
+
+static void
+vrf_port_update_secondary_ipv4_address(struct vrf *vrf, struct port *port,
+                                       struct ovsrec_port *cfg)
+{
+    struct shash new_ip_list;
+    struct net_address *addr, *next;
+    struct shash_node *addr_node;
+    int i;
+
+    shash_init(&new_ip_list);
 
     /*
      * Collect the interested network addresses
@@ -241,27 +292,12 @@ vrf_port_update_network_address(struct vrf *vrf, struct port *port,
         }
     }
 
-    for (i = 0; i < cfg->n_ip6_address_secondary; i++) {
-        if(!shash_add_once(&new_ip6_list, cfg->ip6_address_secondary[i],
-                           cfg->ip6_address_secondary[i])) {
-            VLOG_WARN("Duplicate address in secondary list %s\n",
-                      cfg->ip6_address_secondary[i]);
-        }
-    }
-
     /*
      * Parse the existing list of addresses and remove obsolete ones
      */
     HMAP_FOR_EACH_SAFE (addr, next, addr_node, &port->secondary_ipaddr) {
         if (!shash_find_data(&new_ip_list, addr->address)) {
-            vrf_port_delete_ip(vrf, addr->address, port);
-            free(addr->address);
-            free(addr);
-        }
-    }
-    
-    HMAP_FOR_EACH_SAFE (addr, next, addr_node, &port->secondary_ip6addr) {
-        if (!shash_find_data(&new_ip6_list, addr->address)) {
+            hmap_remove(&port->secondary_ipaddr, &addr->addr_node);
             vrf_port_delete_ip(vrf, addr->address, port);
             free(addr->address);
             free(addr);
@@ -285,25 +321,10 @@ vrf_port_update_network_address(struct vrf *vrf, struct port *port,
             vrf_port_configure_ip(vrf, addr->address, port);
         }
     }
-
-    SHASH_FOR_EACH (addr_node, &new_ip6_list) {
-        struct net_address *addr;
-        const char *address = addr_node->data;
-        if(!ip6_address_lookup(port, address)) {
-            /*
-             * Add the new address to the list
-             */
-            addr = xzalloc(sizeof *addr);
-            addr->address = xstrdup(address);
-            hmap_insert(&port->secondary_ip6addr, &addr->addr_node,
-                        hash_string(addr->address, 0));
-            vrf_port_configure_ip(vrf, addr->address, port);
-        }
-    }
 }
 
 static void
-vrf_port_configure(struct vrf *vrf, struct port *port, 
+vrf_port_configure(struct vrf *vrf, struct port *port,
                    struct ovsrec_port *port_cfg)
 {
     const struct ovsdb_idl_column *column;
@@ -350,11 +371,11 @@ vrf_port_configure(struct vrf *vrf, struct port *port,
         }
     }
     else {
-        if (port->ip6_address != NULL) {    
+        if (port->ip6_address != NULL) {
             vrf_port_delete_ip(vrf, port->ip6_address, port);
             free(port->ip6_address);
             port->ip6_address = NULL;
-        }    
+        }
     }
 
     /*
@@ -364,7 +385,7 @@ vrf_port_configure(struct vrf *vrf, struct port *port,
     if (column) {
         if (OVSREC_IDL_IS_COLUMN_MODIFIED(column, idl_seqno) ) {
             VLOG_DBG("ip_address_secondary modified");
-            vrf_port_update_network_address(vrf, port, port_cfg);
+            vrf_port_update_secondary_ipv4_address(vrf, port, port_cfg);
         }
     }
 
@@ -372,7 +393,7 @@ vrf_port_configure(struct vrf *vrf, struct port *port,
     if (column) {
         if (OVSREC_IDL_IS_COLUMN_MODIFIED(column, idl_seqno) ) {
             VLOG_INFO("ip6_address_secondary modified");
-            vrf_port_update_network_address(vrf, port, port_cfg);
+            vrf_port_update_secondary_ipv6_address(vrf, port, port_cfg);
         }
     }
 }
@@ -532,7 +553,7 @@ error:
     return 0;
 }
 
-/* Returns the correct network device type for interface 'iface' in vrf 
+/* Returns the correct network device type for interface 'iface' in vrf
  * 'vrf'. */
 static const char *
 iface_get_type(const struct ovsrec_interface *iface,
@@ -660,7 +681,7 @@ port_destroy(struct port *port)
     }
 }
 
-static struct port * 
+static struct port *
 port_create (struct vrf *vrf, const struct ovsrec_port *port_cfg)
 {
     struct port *port;
@@ -781,8 +802,8 @@ vrf_reconfigure_ports(struct vrf *vrf, const struct shash *wanted_ports)
         struct port *port = port_lookup(vrf, port_cfg->name);
         if (!port) {
             VLOG_DBG("Creating new port %s vrf %s\n",port_cfg->name, vrf->name);
-            vrf_add_port(vrf, port_cfg); 
-    
+            vrf_add_port(vrf, port_cfg);
+
             /* TODO: Fix this, combine ifs and make it one reconf */
             port = port_lookup(vrf, port_cfg->name);
             vrf_port_configure(vrf, port, port_cfg);
@@ -930,7 +951,7 @@ vrf_run(void)
     }
     run_status_update();
 
-    /* TODO: Handle txt failure and retry */
+    /* TODO: Handle txn failure and retry */
     ovsdb_idl_txn_commit(txn);
     ovsdb_idl_txn_destroy(txn);
 }
