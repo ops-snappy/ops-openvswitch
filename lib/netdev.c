@@ -1851,3 +1851,37 @@ netdev_get_change_seq(const struct netdev *netdev)
 {
     return netdev->change_seq;
 }
+
+#ifdef HALON
+/* Assigns ipv4 or ipv6 addr to given kernel interface.
+*/
+int
+netdev_set_ip_address(struct netdev *netdev, const char *ip_netmask,
+                       const char *name)
+{
+    char   cmd_str[256];
+
+    /* Configure Kernel and Provider */
+    memset(cmd_str, 0, 256);
+    snprintf(cmd_str, 255, "ip addr add %s dev %s", ip_netmask, name);
+    VLOG_DBG("System command to assign kernel ip=%s", cmd_str);
+
+    return (system(cmd_str));
+}
+
+/* Delete ipv4 or ipv6 addr of a given kernel interface.
+*/
+int
+netdev_delete_ip_address(struct netdev *netdev, const char *ip_netmask,
+                         const char *name)
+{
+    char   cmd_str[256];
+
+    /* Configure Kernel and Provider */
+    memset(cmd_str, 0, 256);
+    snprintf(cmd_str, 255, "ip addr del %s dev %s", ip_netmask, name);
+    VLOG_DBG("System Command to delete kernel ip=%s", cmd_str);
+
+    return (system(cmd_str));
+}
+#endif

@@ -265,6 +265,12 @@ int netdev_arp_lookup(const struct netdev *, ovs_be32 ip,
 
 struct netdev *netdev_find_dev_by_in4(const struct in_addr *);
 
+#ifdef HALON
+int netdev_set_ip_address(struct netdev *netdev, const char *ip_netmask,
+                       const char *name);
+int netdev_delete_ip_address(struct netdev *netdev, const char *ip_netmask,
+                         const char *name);
+#endif
 /* Statistics. */
 int netdev_get_stats(const struct netdev *, struct netdev_stats *);
 

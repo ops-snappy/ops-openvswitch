@@ -93,8 +93,15 @@ def printCIDLHeader(schemaFile):
 #define %(prefix)sIDL_IS_ROW_MODIFIED(ovsrec_row_struct, my_seqno)            \
                            (ovsrec_row_struct->header_.modify_seqno > my_seqno)
 #define %(prefix)sIDL_IS_COLUMN_MODIFIED(ovsrec_col_struct, my_seqno)         \
-                                    (ovsrec_col_struct.modify_seqno > my_seqno)'''\
-                                % {'prefix': prefix.upper()}
+                               (ovsrec_col_struct->modify_seqno > my_seqno)'''\
+                               % {'prefix': prefix.upper()}
+
+    print "\n\
+#define %(prefix)sIDL_GET_COLUMN(column_ptr, ovsrec_row_struct, column_name)  \
+{                                                                             \
+    column_ptr = shash_find_data(&ovsrec_row_struct->header_.table->columns,  \
+                                 column_name);                                \
+}" % {'prefix': prefix.upper()}
 
     for tableName, table in sorted(schema.tables.iteritems()):
         structName = "%s%s" % (prefix, tableName.lower())
