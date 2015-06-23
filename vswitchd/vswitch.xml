@@ -680,6 +680,9 @@
       <column name="ports">
         Ports included in the VRF.
       </column>
+      <column name="bgp_routers">
+        BGP routers included in the VRF.
+      </column>
     </group>
    <group title="Common Columns">
       The overall purpose of these columns is described under <code>Common
@@ -717,25 +720,66 @@
   </table>
 
   <table name="RIB" title="Routing Information Base">
-    <group title="Routes Configuration">
+    <group title="Global Routes Configuration">
+      <column name="vrf">
+        This entry is a reference to the VRF table, to which this route 
+	belongs.
+      </column>
+      <column name="selected_for_RIB">
+        This column contains a boolean which when set, indicates that
+	this row is a valid RIB entry.  This is to distinguish it from
+	other entries in the table, which may be there for private
+	reasons.
+      </column>
+      <column name="selected_to_FIB">
+        This is selected as the active route installed in in the 
+	forwarding table.
+      </column>
       <column name="prefix">
+        The prefix represents the destination subnet.
+	Example: 10.10.X.X.  The database representation
+	of this is the string of the form 10.10.0.0.
       </column>
-      <column name="nexthop">
+      <column name="prefix_len">
+        This is an integer which represents the netmask for the prefix.
       </column>
-      <column name="origin">
+      <column name="from_protocol">
+        This entry is a string which explains where this RIB table entry
+	came from.  It could have been discovered by BGP, RIP, OSPF etc,
+	or it could have been statically configured by the administrator.
       </column>
-    </group>
-   <group title="Status">
-      <column name="status" >
+      <column name="address_family">
+        This represents what address family the entry is for.  It can
+	be ipv4 or ipv6 etc.
       </column>
-   </group>
-   <group title="Common Columns">
-      The overall purpose of these columns is described under <code>Common
-      Columns</code> at the beginning of this document.
-
-      <column name="other_config">
+      <column name="sub_address_family">
+        This represents more information regarding this entry.  Unicast,
+	multicast, etc.
       </column>
-      <column name="external_ids">
+      <column name="flags">
+      </column>
+      <column name="distance">
+      </column>
+      <column name="metric">
+      </column>
+      <column name="message">
+      </column>
+      <column name="next_num">
+      </column>
+      <column name="ifindex_num">
+      </column>
+      <column name="nexthop_list">
+        This is a list (one or more) of all the nexthops for this entry.
+	It is a list of strings which represent ipv4 or ipv6 addresses.
+      </column>
+      <column name="interface_list">
+        These are references to interfaces in the Interface table.
+	They represent all the interfaces this route can be reached from.
+      </column>
+      <column name="protocol_specific_data">
+        This is opaque to the rib.  Each protocol daemon can store any
+	number of key value pairs specific to that protocol in this cell
+	for any purpose.
       </column>
    </group>
   </table>
@@ -788,11 +832,50 @@
    </group>
   </table>
 
-  <table name="BGP" title="Border Gateway Protocol">
+  <table name="BGP_Router" title="Border Gateway Protocol">
     <group title="Configuration">
       This table will be extended based on BGP functionality that is present
       in Quagga.
+      <column name="asn">
+      Enable a BGP protocol process with the specified asn (AS number). After
+      this statement you can input any BGP Commands. You can not create
+      different BGP process under different asn without specifying
+      multiple-instance (see Multiple instance). ASN Range: 1-4294967295.
+      </column>
+      <column name="router_id">
+      This command specifies the router-ID. If bgpd connects to zebra it gets
+      an interface and address information. In that case default router ID value
+      is selected as the largest IP Address of the interfaces. When router zebra
+      is not enabled, it is required to set router-id by hand, so that router id
+      is not set to 0.0.0.0.
+      </column>
+      <column name="networks">
+      This command adds the announcement network.
+      router bgp 1
+           network 10.0.0.0/8
+      This configuration example says that network 10.0.0.0/8 will be announced to
+      all neighbors.
+      A.B.C.D    Network number
+      A.B.C.D/M  IP prefix  e.g. 35.0.0.0/8.
+      </column>
+      <column name="redistribute">
+      Allows redistribution of routes from various protocols. For example: ISIS,
+      kernel, OSPF, RIP, static, connected.
+      </column>
+      <column name="always_compare_med">
+      Allow comparing MED from different neighbors.
+      </column>
+      <column name="deterministic_med">
+      Pick the best-MED path among paths advertised from the neighboring AS.
+      </column>
+      <column name="graceful_restart">
+      Set the max time to hold onto restarting peer's stale paths. Range: 1-3600 seconds.
+      </column>
+      <column name="bestpath">
+      Change the default bestpath selection.
+      </column>
       <column name="neighbors">
+      Pointer to BGP neighbor table.
       </column>
     </group>
    <group title="Status">
@@ -811,10 +894,107 @@
   </table>
 
   <table name="BGP_neighbor" title="BGP Neighbors">
-    <group title="Configuration">
+    <group title="Neighbor Configuration">
+      <column name="peer_id">
+      IP address to use for peer-id.
+      </column>
+      <column name="remote_as">
+      Peer AS number. For EBGP, the peer is in another AS, so the remote AS
+      number must be different from the local router's AS number or BGP
+      router asn. For IBGP, the peer is in the same AS, so the two AS
+      numbers must be the same.
+      Remote AS number. Range: 1-4294967295.
+      </column>
+      <column name="local_as">
+      To specify a different asn from BGP router asn to be used as local AS
+      number in update messages to peers.
+      Local AS number. Range: 1-4294967295.
+      </column>
+      <column name="weight">
+      Set default weight for routes from this neighbor.
+      </column>
+      <column name="to_bgp_peer_group">
+      Pointer to the BGP peer-group table.
+      </column>
+      <column name="activate">
+      Enable the Address Family for this Neighbor.
+      </column>
+      <column name="interface">
+      Interface name.
+      </column>
+      <column name="port">
+      Neighbor's BGP port. TCP port number: 0-65535.
+      </column>
+      <column name="advertisement_interval">
+      Minimum interval between sending BGP routing updates. Range: 0-600 seconds.
+      </column>
+      <column name="maximum_prefix">
+      This command configures a limit to the number of prefixes that can be
+      accepted on a BGP peer session. When the limit is exceeded, a system log
+      message is logged.Maximum number of prefix accept from this peer.
+      </column>
+      <column name="send_community">
+      Send Community attributes (standard, extended or both) to this neighbor.
+      </column>
+      <column name="shutdown">
+      Administratively shut down this neighbor.
+      </column>
+      <column name="capability">
+      Advertise dynamic/ORF capabilities to the peer.
+      </column>
+      <column name="override_capability">
+      Override capability negotiation result.
+      </column>
+      <column name="soft_reconfiguration">
+      Allow inbound soft reconfiguration for this neighbor.
+      </column>
+      <column name="passive">
+      Don't send open messages to this neighbor.
+      </column>
+      <column name="password">
+      Set a password.
+      </column>
+      <column name="strict_capability_match">
+      Strict capability negotiation match.
+      </column>
+      <column name="description">
+      Neighbor specific description.
+      </column>
+      <column name="timers">
+      BGP per neighbor timers - Connect timer/Keep-alive Interval.
+      </column>
+      <column name="to_bgp_router">
+      Pointer to the BGP router table.
+      </column>
+      <column name="statistics">
+      Statistics per neighbor.
+      </column>
     </group>
    <group title="Status">
       <column name="status" >
+      </column>
+   </group>
+   <group title="Common Columns">
+      The overall purpose of these columns is described under <code>Common
+      Columns</code> at the beginning of this document.
+
+      <column name="other_config">
+      </column>
+      <column name="external_ids">
+      </column>
+   </group>
+  </table>
+
+  <table name="BGP_Peer_Group" title="BGP Peer_Group">
+    <group title="Peer_Group Attributes">
+      <column name="name">
+      Peer-group name.
+      </column>
+      <column name="to_bgp_router">
+      Pointer to the BGP router table.
+      </column>
+      <column name="to_bgp_neighbor">
+      Pointer to the BGP neighbor table.
       </column>
    </group>
    <group title="Common Columns">
@@ -1646,6 +1826,24 @@
     <column name="hw_intf_info" key="pluggable">
       Boolean value indicating whether or not the interface has a fixed connector or
       a pluggable module socket.
+    </column>
+    <column name="hw_intf_info" key="capability_enet1G">
+      Boolean value indicating whether or not the interface supports Ethernet
+      1G speed.
+    </column>
+    <column name="hw_intf_info" key="capability_enet10G">
+      Boolean value indicating whether or not the interface supports Ethernet
+      10G speed.
+    </column>
+    <column name="hw_intf_info" key="capability_enet40G">
+      Boolean value indicating whether or not the interface supports Ethernet
+      40G speed.
+    </column>
+    <column name="hw_intf_info" key="capability_split_4">
+      Boolean value indicating whether or not the interface supports being
+      split into four split ports. For example, a QSFP+ port can run as a
+      single port or can be split into four 10G split ports using a QSFP+
+      splitter cable.
     </column>
     <column name="split_parent">
       For a split child interface, this is the reference to the parent <ref table="Interface"/>.
