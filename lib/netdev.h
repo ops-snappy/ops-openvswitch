@@ -270,6 +270,8 @@ int netdev_set_ip_address(struct netdev *netdev, const char *ip_netmask,
                        const char *name);
 int netdev_delete_ip_address(struct netdev *netdev, const char *ip_netmask,
                          const char *name);
+int netdev_enable_ip_routing(void);
+int netdev_disable_ip_routing(void);
 #endif
 /* Statistics. */
 int netdev_get_stats(const struct netdev *, struct netdev_stats *);

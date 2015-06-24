@@ -730,6 +730,9 @@ add_del_vrfs(const struct ovsrec_open_vswitch *cfg)
         vrf->cfg = shash_find_data(&new_vrf, vrf->name);
         if (!vrf->cfg) {
             vrf_destroy(vrf);
+            /* Disable routing for this vrf/namespace
+             * HALON TODO: In future this will be per namespace */
+            netdev_disable_ip_routing();
         }
     }
 
@@ -739,6 +742,9 @@ add_del_vrfs(const struct ovsrec_open_vswitch *cfg)
         struct vrf *vrf = vrf_lookup(vrf_cfg->name);
         if (!vrf) {
             vrf_create(vrf_cfg);
+            /* Enable routing for this vrf/namespace
+             * HALON TODO: In future this will be per namespace */
+            netdev_enable_ip_routing();
         }
     }
 

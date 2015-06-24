@@ -1884,4 +1884,34 @@ netdev_delete_ip_address(struct netdev *netdev, const char *ip_netmask,
 
     return (system(cmd_str));
 }
+
+/* Enable v4 and v6 routing in the kernel
+ */
+int
+netdev_enable_ip_routing(void)
+{
+    char   cmd_str[256];
+
+    /* Configure Kernel to enable routing */
+    memset(cmd_str, 0, 256);
+    snprintf(cmd_str, 255, "sysctl --load=/etc/halon/sysctl.d/halon-vrf-sysctl-set.conf");
+    VLOG_DBG("System command to enable routing: %s",cmd_str);
+
+    return (system(cmd_str));
+}
+
+/* Disable v4 and v6 routing in the kernel
+ */
+int
+netdev_disable_ip_routing(void)
+{
+    char   cmd_str[256];
+
+    /* Configure Kernel to disable routing */
+    memset(cmd_str, 0, 256);
+    snprintf(cmd_str, 255, "sysctl --load=/etc/halon/sysctl.d/halon-vrf-sysctl-unset.conf");
+    VLOG_DBG("System command to disable routing: %s",cmd_str);
+
+    return (system(cmd_str));
+}
 #endif
