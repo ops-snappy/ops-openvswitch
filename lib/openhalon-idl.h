@@ -165,6 +165,15 @@ enum ovsrec_interface_user_config_duplex_e {
     INTERFACE_USER_CONFIG_DUPLEX_FULL
 };
 
+#define INTERFACE_USER_CONFIG_MAP_LANE_SPLIT                    "lane_split"
+#define INTERFACE_USER_CONFIG_MAP_LANE_SPLIT_NO_SPLIT           "no-split"
+#define INTERFACE_USER_CONFIG_MAP_LANE_SPLIT_SPLIT              "split"
+
+enum ovsrec_interface_user_config_lane_split_e {
+    INTERFACE_USER_CONFIG_LANE_SPLIT_NO_SPLIT,
+    INTERFACE_USER_CONFIG_LANE_SPLIT_SPLIT
+};
+
 #define INTERFACE_HW_INTF_CONFIG_MAP_ENABLE                     "enable"
 
 #define INTERFACE_HW_INTF_CONFIG_MAP_ENABLE_FALSE               "false"
