@@ -1008,6 +1008,28 @@
    </group>
   </table>
 
+  <table name="Neighbor" title="Neighbor information">
+    <group title="Neighbor information">
+      <column name="vrf">
+        This entry is a reference to the VRF table, to which this neighbor
+        belongs.
+      </column>
+      <column name="network_address">
+        The IPv4 address or the IPv6 address of neighbor
+      </column>
+      <column name="address_family">
+        This represents what address family the entry is for.  It can
+        be ipv4 or ipv6 etc.
+      </column>
+      <column name="mac">
+        MAC address learnt for this neighbor
+      </column>
+      <column name="interface">
+        Name of interface where this neighbor was learnt
+      </column>
+   </group>
+  </table>
+
   <table name="VLAN" title="Virtual Local Area Network">
     <group title="Configuration">
       <column name="name">
