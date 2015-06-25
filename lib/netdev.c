@@ -502,6 +502,30 @@ netdev_set_hw_intf_config(struct netdev *netdev, const struct smap *args)
     return 0;
 }
 
+int
+netdev_enable_l3(const struct netdev *netdev, int vrf_id)
+{
+    int rc;
+
+    rc = netdev->netdev_class->enable_l3 ?
+                netdev->netdev_class->enable_l3(netdev, vrf_id) : EOPNOTSUPP;
+    VLOG_DBG("Enable L3 rc=(%d)", rc);
+
+    return rc;
+}
+
+int
+netdev_disable_l3(const struct netdev *netdev, int vrf_id)
+{
+    int rc;
+
+    rc = netdev->netdev_class->disable_l3 ?
+                netdev->netdev_class->disable_l3(netdev, vrf_id) : EOPNOTSUPP;
+    VLOG_DBG("Disable L3 rc=(%d)", rc);
+
+    return rc;
+}
+
 #endif
 /* Returns the current configuration for 'netdev' in 'args'.  The caller must
  * have already initialized 'args' with smap_init().  Returns 0 on success, in

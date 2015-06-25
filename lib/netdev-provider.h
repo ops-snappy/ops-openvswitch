@@ -615,6 +615,15 @@ struct netdev_class {
                                        void *aux),
                             void *aux);
 
+
+#ifdef HALON
+    /* Enable L3 on the interface. */
+    int (*enable_l3)(const struct netdev *netdev, int vrf_id);
+
+    /* Disable L3 on the interface. */
+    int (*disable_l3)(const struct netdev *netdev, int vrf_id);
+#endif
+
     /* If 'netdev' has an assigned IPv4 address, sets '*address' to that
      * address and '*netmask' to the associated netmask.
      *

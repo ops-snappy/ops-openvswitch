@@ -543,6 +543,11 @@ iface_do_create(const struct vrf *vrf,
         goto error;
     }
 
+    error = netdev_enable_l3(netdev, VSWITCHD_VRF_DEFAULT_ID);
+    if (error) {
+        goto error;
+    }
+
     *netdevp = netdev;
     return 0;
 
@@ -618,6 +623,7 @@ iface_destroy(struct iface *iface)
         struct port *port = iface->port;
         struct vrf *vrf = port->vrf;
 
+        netdev_disable_l3(iface->netdev, VSWITCHD_VRF_DEFAULT_ID);
         hmap_remove(&vrf->iface_by_name, &iface->iface_node);
 
         netdev_remove(iface->netdev);

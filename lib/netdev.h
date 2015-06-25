@@ -157,6 +157,8 @@ int netdev_get_config(const struct netdev *, struct smap *);
 #ifdef HALON
 int netdev_set_hw_intf_info(struct netdev *, const struct smap *args);
 int netdev_set_hw_intf_config(struct netdev *, const struct smap *args);
+int netdev_enable_l3(const struct netdev *, int vrf_id);
+int netdev_disable_l3(const struct netdev *, int vrf_id);
 #endif
 const struct netdev_tunnel_config *
     netdev_get_tunnel_config(const struct netdev *);
