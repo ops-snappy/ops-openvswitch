@@ -38,6 +38,8 @@
 #include "lib/vswitch-idl.h"
 #include "openvswitch/vlog.h"
 
+#include "openhalon-idl.h"
+
 VLOG_DEFINE_THIS_MODULE(subsystem);
 
 COVERAGE_DEFINE(subsystem_reconfigure);
@@ -176,12 +178,33 @@ subsystem_add_ifaces(struct subsystem *ss, const struct shash *wanted_ifaces)
 {
     struct shash_node *iface_node;
 
+    /* Split children interfaces expect their parent interface
+     * to be created ahead of them. So create all the split parent
+     * interfaces first.
+     */
     SHASH_FOR_EACH (iface_node, wanted_ifaces) {
         const struct ovsrec_interface *iface_cfg = iface_node->data;
-        struct iface *iface = iface_lookup(ss, iface_cfg->name);
 
-        if (!iface) {
-            iface_create(ss, iface_cfg);
+        if (iface_cfg->n_split_children != 0) {
+
+            struct iface *iface = iface_lookup(ss, iface_cfg->name);
+            if (!iface) {
+                VLOG_DBG("Adding splittable interface. Name=%s", iface_cfg->name);
+                iface_create(ss, iface_cfg);
+            }
+        }
+    }
+
+    SHASH_FOR_EACH (iface_node, wanted_ifaces) {
+        const struct ovsrec_interface *iface_cfg = iface_node->data;
+
+        if (iface_cfg->n_split_children == 0) {
+
+            struct iface *iface = iface_lookup(ss, iface_cfg->name);
+            if (!iface) {
+                VLOG_DBG("Adding non-splittable interface. Name=%s", iface_cfg->name);
+                iface_create(ss, iface_cfg);
+            }
         }
     }
 }
@@ -338,6 +361,7 @@ iface_do_create(const struct subsystem *ss,
                 const struct ovsrec_interface *iface_cfg,
                 struct netdev **netdevp)
 {
+    struct smap hw_intf_info;
     struct netdev *netdev = NULL;
     int error;
 
@@ -355,13 +379,25 @@ iface_do_create(const struct subsystem *ss,
         goto error;
     }
 
-    VLOG_DBG("subsystem %s: added interface %s",
-              ss->name, iface_cfg->name);
+    VLOG_DBG("subsystem %s: added interface %s", ss->name, iface_cfg->name);
 
-    error = netdev_set_hw_intf_info(netdev, &(iface_cfg->hw_intf_info));
+    /* Copy the iface->hw_intf_info to a local smap. */
+    smap_clone(&hw_intf_info, &(iface_cfg->hw_intf_info));
+
+    /* Check if the interface is a split child of another port. */
+    if (iface_cfg->split_parent != NULL) {
+        smap_add(&hw_intf_info,
+                 INTERFACE_HW_INTF_INFO_SPLIT_PARENT,
+                 iface_cfg->split_parent->name);
+    }
+
+    error = netdev_set_hw_intf_info(netdev, &hw_intf_info);
     if (error) {
+        smap_clear(&hw_intf_info);
         goto error;
     }
+
+    smap_clear(&hw_intf_info);
 
     error = iface_set_netdev_hw_intf_config(iface_cfg, netdev);
     if (error) {

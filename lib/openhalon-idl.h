@@ -268,6 +268,7 @@ enum ovsrec_interface_hw_intf_config_interface_type_e {
 #define INTERFACE_HW_INTF_INFO_MAP_ENET10G                      "enet10G"
 #define INTERFACE_HW_INTF_INFO_MAP_ENET40G                      "enet40G"
 #define INTERFACE_HW_INTF_INFO_MAP_SPLIT_4                      "split_4"
+#define INTERFACE_HW_INTF_INFO_SPLIT_PARENT                     "split_parent"
 
 #define INTERFACE_HW_INTF_INFO_MAP_SPLIT_4_FALSE                "false"
 #define INTERFACE_HW_INTF_INFO_MAP_SPLIT_4_TRUE                 "true"
