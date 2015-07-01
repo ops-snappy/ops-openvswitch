@@ -170,6 +170,7 @@ enum ovsrec_interface_user_config_duplex_e {
 #define INTERFACE_USER_CONFIG_MAP_LANE_SPLIT_SPLIT              "split"
 
 enum ovsrec_interface_user_config_lane_split_e {
+    INTERFACE_USER_CONFIG_LANE_SPLIT_DEFAULT,
     INTERFACE_USER_CONFIG_LANE_SPLIT_NO_SPLIT,
     INTERFACE_USER_CONFIG_LANE_SPLIT_SPLIT
 };
@@ -259,14 +260,17 @@ enum ovsrec_interface_hw_intf_config_interface_type_e {
 #define INTERFACE_HW_INTF_INFO_MAP_SPEEDS                       "speeds"
 #define INTERFACE_HW_INTF_INFO_MAP_CONNECTOR                    "connector"
 #define INTERFACE_HW_INTF_INFO_MAP_PLUGGABLE                    "pluggable"
+
+#define INTERFACE_HW_INTF_INFO_MAP_PLUGGABLE_FALSE              "false"
+#define INTERFACE_HW_INTF_INFO_MAP_PLUGGABLE_TRUE               "true"
+
 #define INTERFACE_HW_INTF_INFO_MAP_ENET1G                       "enet1G"
 #define INTERFACE_HW_INTF_INFO_MAP_ENET10G                      "enet10G"
 #define INTERFACE_HW_INTF_INFO_MAP_ENET40G                      "enet40G"
 #define INTERFACE_HW_INTF_INFO_MAP_SPLIT_4                      "split_4"
 
-
-#define INTERFACE_HW_INTF_INFO_MAP_PLUGGABLE_FALSE              "false"
-#define INTERFACE_HW_INTF_INFO_MAP_PLUGGABLE_TRUE               "true"
+#define INTERFACE_HW_INTF_INFO_MAP_SPLIT_4_FALSE                "false"
+#define INTERFACE_HW_INTF_INFO_MAP_SPLIT_4_TRUE                 "true"
 
 enum ovsrec_interface_hw_intf_info_pluggable_e {
     INTERFACE_HW_INTF_INFO_PLUGGABLE_FALSE,
