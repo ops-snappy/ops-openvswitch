@@ -2617,6 +2617,14 @@ iface_refresh_cfm_stats(struct iface *iface)
 static void
 iface_refresh_stats(struct iface *iface)
 {
+
+#ifdef HALON
+    /* Interface stats are updated from subsystem.c. */
+    if (!iface->type || !strcmp(iface->type, "system")) {
+            return;
+    }
+#endif
+
 #define IFACE_STATS                             \
     IFACE_STAT(rx_packets,      "rx_packets")   \
     IFACE_STAT(tx_packets,      "tx_packets")   \
