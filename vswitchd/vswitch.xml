@@ -770,7 +770,6 @@
       </column>
       <column name="nexthop_list">
         This is a list (one or more) of all the nexthops for this entry.
-	It is a list of strings which represent ipv4 or ipv6 addresses.
       </column>
       <column name="interface_list">
         These are references to interfaces in the Interface table.
@@ -812,9 +811,10 @@
     <group title="Configuration">
       <column name="ip_address">
       </column>
-      <column name="mac_address">
-      </column>
       <column name="port">
+      </column>
+      <column name="weight">
+        Weight of this nexthop. Default 1 for static routes.
       </column>
     </group>
    <group title="Status">
