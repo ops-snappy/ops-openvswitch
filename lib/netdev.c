@@ -502,6 +502,30 @@ netdev_set_hw_intf_config(struct netdev *netdev, const struct smap *args)
     return 0;
 }
 
+int
+netdev_enable_l3(const struct netdev *netdev, int vrf_id)
+{
+    int rc;
+
+    rc = netdev->netdev_class->enable_l3 ?
+                netdev->netdev_class->enable_l3(netdev, vrf_id) : EOPNOTSUPP;
+    VLOG_DBG("Enable L3 rc=(%d)", rc);
+
+    return rc;
+}
+
+int
+netdev_disable_l3(const struct netdev *netdev, int vrf_id)
+{
+    int rc;
+
+    rc = netdev->netdev_class->disable_l3 ?
+                netdev->netdev_class->disable_l3(netdev, vrf_id) : EOPNOTSUPP;
+    VLOG_DBG("Disable L3 rc=(%d)", rc);
+
+    return rc;
+}
+
 #endif
 /* Returns the current configuration for 'netdev' in 'args'.  The caller must
  * have already initialized 'args' with smap_init().  Returns 0 on success, in
@@ -1881,6 +1905,36 @@ netdev_delete_ip_address(struct netdev *netdev, const char *ip_netmask,
     memset(cmd_str, 0, 256);
     snprintf(cmd_str, 255, "ip addr del %s dev %s", ip_netmask, name);
     VLOG_DBG("System Command to delete kernel ip=%s", cmd_str);
+
+    return (system(cmd_str));
+}
+
+/* Enable v4 and v6 routing in the kernel
+ */
+int
+netdev_enable_ip_routing(void)
+{
+    char   cmd_str[256];
+
+    /* Configure Kernel to enable routing */
+    memset(cmd_str, 0, 256);
+    snprintf(cmd_str, 255, "sysctl --load=/etc/halon/sysctl.d/halon-vrf-sysctl-set.conf");
+    VLOG_DBG("System command to enable routing: %s",cmd_str);
+
+    return (system(cmd_str));
+}
+
+/* Disable v4 and v6 routing in the kernel
+ */
+int
+netdev_disable_ip_routing(void)
+{
+    char   cmd_str[256];
+
+    /* Configure Kernel to disable routing */
+    memset(cmd_str, 0, 256);
+    snprintf(cmd_str, 255, "sysctl --load=/etc/halon/sysctl.d/halon-vrf-sysctl-unset.conf");
+    VLOG_DBG("System command to disable routing: %s",cmd_str);
 
     return (system(cmd_str));
 }

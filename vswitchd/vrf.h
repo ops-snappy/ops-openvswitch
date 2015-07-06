@@ -17,6 +17,8 @@
 #ifndef VSWITCHD_VRF_H
 #define VSWITCHD_VRF_H 1
 
+#define VSWITCHD_VRF_DEFAULT_ID 1
+
 void vrf_init(void);
 void vrf_exit(void);
 

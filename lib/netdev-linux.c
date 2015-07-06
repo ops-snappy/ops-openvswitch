@@ -2796,6 +2796,10 @@ netdev_linux_update_flags(struct netdev *netdev_, enum netdev_flags off,
     netdev_linux_queue_dump_done,                               \
     netdev_linux_dump_queue_stats,                              \
                                                                 \
+#ifdef HALON
+    NULL,                       /* enable_l3 */                 \
+    NULL,                       /* enable_l3 */                 \
+#endif
     netdev_linux_get_in4,                                       \
     netdev_linux_set_in4,                                       \
     netdev_linux_get_in6,                                       \

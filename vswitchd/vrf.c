@@ -543,6 +543,11 @@ iface_do_create(const struct vrf *vrf,
         goto error;
     }
 
+    error = netdev_enable_l3(netdev, VSWITCHD_VRF_DEFAULT_ID);
+    if (error) {
+        goto error;
+    }
+
     *netdevp = netdev;
     return 0;
 
@@ -618,6 +623,7 @@ iface_destroy(struct iface *iface)
         struct port *port = iface->port;
         struct vrf *vrf = port->vrf;
 
+        netdev_disable_l3(iface->netdev, VSWITCHD_VRF_DEFAULT_ID);
         hmap_remove(&vrf->iface_by_name, &iface->iface_node);
 
         netdev_remove(iface->netdev);
@@ -730,6 +736,9 @@ add_del_vrfs(const struct ovsrec_open_vswitch *cfg)
         vrf->cfg = shash_find_data(&new_vrf, vrf->name);
         if (!vrf->cfg) {
             vrf_destroy(vrf);
+            /* Disable routing for this vrf/namespace
+             * HALON TODO: In future this will be per namespace */
+            netdev_disable_ip_routing();
         }
     }
 
@@ -739,6 +748,9 @@ add_del_vrfs(const struct ovsrec_open_vswitch *cfg)
         struct vrf *vrf = vrf_lookup(vrf_cfg->name);
         if (!vrf) {
             vrf_create(vrf_cfg);
+            /* Enable routing for this vrf/namespace
+             * HALON TODO: In future this will be per namespace */
+            netdev_enable_ip_routing();
         }
     }
 

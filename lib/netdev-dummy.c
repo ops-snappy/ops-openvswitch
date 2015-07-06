@@ -1100,6 +1100,10 @@ static const struct netdev_class dummy_class = {
     NULL,                       /* queue_dump_done */
     NULL,                       /* dump_queue_stats */
 
+#ifdef HALON
+    NULL,                       /* enable_l3 */
+    NULL,                       /* disable_l3 */
+#endif
     netdev_dummy_get_in4,       /* get_in4 */
     NULL,                       /* set_in4 */
     NULL,                       /* get_in6 */

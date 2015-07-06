@@ -157,6 +157,8 @@ int netdev_get_config(const struct netdev *, struct smap *);
 #ifdef HALON
 int netdev_set_hw_intf_info(struct netdev *, const struct smap *args);
 int netdev_set_hw_intf_config(struct netdev *, const struct smap *args);
+int netdev_enable_l3(const struct netdev *, int vrf_id);
+int netdev_disable_l3(const struct netdev *, int vrf_id);
 #endif
 const struct netdev_tunnel_config *
     netdev_get_tunnel_config(const struct netdev *);
@@ -270,6 +272,8 @@ int netdev_set_ip_address(struct netdev *netdev, const char *ip_netmask,
                        const char *name);
 int netdev_delete_ip_address(struct netdev *netdev, const char *ip_netmask,
                          const char *name);
+int netdev_enable_ip_routing(void);
+int netdev_disable_ip_routing(void);
 #endif
 /* Statistics. */
 int netdev_get_stats(const struct netdev *, struct netdev_stats *);
