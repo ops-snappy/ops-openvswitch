@@ -1095,7 +1095,8 @@ port_configure(struct port *port)
 #ifdef HALON
     int prev_bond_handle = port->bond_hw_handle;
     int cfg_slave_count;
-    bool lacp_active;
+    bool lacp_enabled = false;
+    bool lacp_active = false;   /* Not used. */
 #endif
 #ifndef HALON_TEMP
     if (cfg->vlan_mode && !strcmp(cfg->vlan_mode, "splinter")) {
@@ -1113,12 +1114,19 @@ port_configure(struct port *port)
     cfg_slave_count = list_size(&port->ifaces);
     s.n_slaves_tx_enable = 0;
     s.slaves_tx_enable = xmalloc(cfg_slave_count * sizeof *s.slaves);
+
+    /* Determine if bond mode is dynamic (LACP). */
+    lacp_enabled  = enable_lacp(port, &lacp_active);
 #endif
     LIST_FOR_EACH (iface, port_elem, &port->ifaces) {
 #ifndef HALON_TEMP
         s.slaves[s.n_slaves++] = iface->ofp_port;
 #else
-        if (cfg_slave_count > 1) {
+        if ((cfg_slave_count > 1) || lacp_enabled) {
+            /* Static LAG with 2 or more interfaces, or LACP has been enabled
+             * for this bond.  A bond should exist in h/w. */
+            s.hw_bond_should_exist = true;
+
             /* Add only the interfaces with hw_bond_config:rx_enabled set. */
             if (smap_get_bool(&iface->cfg->hw_bond_config,
                               INTERFACE_HW_BOND_CONFIG_MAP_RX_ENABLED,
@@ -1131,15 +1139,22 @@ port_configure(struct port *port)
                 s.slaves_tx_enable[s.n_slaves_tx_enable++] = iface->ofp_port;
             }
         } else {
-                s.slaves[s.n_slaves++] = iface->ofp_port;
+            /* Port has only one interface and not running LACP.
+             * Need to destroy LAG in h/w if it was created.
+             * E.g. static LAG previously with 2 or more interfaces
+             * now only has 1 interface need to have LAG destroyed. */
+            s.hw_bond_should_exist = false;
+            s.slaves[s.n_slaves++] = iface->ofp_port;
         }
 #endif
     }
 #ifdef HALON
-    VLOG_DBG("port %s has %d eligible interfaces", s.name, (int)s.n_slaves);
+    VLOG_DBG("port %s has %d configured interfaces, %d eligible "
+             "interfaces, lacp_enabled=%d",
+             s.name, cfg_slave_count, (int)s.n_slaves, lacp_enabled);
     s.bond_handle_alloc_only = false;
     if (((cfg_slave_count > 1) && (s.n_slaves <= 1)) ||
-        (enable_lacp(port, &lacp_active) && (s.n_slaves <= 1))) {
+        (lacp_enabled && (s.n_slaves <= 1))) {
         if (port->bond_hw_handle == -1) {
             s.bond_handle_alloc_only = true;
         }
@@ -1235,12 +1250,17 @@ port_configure(struct port *port)
     ofproto_bundle_get(port->bridge->ofproto, port, &port->bond_hw_handle);
     if (prev_bond_handle != port->bond_hw_handle) {
         struct smap smap;
-        char buf[20];
 
-        /* Write the bond handle to port's status column. */
-        snprintf(buf, sizeof(buf), "%d", port->bond_hw_handle);
+        /* Write the bond handle to port's status column if
+           handle is valid.  Otherwise, remove it. */
         smap_clone(&smap, &port->cfg->status);
-        smap_replace(&smap, PORT_STATUS_BOND_HW_HANDLE, buf);
+        if (port->bond_hw_handle != -1) {
+            char buf[20];
+            snprintf(buf, sizeof(buf), "%d", port->bond_hw_handle);
+            smap_replace(&smap, PORT_STATUS_BOND_HW_HANDLE, buf);
+        } else {
+            smap_remove(&smap, PORT_STATUS_BOND_HW_HANDLE);
+        }
         ovsrec_port_set_status(port->cfg, &smap);
         smap_destroy(&smap);
     }
@@ -4242,7 +4262,9 @@ port_create(struct bridge *br, const struct ovsrec_port *cfg)
     port->bridge = br;
     port->name = xstrdup(cfg->name);
     port->cfg = cfg;
+#ifdef HALON
     port->bond_hw_handle = -1;
+#endif
     list_init(&port->ifaces);
 
     hmap_insert(&br->ports, &port->hmap_node, hash_string(port->name, 0));

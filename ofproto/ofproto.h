@@ -415,6 +415,10 @@ struct ofproto_bundle_settings {
 
 #ifdef HALON
     const struct smap *port_options[PORT_OPT_MAX];  /* Port options list */
+    bool hw_bond_should_exist;    /* Indicates if a bond should exist in h/w
+                                     for this bundle.  If hw_bond_handle exists
+                                     but this variable is false, it indicates
+                                     the h/w bond should be deleted. */
     bool bond_handle_alloc_only;  /* Allocate a bond hanlde and return.
                                      This flag is set to true when a bond
                                      entry is initially created without
