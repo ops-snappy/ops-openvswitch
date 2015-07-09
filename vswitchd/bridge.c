@@ -4577,9 +4577,11 @@ iface_destroy__(struct iface *iface)
         list_remove(&iface->port_elem);
         hmap_remove(&br->iface_by_name, &iface->name_node);
 
+#ifndef HALON_TEMP
         /* The user is changing configuration here, so netdev_remove needs to be
          * used as opposed to netdev_close */
         netdev_remove(iface->netdev);
+#endif
 
         free(iface->name);
         free(iface);
