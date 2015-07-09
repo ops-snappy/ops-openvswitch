@@ -1153,8 +1153,8 @@ port_configure(struct port *port)
              "interfaces, lacp_enabled=%d",
              s.name, cfg_slave_count, (int)s.n_slaves, lacp_enabled);
     s.bond_handle_alloc_only = false;
-    if (((cfg_slave_count > 1) && (s.n_slaves <= 1)) ||
-        (lacp_enabled && (s.n_slaves <= 1))) {
+    if (((cfg_slave_count > 1) && (s.n_slaves < 1)) ||
+        (lacp_enabled && (s.n_slaves < 1))) {
         if (port->bond_hw_handle == -1) {
             s.bond_handle_alloc_only = true;
         }
@@ -1213,6 +1213,8 @@ port_configure(struct port *port)
     s.use_priority_tags = smap_get_bool(&cfg->other_config, "priority-tags",
                                         false);
 
+/* For HALON, bond & LACP support are handled by lacpd. */
+#ifndef HALON
     /* Get LACP settings. */
     s.lacp = port_configure_lacp(port, &lacp_settings);
     if (s.lacp) {
@@ -1236,6 +1238,7 @@ port_configure(struct port *port)
             netdev_set_miimon_interval(iface->netdev, 0);
         }
     }
+#endif
 
 #ifdef HALON_TEMP
     /* Setup port configuration option array and save
@@ -1271,7 +1274,9 @@ port_configure(struct port *port)
     free(s.slaves_tx_enable);
 #endif
     free(s.trunks);
+#ifndef HALON
     free(s.lacp_slaves);
+#endif
 }
 
 /* Pick local port hardware address and datapath ID for 'br'. */
