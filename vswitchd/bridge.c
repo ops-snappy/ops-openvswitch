@@ -1213,7 +1213,7 @@ port_configure(struct port *port)
     s.use_priority_tags = smap_get_bool(&cfg->other_config, "priority-tags",
                                         false);
 
-/* For HALON, bond & LACP support are handled by lacpd. */
+/* For HALON, LACP support is handled by lacpd. */
 #ifndef HALON
     /* Get LACP settings. */
     s.lacp = port_configure_lacp(port, &lacp_settings);
@@ -1227,6 +1227,7 @@ port_configure(struct port *port)
     } else {
         s.lacp_slaves = NULL;
     }
+#endif
 
     /* Get bond settings. */
     if (s.n_slaves > 1) {
@@ -1238,7 +1239,6 @@ port_configure(struct port *port)
             netdev_set_miimon_interval(iface->netdev, 0);
         }
     }
-#endif
 
 #ifdef HALON_TEMP
     /* Setup port configuration option array and save
