@@ -260,15 +260,25 @@ enum ovsrec_interface_hw_intf_config_interface_type_e {
 #define INTERFACE_HW_INTF_INFO_MAP_SPEEDS                       "speeds"
 #define INTERFACE_HW_INTF_INFO_MAP_CONNECTOR                    "connector"
 #define INTERFACE_HW_INTF_INFO_MAP_PLUGGABLE                    "pluggable"
-
-#define INTERFACE_HW_INTF_INFO_MAP_PLUGGABLE_FALSE              "false"
-#define INTERFACE_HW_INTF_INFO_MAP_PLUGGABLE_TRUE               "true"
-
 #define INTERFACE_HW_INTF_INFO_MAP_ENET1G                       "enet1G"
 #define INTERFACE_HW_INTF_INFO_MAP_ENET10G                      "enet10G"
 #define INTERFACE_HW_INTF_INFO_MAP_ENET40G                      "enet40G"
 #define INTERFACE_HW_INTF_INFO_MAP_SPLIT_4                      "split_4"
 #define INTERFACE_HW_INTF_INFO_SPLIT_PARENT                     "split_parent"
+
+#define INTERFACE_HW_INTF_INFO_MAP_CONNECTOR_RJ45               "RJ45"
+#define INTERFACE_HW_INTF_INFO_MAP_CONNECTOR_SFP_PLUS           "SFP_PLUS"
+#define INTERFACE_HW_INTF_INFO_MAP_CONNECTOR_QSFP_PLUS          "QSFP_PLUS"
+
+enum ovsrec_interface_hw_intf_connector_e {
+    INTERFACE_HW_INTF_INFO_CONNECTOR_UNKNOWN,
+    INTERFACE_HW_INTF_INFO_CONNECTOR_RJ45,
+    INTERFACE_HW_INTF_INFO_CONNECTOR_SFP_PLUS,
+    INTERFACE_HW_INTF_INFO_CONNECTOR_QSFP_PLUS
+};
+
+#define INTERFACE_HW_INTF_INFO_MAP_PLUGGABLE_FALSE              "false"
+#define INTERFACE_HW_INTF_INFO_MAP_PLUGGABLE_TRUE               "true"
 
 #define INTERFACE_HW_INTF_INFO_MAP_SPLIT_4_FALSE                "false"
 #define INTERFACE_HW_INTF_INFO_MAP_SPLIT_4_TRUE                 "true"
