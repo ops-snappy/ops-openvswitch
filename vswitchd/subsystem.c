@@ -38,9 +38,17 @@
 #include "lib/vswitch-idl.h"
 #include "openvswitch/vlog.h"
 
+#include "openhalon-idl.h"
+#include "openhalon-dflt.h"
+
 VLOG_DEFINE_THIS_MODULE(subsystem);
 
 COVERAGE_DEFINE(subsystem_reconfigure);
+
+/* Each time this timer expires, the interface statistics
+ * are pushed to the database. */
+static int stats_timer_interval;
+static long long int stats_timer = LLONG_MIN;
 
 struct iface {
     /* These members are always valid.
@@ -98,6 +106,7 @@ static struct iface *iface_lookup(const struct subsystem *, const char *name);
 static int iface_set_netdev_hw_intf_config(const struct ovsrec_interface *,
                                            struct netdev *);
 static void iface_refresh_netdev_status(struct iface *iface);
+static void iface_refresh_stats(struct iface *iface);
 
 static void
 run_status_update(void)
@@ -110,6 +119,38 @@ run_status_update(void)
             iface_refresh_netdev_status(iface);
         }
     }
+}
+
+static void
+run_stats_update(void)
+{
+    int stats_interval;
+    struct subsystem *ss;
+    struct iface *iface;
+    const struct ovsrec_open_vswitch *cfg = ovsrec_open_vswitch_first(idl);
+
+    /* Statistics update interval should always be greater than or equal to
+     * 5000 ms. */
+    stats_interval = MAX(smap_get_int(&cfg->other_config,
+                                      "stats-update-interval",
+                                      DFLT_OPEN_VSWITCH_OTHER_CONFIG_STATS_UPDATE_INTERVAL),
+                                      DFLT_OPEN_VSWITCH_OTHER_CONFIG_STATS_UPDATE_INTERVAL);
+    if (stats_timer_interval != stats_interval) {
+        stats_timer_interval = stats_interval;
+        stats_timer = LLONG_MIN;
+    }
+
+    if (time_msec() >= stats_timer) {
+
+        HMAP_FOR_EACH (ss, node, &all_subsystems) {
+            HMAP_FOR_EACH (iface, name_node, &ss->iface_by_name) {
+                iface_refresh_stats(iface);
+            }
+        }
+    }
+
+    stats_timer = time_msec() + stats_timer_interval;
+    poll_timer_wait_until(stats_timer);
 }
 
 /* Public functions. */
@@ -176,12 +217,33 @@ subsystem_add_ifaces(struct subsystem *ss, const struct shash *wanted_ifaces)
 {
     struct shash_node *iface_node;
 
+    /* Split children interfaces expect their parent interface
+     * to be created ahead of them. So create all the split parent
+     * interfaces first.
+     */
     SHASH_FOR_EACH (iface_node, wanted_ifaces) {
         const struct ovsrec_interface *iface_cfg = iface_node->data;
-        struct iface *iface = iface_lookup(ss, iface_cfg->name);
 
-        if (!iface) {
-            iface_create(ss, iface_cfg);
+        if (iface_cfg->n_split_children != 0) {
+
+            struct iface *iface = iface_lookup(ss, iface_cfg->name);
+            if (!iface) {
+                VLOG_DBG("Adding splittable interface. Name=%s", iface_cfg->name);
+                iface_create(ss, iface_cfg);
+            }
+        }
+    }
+
+    SHASH_FOR_EACH (iface_node, wanted_ifaces) {
+        const struct ovsrec_interface *iface_cfg = iface_node->data;
+
+        if (iface_cfg->n_split_children == 0) {
+
+            struct iface *iface = iface_lookup(ss, iface_cfg->name);
+            if (!iface) {
+                VLOG_DBG("Adding non-splittable interface. Name=%s", iface_cfg->name);
+                iface_create(ss, iface_cfg);
+            }
         }
     }
 }
@@ -242,7 +304,9 @@ subsystem_run(void)
         subsystem_reconfigure(cfg ? cfg : &null_cfg);
         idl_seqno = ovsdb_idl_get_seqno(idl);
     }
+
     run_status_update();
+    run_stats_update();
 
     ovsdb_idl_txn_commit(txn);
     ovsdb_idl_txn_destroy(txn);
@@ -338,6 +402,7 @@ iface_do_create(const struct subsystem *ss,
                 const struct ovsrec_interface *iface_cfg,
                 struct netdev **netdevp)
 {
+    struct smap hw_intf_info;
     struct netdev *netdev = NULL;
     int error;
 
@@ -355,13 +420,25 @@ iface_do_create(const struct subsystem *ss,
         goto error;
     }
 
-    VLOG_DBG("subsystem %s: added interface %s",
-              ss->name, iface_cfg->name);
+    VLOG_DBG("subsystem %s: added interface %s", ss->name, iface_cfg->name);
 
-    error = netdev_set_hw_intf_info(netdev, &(iface_cfg->hw_intf_info));
+    /* Copy the iface->hw_intf_info to a local smap. */
+    smap_clone(&hw_intf_info, &(iface_cfg->hw_intf_info));
+
+    /* Check if the interface is a split child of another port. */
+    if (iface_cfg->split_parent != NULL) {
+        smap_add(&hw_intf_info,
+                 INTERFACE_HW_INTF_INFO_SPLIT_PARENT,
+                 iface_cfg->split_parent->name);
+    }
+
+    error = netdev_set_hw_intf_info(netdev, &hw_intf_info);
     if (error) {
+        smap_clear(&hw_intf_info);
         goto error;
     }
+
+    smap_clear(&hw_intf_info);
 
     error = iface_set_netdev_hw_intf_config(iface_cfg, netdev);
     if (error) {
@@ -402,6 +479,7 @@ iface_create(struct subsystem *ss, const struct ovsrec_interface *iface_cfg)
     iface->cfg = iface_cfg;
 
     iface_refresh_netdev_status(iface);
+    iface_refresh_stats(iface);
 
     return true;
 }
@@ -544,4 +622,50 @@ iface_refresh_netdev_status(struct iface *iface)
     } else {
         ovsrec_interface_set_mac_in_use(iface->cfg, NULL);
     }
+}
+
+static void
+iface_refresh_stats(struct iface *iface)
+{
+    /* This function is copied from bridge.c */
+#define IFACE_STATS                             \
+    IFACE_STAT(rx_packets,      "rx_packets")   \
+    IFACE_STAT(tx_packets,      "tx_packets")   \
+    IFACE_STAT(rx_bytes,        "rx_bytes")     \
+    IFACE_STAT(tx_bytes,        "tx_bytes")     \
+    IFACE_STAT(rx_dropped,      "rx_dropped")   \
+    IFACE_STAT(tx_dropped,      "tx_dropped")   \
+    IFACE_STAT(rx_errors,       "rx_errors")    \
+    IFACE_STAT(tx_errors,       "tx_errors")    \
+    IFACE_STAT(rx_crc_errors,   "rx_crc_err")   \
+    IFACE_STAT(collisions,      "collisions")
+
+#define IFACE_STAT(MEMBER, NAME) + 1
+    enum { N_IFACE_STATS = IFACE_STATS };
+#undef IFACE_STAT
+    int64_t values[N_IFACE_STATS];
+    char *keys[N_IFACE_STATS];
+    int n;
+
+    struct netdev_stats stats;
+
+    /* Intentionally ignore return value, since errors will set 'stats' to
+     * all-1s, and we will deal with that correctly below. */
+    memset(&stats, 0, sizeof(struct netdev_stats));
+    netdev_get_stats(iface->netdev, &stats);
+
+    /* Copy statistics into keys[] and values[]. */
+    n = 0;
+#define IFACE_STAT(MEMBER, NAME)                \
+    if (stats.MEMBER != UINT64_MAX) {           \
+        keys[n] = NAME;                         \
+        values[n] = stats.MEMBER;               \
+        n++;                                    \
+    }
+    IFACE_STATS;
+#undef IFACE_STAT
+    ovs_assert(n <= N_IFACE_STATS);
+
+    ovsrec_interface_set_statistics(iface->cfg, keys, values, n);
+#undef IFACE_STATS
 }

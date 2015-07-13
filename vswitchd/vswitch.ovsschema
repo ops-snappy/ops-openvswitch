@@ -1,7 +1,7 @@
 {
   "name": "OpenHalon",
   "version": "0.1.8",
-  "cksum": "4152576483 45471",
+  "cksum": "2695817912 46642",
   "tables": {
     "Open_vSwitch": {
       "columns": {
@@ -542,7 +542,8 @@
         "nexthop_list": {
           "type": {
             "key": {
-              "type": "string"
+              "type": "uuid",
+              "refTable": "Nexthop"
             },
             "min": 0,
             "max": "unlimited"
@@ -566,7 +567,8 @@
             "max": "unlimited"
           }
         }
-      }
+      },
+      "isRoot": true
     },
     "FIB": {
       "columns": {
@@ -641,7 +643,7 @@
           },
           "mutable": false
         },
-        "mac_address": {
+        "port": {
           "type": {
             "key": {
               "type": "string"
@@ -651,16 +653,16 @@
           },
           "mutable": false
         },
-        "port": {
+        "weight": {
           "type": {
             "key": {
-              "type": "uuid",
-              "refTable": "Port"
+              "type": "integer",
+              "minInteger": 0,
+              "maxInteger": 255
             },
-            "min": 0,
-            "max": 1
-          },
-          "mutable": false
+             "min": 1,
+             "max": 1
+          }
         },
         "status": {
           "type": {
@@ -687,8 +689,7 @@
             "max": "unlimited"
           }
         }
-      },
-      "isRoot": true
+      }
     },
     "BGP_Router": {
       "columns": {
@@ -1149,6 +1150,64 @@
           }
         }
       }
+    },
+    "Neighbor": {
+      "columns": {
+        "vrf": {
+          "type": {
+            "key": {
+              "type": "uuid",
+              "refTable": "VRF"
+            },
+            "min": 1,
+            "max": 1
+          }
+        },
+        "network_address": {
+          "type": {
+            "key": {
+              "type": "string"
+            },
+            "min": 1,
+            "max": 1
+          }
+        },
+        "address_family": {
+          "type": {
+            "key": {
+              "type": "string",
+              "enum": [
+                "set",
+                [
+                  "ipv4",
+                  "ipv6"
+                ]
+              ]
+            },
+            "min": 1,
+            "max": 1
+          }
+        },
+        "mac": {
+          "type": {
+            "key": {
+              "type": "string"
+            },
+            "min": 0,
+            "max": 1
+          }
+        },
+        "interface": {
+          "type": {
+            "key": {
+              "type": "string"
+            },
+            "min": 0,
+            "max": 1
+          }
+        }
+      },
+      "isRoot": true
     },
     "VLAN": {
       "columns": {

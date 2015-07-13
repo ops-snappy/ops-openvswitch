@@ -770,7 +770,6 @@
       </column>
       <column name="nexthop_list">
         This is a list (one or more) of all the nexthops for this entry.
-	It is a list of strings which represent ipv4 or ipv6 addresses.
       </column>
       <column name="interface_list">
         These are references to interfaces in the Interface table.
@@ -812,9 +811,10 @@
     <group title="Configuration">
       <column name="ip_address">
       </column>
-      <column name="mac_address">
-      </column>
       <column name="port">
+      </column>
+      <column name="weight">
+        Weight of this nexthop. Default 1 for static routes.
       </column>
     </group>
    <group title="Status">
@@ -1004,6 +1004,28 @@
       <column name="other_config">
       </column>
       <column name="external_ids">
+      </column>
+   </group>
+  </table>
+
+  <table name="Neighbor" title="Neighbor information">
+    <group title="Neighbor information">
+      <column name="vrf">
+        This entry is a reference to the VRF table, to which this neighbor
+        belongs.
+      </column>
+      <column name="network_address">
+        The IPv4 address or the IPv6 address of neighbor
+      </column>
+      <column name="address_family">
+        This represents what address family the entry is for.  It can
+        be ipv4 or ipv6 etc.
+      </column>
+      <column name="mac">
+        MAC address learnt for this neighbor
+      </column>
+      <column name="interface">
+        Name of interface where this neighbor was learnt
       </column>
    </group>
   </table>

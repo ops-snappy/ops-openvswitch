@@ -165,6 +165,16 @@ enum ovsrec_interface_user_config_duplex_e {
     INTERFACE_USER_CONFIG_DUPLEX_FULL
 };
 
+#define INTERFACE_USER_CONFIG_MAP_LANE_SPLIT                    "lane_split"
+#define INTERFACE_USER_CONFIG_MAP_LANE_SPLIT_NO_SPLIT           "no-split"
+#define INTERFACE_USER_CONFIG_MAP_LANE_SPLIT_SPLIT              "split"
+
+enum ovsrec_interface_user_config_lane_split_e {
+    INTERFACE_USER_CONFIG_LANE_SPLIT_DEFAULT,
+    INTERFACE_USER_CONFIG_LANE_SPLIT_NO_SPLIT,
+    INTERFACE_USER_CONFIG_LANE_SPLIT_SPLIT
+};
+
 #define INTERFACE_HW_INTF_CONFIG_MAP_ENABLE                     "enable"
 
 #define INTERFACE_HW_INTF_CONFIG_MAP_ENABLE_FALSE               "false"
@@ -250,14 +260,18 @@ enum ovsrec_interface_hw_intf_config_interface_type_e {
 #define INTERFACE_HW_INTF_INFO_MAP_SPEEDS                       "speeds"
 #define INTERFACE_HW_INTF_INFO_MAP_CONNECTOR                    "connector"
 #define INTERFACE_HW_INTF_INFO_MAP_PLUGGABLE                    "pluggable"
+
+#define INTERFACE_HW_INTF_INFO_MAP_PLUGGABLE_FALSE              "false"
+#define INTERFACE_HW_INTF_INFO_MAP_PLUGGABLE_TRUE               "true"
+
 #define INTERFACE_HW_INTF_INFO_MAP_ENET1G                       "enet1G"
 #define INTERFACE_HW_INTF_INFO_MAP_ENET10G                      "enet10G"
 #define INTERFACE_HW_INTF_INFO_MAP_ENET40G                      "enet40G"
 #define INTERFACE_HW_INTF_INFO_MAP_SPLIT_4                      "split_4"
+#define INTERFACE_HW_INTF_INFO_SPLIT_PARENT                     "split_parent"
 
-
-#define INTERFACE_HW_INTF_INFO_MAP_PLUGGABLE_FALSE              "false"
-#define INTERFACE_HW_INTF_INFO_MAP_PLUGGABLE_TRUE               "true"
+#define INTERFACE_HW_INTF_INFO_MAP_SPLIT_4_FALSE                "false"
+#define INTERFACE_HW_INTF_INFO_MAP_SPLIT_4_TRUE                 "true"
 
 enum ovsrec_interface_hw_intf_info_pluggable_e {
     INTERFACE_HW_INTF_INFO_PLUGGABLE_FALSE,
@@ -356,5 +370,17 @@ enum ovsrec_interface_hw_bond_config_enabled_e {
 #define OVSDB_STATISTICS_LLDP_TABLE_DELETES         "lldp_table_deletes"
 #define OVSDB_STATISTICS_LLDP_TABLE_DROPS           "lldp_table_drops"
 #define OVSDB_STATISTICS_LLDP_TABLE_AGEOUTS         "lldp_table_ageouts"
+
+/* Message column global definitions for RIB table, to be used by Zebra */
+#define OVSDB_RIB_MESSAGE_NEXTHOP                   0x01
+#define OVSDB_RIB_MESSAGE_INDEX                     0x02
+#define OVSDB_RIB_MESSAGE_DISTANCE                  0x04
+#define OVSDB_RIB_MESSAGE_METRIC                    0x08
+
+/* RIB table global protocol specific column definitions */
+#define OVSDB_RIB_PROT_SPECIFIC_DATA_BGP_FLAGS      "rib_psd_bgp_flags"
+#define OVSDB_RIB_PROT_SPECIFIC_DATA_BGP_AS_PATH    "rib_psd_bgp_as_path"
+#define OVSDB_RIB_PROT_SPECIFIC_DATA_BGP_ORIGIN     "rib_psd_bgp_origin"
+#define OVSDB_RIB_PROT_SPECIFIC_DATA_BGP_LOC_PREF   "rib_psd_bgp_loc_pref"
 
 #endif /* OPENHALON_IDL_HEADER */
