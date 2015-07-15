@@ -1027,6 +1027,9 @@
       <column name="interface">
         Name of interface where this neighbor was learnt
       </column>
+      <column name="active">
+        Represents if traffic to the neighbor is active
+      </column>
    </group>
   </table>
 
