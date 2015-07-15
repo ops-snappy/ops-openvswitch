@@ -721,6 +721,117 @@
     </group>
   </table>
 
+  <table name="Route_Map" title="Routing Map">
+    <group title="Global Route Map Configuration">
+      <column name="name">
+        This entry is a reference to the VRF table, to which this route
+	belongs.
+      </column>
+    </group>
+   <group title="Status">
+      <column name="status" >
+      </column>
+   </group>
+   <group title="Common Columns">
+      The overall purpose of these columns is described under <code>Common
+      Columns</code> at the beginning of this document.
+
+      <column name="other_config">
+      </column>
+      <column name="external_ids">
+      </column>
+   </group>
+  </table>
+  <table name="Route_Map_Entries" title="Route Map Entries">
+    <group title="Global Route Map Entries Configuration">
+      <column name="route_map">
+        These are references to the route map in the route map table.
+      </column>
+      <column name="description">
+      </column>
+      <column name="preference">
+        This is the order that route map is processed.
+      </column>
+      <column name="action">
+        There are three types, permit, deny, and any.
+      </column>
+      <column name="exitpolicy">
+        Rather than normal exiting, route map can continue on processing next route map,
+        or goto N route map and continue on processing.
+      </column>
+      <column name="goto_target">
+        If exitpolicy is goto, nextpref is the route map to jump to.
+      </column>
+      <column name="call">
+        If call command is used, nextrm indicate which route map to goto.
+      </column>
+      <column name="match">
+        The match rule for route map. Default is deny.
+      </column>
+      <column name="set">
+        The set rule for route map
+      </column>
+   </group>
+   <group title="Status">
+      <column name="status" >
+      </column>
+   </group>
+   <group title="Common Columns">
+      The overall purpose of these columns is described under <code>Common
+      Columns</code> at the beginning of this document.
+      <column name="other_config">
+      </column>
+      <column name="external_ids">
+      </column>
+   </group>
+  </table>
+
+  <table name="Prefix_List" title="IP Address Prefix List">
+    <group title="Global IP Address Prefix List Configuration">
+      <column name="name">
+        This entry is a name of the prefix list.
+      </column>
+      <column name="description">
+      </column>
+   </group>
+   <group title="Common Columns">
+      The overall purpose of these columns is described under <code>Common
+      Columns</code> at the beginning of this document.
+
+      <column name="other_config">
+      </column>
+      <column name="external_ids">
+      </column>
+   </group>
+  </table>
+
+  <table name="Prefix_List_Entries" title="Prefix List Entries">
+    <group title="Global Prefix List Entries Configuration">
+      <column name="prefix_list">
+        These are references to the route map in the route map table.
+      </column>
+      <column name="sequence">
+      </column>
+      <column name="le">
+      </column>
+      <column name="ge">
+      </column>
+      <column name="action">
+        There are three types, permit, deny, and any.
+      </column>
+      <column name="prefix">
+      </column>
+   </group>
+   <group title="Common Columns">
+      The overall purpose of these columns is described under <code>Common
+      Columns</code> at the beginning of this document.
+      <column name="other_config">
+      </column>
+      <column name="external_ids">
+      </column>
+   </group>
+  </table>
+
   <table name="RIB" title="Routing Information Base">
     <group title="Global Routes Configuration">
       <column name="vrf">

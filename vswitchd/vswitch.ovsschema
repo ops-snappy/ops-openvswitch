@@ -1,7 +1,7 @@
 {
   "name": "OpenHalon",
   "version": "0.1.8",
-  "cksum": "3391999691 46816",
+  "cksum": "244214187 53136",
   "tables": {
     "Open_vSwitch": {
       "columns": {
@@ -440,6 +440,315 @@
         ]
       ]
     },
+    "Route_Map": {
+      "columns": {
+        "name": {
+          "type": {
+            "key": {
+              "type": "string",
+              "maxLength": 80
+            }
+          }
+        },
+        "status": {
+          "type": {
+            "key": "string",
+            "value": "string",
+            "min": 0,
+            "max": "unlimited"
+          },
+          "ephemeral": true
+        },
+        "other_config": {
+          "type": {
+            "key": "string",
+            "value": "string",
+            "min": 0,
+            "max": "unlimited"
+          }
+        },
+        "external_ids": {
+          "type": {
+            "key": "string",
+            "value": "string",
+            "min": 0,
+            "max": "unlimited"
+          }
+        }
+      },
+      "indexes": [
+        [
+          "name"
+        ]
+      ],
+      "isRoot": true
+    },
+    "Route_Map_Entries": {
+      "columns": {
+        "route_map": {
+          "type": {
+            "key": {
+              "type": "uuid",
+              "refTable": "Route_Map"
+            }
+          }
+        },
+        "description": {
+          "type": {
+            "key": {
+             "type": "string",
+             "maxLength": 80
+            }
+          }
+        },
+        "preference": {
+          "type": "integer"
+        },
+        "action": {
+          "type": {
+           "key": {
+              "type": "string",
+              "enum": [
+                "set",
+                [
+                  "permit",
+                  "deny"
+                ]
+              ]
+            },
+            "min": 1,
+            "max": 1
+          }
+        },
+        "exitpolicy": {
+          "type": {
+           "key": {
+              "type": "string",
+              "enum": [
+                "set",
+                [
+                  "goto",
+                  "next"
+                ]
+              ]
+            },
+            "min": 0,
+            "max": 1
+          }
+        },
+        "goto_target": {
+          "type": {
+            "key": {
+              "type": "uuid",
+              "refTable": "Route_Map_Entries"
+            },
+            "min": 0,
+            "max": 1
+          }
+        },
+        "call": {
+          "type": {
+            "key": {
+              "type": "uuid",
+              "refTable": "Route_Map_Entries"
+            },
+            "min": 0,
+            "max": 1
+          }
+        },
+        "match": {
+          "type": {
+            "key": "string",
+            "value": "string",
+            "min": 0,
+            "max": "unlimited"
+          }
+        },
+        "set": {
+          "type": {
+            "key": "string",
+            "value": "string",
+            "min": 0,
+            "max": "unlimited"
+          }
+        },
+        "status": {
+          "type": {
+            "key": "string",
+            "value": "string",
+            "min": 0,
+            "max": "unlimited"
+          },
+          "ephemeral": true
+        },
+        "other_config": {
+          "type": {
+            "key": "string",
+            "value": "string",
+            "min": 0,
+            "max": "unlimited"
+          }
+        },
+        "external_ids": {
+          "type": {
+            "key": "string",
+            "value": "string",
+            "min": 0,
+            "max": "unlimited"
+          }
+        }
+      },
+      "indexes": [
+        [
+          "route_map"
+        ],
+        [
+          "preference"
+        ]
+      ],
+      "isRoot": true
+    },
+    "Prefix_List": {
+      "columns": {
+        "name": {
+          "type": {
+            "key": {
+              "type": "string",
+              "maxLength": 80
+            }
+          }
+        },
+        "description": {
+          "type": {
+            "key": {
+             "type": "string",
+              "maxLength": 80
+            },
+            "min": 0,
+            "max": 1
+          }
+        },
+        "other_config": {
+          "type": {
+            "key": "string",
+            "value": "string",
+            "min": 0,
+            "max": "unlimited"
+          }
+        },
+        "external_ids": {
+          "type": {
+            "key": "string",
+            "value": "string",
+            "min": 0,
+            "max": "unlimited"
+          }
+        }
+      },
+      "indexes": [
+        [
+          "name"
+        ]
+      ],
+      "isRoot": true
+    },
+    "Prefix_List_Entries": {
+      "columns": {
+        "prefix_list": {
+          "type": {
+            "key": {
+              "type": "uuid",
+              "refTable": "Prefix_List"
+            }
+          }
+        },
+        "sequence": {
+          "type": {
+            "key": {
+              "type": "integer",
+              "minInteger": 1,
+              "maxInteger": 4294967295
+            },
+             "min": 1,
+             "max": 1
+          }
+        },
+        "le": {
+          "type": {
+            "key": {
+              "type": "integer",
+              "minInteger": 1,
+              "maxInteger": 32
+            },
+             "min": 1,
+             "max": 1
+          }
+        },
+        "ge": {
+          "type": {
+            "key": {
+              "type": "integer",
+              "minInteger": 1,
+              "maxInteger": 32
+            },
+             "min": 1,
+             "max": 1
+          }
+        },
+        "action": {
+          "type": {
+           "key": {
+              "type": "string",
+              "enum": [
+                "set",
+                [
+                  "permit",
+                  "deny"
+                ]
+              ]
+            },
+            "min": 1,
+            "max": 1
+          }
+        },
+        "prefix": {
+          "type": {
+            "key": {
+              "type": "string",
+              "maxLength": 43
+            },
+            "min": 1,
+            "max": 1
+          }
+        },
+        "other_config": {
+          "type": {
+            "key": "string",
+            "value": "string",
+            "min": 0,
+            "max": "unlimited"
+          }
+        },
+        "external_ids": {
+          "type": {
+            "key": "string",
+            "value": "string",
+            "min": 0,
+            "max": "unlimited"
+          }
+        }
+      },
+      "indexes": [
+        [
+          "prefix_list"
+        ],
+        [
+          "sequence"
+        ]
+      ],
+      "isRoot": true
+    },
+
     "RIB": {
       "columns": {
         "vrf": {
