@@ -1,7 +1,7 @@
 {
   "name": "OpenHalon",
   "version": "0.1.8",
-  "cksum": "2695817912 46642",
+  "cksum": "3391999691 46816",
   "tables": {
     "Open_vSwitch": {
       "columns": {
@@ -1201,6 +1201,15 @@
           "type": {
             "key": {
               "type": "string"
+            },
+            "min": 0,
+            "max": 1
+          }
+        },
+        "active": {
+          "type": {
+            "key": {
+              "type": "boolean"
             },
             "min": 0,
             "max": 1
