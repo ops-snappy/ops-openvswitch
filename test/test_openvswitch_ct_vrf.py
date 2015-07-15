@@ -1,27 +1,20 @@
-"""
-Copyright (C) 2015 Hewlett Packard Enterprise Development LP
-All Rights Reserved.
+#!/usr/bin/env python
 
-Licensed under the Apache License, Version 2.0 (the "License"); you may
-not use this file except in compliance with the License. You may obtain
-a copy of the License at
+# Copyright (C) 2015 Hewlett Packard Enterprise Development LP
+# All Rights Reserved.
+#
+# Licensed under the Apache License, Version 2.0 (the "License"); you may
+# not use this file except in compliance with the License. You may obtain
+# a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+# WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+# License for the specific language governing permissions and limitations
+# under the License.
 
-    http://www.apache.org/licenses/LICENSE-2.0
-
-Unless required by applicable law or agreed to in writing, software
-distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
-WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
-License for the specific language governing permissions and limitations
-under the License.
-"""
-
-#!/usr/bin/python
-
-import os
-import sys
-import time
-import pytest
-import subprocess
 from halonvsi.docker import *
 from halonvsi.halon import *
 
@@ -47,7 +40,6 @@ class vrfTests( HalonTest ):
     #configuring Halon, in the future it would be through
     #proper Halon commands
     s1 = self.net.switches[ 0 ]
-    #time.sleep(5)
 
     #Configure vrf
     print('Configure a vrf vrf1 in DB')
@@ -104,31 +96,29 @@ class vrfTests( HalonTest ):
     #proper Halon commands
     s1 = self.net.switches[ 0 ]
 
-    #Configure vrf and add port to it
-    print('Configure a vrf vrf1 in DB.')
-    s1.cmd("/usr/bin/ovs-vsctl add-vrf vrf1")
-    print('Add a port 1 to vrf1')
-    s1.cmd("/usr/bin/ovs-vsctl add-vrf-port vrf1 1");
+    #Add port to default VRF
+    print('Add a port 1 to vrf_default')
+    s1.cmd("/usr/bin/ovs-vsctl add-vrf-port vrf_default 1");
 
     #Display port in vrf
-    print('Expecting port 1 in vrf1"')
-    output = s1.cmd("/usr/bin/ovs-vsctl list-vrf-ports vrf1")
+    print('Expecting port 1 in vrf_default')
+    output = s1.cmd("/usr/bin/ovs-vsctl list-vrf-ports vrf_default")
 
     if '1' in output:
-      print('Found port 1 in vrf1')
+      print('Found port 1 in vrf_default')
     else:
       print(output)
-      assert 0, 'Failed to find port 1 in vrf1'
+      assert 0, 'Failed to find port 1 in vrf_default'
 
     #Display vrf to which port belongs
-    print('Expecting vrf1 to which port 1 belongs')
+    print('Expecting vrf_default to which port 1 belongs')
     output = s1.cmd("/usr/bin/ovs-vsctl port-to-vrf 1")
 
-    if 'vrf1' in output:
-      print('Found vrf1 for port 1')
+    if 'vrf_default' in output:
+      print('Found vrf_default for port 1')
     else:
       print(output)
-      assert 0, 'Failed to add  port 1 to vrf1'
+      assert 0, 'Failed to add port 1 to vrf_default'
 
     #Add a bridge and try to add
     #same port to bridge it should fail
@@ -138,27 +128,25 @@ class vrfTests( HalonTest ):
     output = s1.cmd("/usr/bin/ovs-vsctl add-port br1 1");
 
     if 'constraint violation' in output:
-      print('Success: Can\'t add port to bridge br1, belongs to vrf vrf1')
+      print('Success: Can\'t add port to bridge br1, belongs to vrf vrf_default')
     else:
       print(output)
-      assert 0, 'Failed: Port 1 added to br1 and already in vrf vrf1'
+      assert 0, 'Failed: Port 1 added to br1 and already in vrf vrf_default'
 
     #delete bridge
     s1.cmd("/usr/bin/ovs-vsctl del-br br1");
 
     #Delete port from vrf
-    print('Remove port 1 from vrf1')
-    s1.cmd("/usr/bin/ovs-vsctl del-vrf-port vrf1 1")
-    output = s1.cmd("/usr/bin/ovs-vsctl list-vrf-ports vrf1")
+    print('Remove port 1 from vrf_default')
+    s1.cmd("/usr/bin/ovs-vsctl del-vrf-port vrf_default 1")
+    output = s1.cmd("/usr/bin/ovs-vsctl list-vrf-ports vrf_default")
 
     if '1' not in output:
-      print('Success: Port 1 not in vrf1')
+      print('Success: Port 1 not in vrf_default')
     else:
       print(output)
-      assert 0, 'Failed: Port1 still found in vrf1'
+      assert 0, 'Failed: Port1 still found in vrf_default'
 
-    #Delete vrf
-    s1.cmd("/usr/bin/ovs-vsctl del-vrf vrf1")
     print('=============================================')
     print('*** End of vrf-port commands ***')
     print('=============================================')
@@ -169,8 +157,7 @@ class vrfTests( HalonTest ):
     print('\n=============================================')
     print('*** Test ip/ipv6 address on port ***')
     print('=============================================')
-    s1.cmd("/usr/bin/ovs-vsctl add-vrf vrf1")
-    s1.cmd("/usr/bin/ovs-vsctl add-vrf-port vrf1 1")
+    s1.cmd("/usr/bin/ovs-vsctl add-vrf-port vrf_default 1")
 
     #Configure and check primary ip address
     print('Configure primary ip address 10.1.1.1/24 on port 1')
@@ -227,8 +214,7 @@ class vrfTests( HalonTest ):
       assert 0, 'Primary ip address unconfiguration failed'
 
     #Delete port from vrf and also remove vrf
-    s1.cmd("/usr/bin/ovs-vsctl del-vrf-port vrf1 1")
-    s1.cmd("/usr/bin/ovs-vsctl del-vrf vrf1")
+    s1.cmd("/usr/bin/ovs-vsctl del-vrf-port vrf_default 1")
 
     print('=============================================')
     print('*** End of ip/ipv6 commands ***')
@@ -278,9 +264,11 @@ class Test_vrf:
   def __del__(self):
     del self.test
 
+  # HALON_TODO: When multiple VRFs are supported, change the script accordingly.
+
   # Vrf tests.
-  def test_vrf_config_commands(self):
-    self.test.vrf_config_commands()
+  #def test_vrf_config_commands(self):
+  #  self.test.vrf_config_commands()
 
   def test_vrf_port_config_commands(self):
     self.test.vrf_port_config_commands()
