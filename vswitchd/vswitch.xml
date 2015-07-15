@@ -552,6 +552,8 @@
       </column>
       <column name="other_info" key="max_interface_speed" >
       </column>
+      <column name="other_info" key="max_transmission_unit" >
+      </column>
       <column name="other_info" key="max_bond_count" >
       </column>
       <column name="other_info" key="max_bond_member_count" >
@@ -722,7 +724,7 @@
   <table name="RIB" title="Routing Information Base">
     <group title="Global Routes Configuration">
       <column name="vrf">
-        This entry is a reference to the VRF table, to which this route 
+        This entry is a reference to the VRF table, to which this route
 	belongs.
       </column>
       <column name="selected_for_RIB">
@@ -732,7 +734,7 @@
 	reasons.
       </column>
       <column name="selected_to_FIB">
-        This is selected as the active route installed in in the 
+        This is selected as the active route installed in in the
 	forwarding table.
       </column>
       <column name="prefix">
