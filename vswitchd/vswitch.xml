@@ -512,13 +512,11 @@
     <group title="Inventory Info">
       <column name="name">
       </column>
-      <column name="hw_desc_dir">
-        Directory where the hardware description files for this subsystem
-        are located.
-      </column>
       <column name="type">
       </column>
       <column name="hw_desc_dir">
+        Directory where the hardware description files for this subsystem
+        are located.
       </column>
       <column name="other_info" key="device_version" >
       </column>
@@ -681,9 +679,6 @@
 
       <column name="ports">
         Ports included in the VRF.
-      </column>
-      <column name="bgp_routers">
-        BGP routers included in the VRF.
       </column>
     </group>
    <group title="Common Columns">
@@ -948,7 +943,7 @@
   <table name="BGP_Router" title="Border Gateway Protocol">
     <group title="Configuration">
       This table will be extended based on BGP functionality that is present
-      in Quagga.
+      in Quagga. The unique key is "VRF" and "ASN".
       <column name="asn">
       Enable a BGP protocol process with the specified asn (AS number). After
       this statement you can input any BGP Commands. You can not create
@@ -956,14 +951,14 @@
       multiple-instance (see Multiple instance). ASN Range: 1-4294967295.
       </column>
       <column name="router_id">
-      This command specifies the router-ID. If bgpd connects to zebra it gets
+      It is used to set router-id to bgp router. If bgpd connects to zebra it gets
       an interface and address information. In that case default router ID value
       is selected as the largest IP Address of the interfaces. When router zebra
-      is not enabled, it is required to set router-id by hand, so that router id
-      is not set to 0.0.0.0.
+      is not enabled, router-id must be set manually in order to prevent setting
+      router id to 0.0.0.0.
       </column>
       <column name="networks">
-      This command adds the announcement network.
+      Announces networks for given bgp router.
       router bgp 1
            network 10.0.0.0/8
       This configuration example says that network 10.0.0.0/8 will be announced to
@@ -972,23 +967,31 @@
       A.B.C.D/M  IP prefix  e.g. 35.0.0.0/8.
       </column>
       <column name="redistribute">
-      Allows redistribution of routes from various protocols. For example: ISIS,
-      kernel, OSPF, RIP, static, connected.
+      Allows redistribution of routes from various protocols.
+      For example: static, connected. We can provide either static or connected
+      or use both.
       </column>
       <column name="always_compare_med">
-      Allow comparing MED from different neighbors.
+      Allow comparing MED (Multi-Exit Discriminitor) from different neighbors.
+      MED is an optional nontransitive attribute. MED is a hint to external
+      neighbors about the preferred path into an autonomous system (AS) that
+      has multiple entry points. The MED is also known as the external metric
+      of a route. A lower MED value is preferred over a higher value.
+      Default is false.
       </column>
       <column name="deterministic_med">
       Pick the best-MED path among paths advertised from the neighboring AS.
+      When enabled router will group all paths from the same AS and compare
+      them together before comparing them to paths from different ASes.
+      Default is false.
       </column>
-      <column name="graceful_restart">
-      Set the max time to hold onto restarting peer's stale paths. Range: 1-3600 seconds.
+      <column name="gr_stale_timer">
+      Set the max time to hold onto restarting peer's stale paths.
+      Range: 1-3600 seconds.
+      Default stale path timer is 360 seconds.
       </column>
-      <column name="bestpath">
-      Change the default bestpath selection.
-      </column>
-      <column name="neighbors">
-      Pointer to BGP neighbor table.
+      <column name="vrf">
+      Provides VRF reference to given bgp instance.
       </column>
     </group>
    <group title="Status">
@@ -998,7 +1001,6 @@
    <group title="Common Columns">
       The overall purpose of these columns is described under <code>Common
       Columns</code> at the beginning of this document.
-
       <column name="other_config">
       </column>
       <column name="external_ids">
