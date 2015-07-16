@@ -43,21 +43,19 @@ class slowRoutingTests( HalonTest ):
     h1 = self.net.hosts[ 0 ]
     h2 = self.net.hosts[ 1 ]
 
-    info("Configure a vrf vrf1 in Halon switch\n")
     # Configure switch s1
     s1.cmdCLI("configure terminal")
-    s1.cmdCLI("vrf vrf0")
 
     # Configure interface 1 on switch s1
     s1.cmdCLI("interface 1")
-    s1.cmdCLI("vrf attach vrf0")
+    s1.cmdCLI("vrf attach vrf_default")
     s1.cmdCLI("ip address 192.168.1.1/24")
     s1.cmdCLI("ipv6 address 2000::1/120")
     s1.cmdCLI("exit")
 
     # Configure interface 2 on switch s1
     s1.cmdCLI("interface 2")
-    s1.cmdCLI("vrf attach vrf0")
+    s1.cmdCLI("vrf attach vrf_default")
     s1.cmdCLI("ip address 192.168.2.1/24")
     s1.cmdCLI("ipv6 address 2002::1/120")
     s1.cmdCLI("exit")
