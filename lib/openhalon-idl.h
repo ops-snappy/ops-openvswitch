@@ -33,14 +33,19 @@
 
 /****************************** INTERFACE TABLE ******************************/
 
-#define OVSREC_INTERFACE_ERROR_UNINITIALIZED                    "uninitialized"
-#define OVSREC_INTERFACE_ERROR_ADMIN_DOWN                       "admin_down"
-#define OVSREC_INTERFACE_ERROR_MODULE_MISSING                   "module_missing"
-#define OVSREC_INTERFACE_ERROR_MODULE_UNRECOGNIZED              "module_unrecognized"
-#define OVSREC_INTERFACE_ERROR_MODULE_UNSUPPORTED               "module_unsupported"
-#define OVSREC_INTERFACE_ERROR_LANES_SPLIT                      "lanes_split"
-#define OVSREC_INTERFACE_ERROR_LANES_NOT_SPLIT                  "lanes_not_split"
-#define OVSREC_INTERFACE_ERROR_OK                               "ok"
+#define OVSREC_INTERFACE_ERROR_UNINITIALIZED            "uninitialized"
+#define OVSREC_INTERFACE_ERROR_ADMIN_DOWN               "admin_down"
+#define OVSREC_INTERFACE_ERROR_MODULE_MISSING           "module_missing"
+#define OVSREC_INTERFACE_ERROR_MODULE_UNRECOGNIZED      "module_unrecognized"
+#define OVSREC_INTERFACE_ERROR_MODULE_UNSUPPORTED       "module_unsupported"
+#define OVSREC_INTERFACE_ERROR_LANES_SPLIT              "lanes_split"
+#define OVSREC_INTERFACE_ERROR_LANES_NOT_SPLIT          "lanes_not_split"
+#define OVSREC_INTERFACE_ERROR_INVALID_MTU              "invalid_mtu"
+#define OVSREC_INTERFACE_ERROR_INVALID_SPEEDS           "invalid_speeds"
+#define OVSREC_INTERFACE_ERROR_INVALID_AUTONEG          "invalid_autoneg"
+#define OVSREC_INTERFACE_ERROR_AUTONEG_NOT_SUPPORTED    "autoneg_not_supported"
+#define OVSREC_INTERFACE_ERROR_AUTONEG_REQUIRED         "autoneg_required"
+#define OVSREC_INTERFACE_ERROR_OK                       "ok"
 
 enum ovsrec_interface_error_e {
     INTERFACE_ERROR_UNINITIALIZED,
@@ -50,6 +55,11 @@ enum ovsrec_interface_error_e {
     INTERFACE_ERROR_MODULE_UNSUPPORTED,
     INTERFACE_ERROR_LANES_SPLIT,
     INTERFACE_ERROR_LANES_NOT_SPLIT,
+    INTERFACE_ERROR_INVALID_MTU,
+    INTERFACE_ERROR_INVALID_SPEEDS,
+    INTERFACE_ERROR_INVALID_AUTONEG,
+    INTERFACE_ERROR_AUTONEG_NOT_SUPPORTED,
+    INTERFACE_ERROR_AUTONEG_REQUIRED,
     INTERFACE_ERROR_OK
 };
 
@@ -327,6 +337,10 @@ enum ovsrec_interface_hw_bond_config_enabled_e {
 /****************************** PORT TABLE *******************************/
 
 #define PORT_STATUS_BOND_HW_HANDLE                              "bond_hw_handle"
+
+/****************************** SUBSYSTEM TABLE *******************************/
+
+#define SUBSYSTEM_OTHER_INFO_MAX_TRANSMISSION_UNIT       "max_transmission_unit"
 
 /****************************** VLAN TABLE ******************************/
 
