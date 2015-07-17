@@ -16,9 +16,7 @@
   <p>
     The top-level configuration is the
     <ref table="Open_vSwitch"/> table, which must have exactly one
-    record.  Records in other tables are significant only when they
-    can be reached directly or indirectly from the <ref
-    table="Open_vSwitch"/> table.  Records that are not reachable from
+    record. Records that are not reachable from
     the <ref table="Open_vSwitch"/> table are automatically deleted
     from the database, except for records in a few distinguished
     ``root set'' tables.
@@ -80,9 +78,6 @@
       <column name="vrfs">
       </column>
 
-      <column name="management_vrf">
-      </column>
-
       <column name="daemons">
       </column>
 
@@ -116,6 +111,7 @@
               type='{"type": "boolean"}'>
         Set this value to <code>true</code> to enable System level LLDP
         or to <code>false</code> to explicitly disable it.
+        Default is <code>disable</code>.
       </column>
 
       <column name="other_config" key="lldp_tlv_mgmt_addr_enable"
@@ -123,6 +119,7 @@
         Set this value to <code>true</code> to enable transmission of LLDP
         Management Address TLV or set it to <code>false</code> to disable
         transmitting it.
+        Default is <code>enable</code>.
       </column>
 
       <column name="other_config" key="lldp_tlv_port_desc_enable"
@@ -130,6 +127,7 @@
         Set this value to <code>true</code> to enable transmission of LLDP
         Port Description TLV or set it to <code>false</code> to disable
         transmitting it.
+        Default is <code>enable</code>.
       </column>
 
       <column name="other_config" key="lldp_tlv_port_vlan_enable"
@@ -137,6 +135,7 @@
         Set this value to <code>true</code> to enable transmission of LLDP
         Port VLAN TLV or set it to <code>false</code> to disable
         transmitting it.
+        Default is <code>enable</code>.
       </column>
 
       <column name="other_config" key="lldp_tlv_sys_cap_enable"
@@ -144,6 +143,7 @@
         Set this value to <code>true</code> to enable transmission of LLDP
         System Capabilities TLV or set it to <code>false</code> to disable
         transmitting it.
+        Default is <code>enable</code>.
       </column>
 
       <column name="other_config" key="lldp_tlv_sys_desc_enable"
@@ -151,6 +151,7 @@
         Set this value to <code>true</code> to enable transmission of LLDP
         System Description TLV or set it to <code>false</code> to disable
         transmitting it.
+        Default is <code>enable</code>.
       </column>
 
       <column name="other_config" key="lldp_tlv_sys_name_enable"
@@ -158,6 +159,7 @@
         Set this value to <code>true</code> to enable transmission of LLDP
         System Name TLV or set it to <code>false</code> to disable
         transmitting it.
+        Default is <code>enable</code>.
       </column>
 
       <column name="other_config" key="lldp_mgmt_addr"
@@ -168,8 +170,8 @@
       <column name="other_config" key="lldp_tx_interval"
               type='{"type": "integer", "minInteger": 5, "maxInteger": 32768}'>
         <p>
-          The interval at which LLDP status updates are transmitted
-          to neighbors in seconds.
+            The interval in seconds at which LLDP status updates are
+            transmitted to neighbors in seconds.
         </p>
         <p>
           Default value is 30 sec.
@@ -386,21 +388,25 @@
     <group title="LLDP Statistics">
         <column name="lldp_statistics" key="lldp_table_inserts">
             Number of neighbor entries inserted to LLDP neighbor table.
+            Default is 0.
         </column>
 
         <column name="lldp_statistics" key="lldp_table_deletes">
             Number of neighbor entries deleted from LLDP neighbor table.
+            Default is 0.
         </column>
 
         <column name="lldp_statistics" key="lldp_table_drops">
             Number of neighbor entries that could not be added to LLDP
             neighbor table and dropped.
+            Default is 0.
         </column>
 
         <column name="lldp_statistics" key="lldp_table_ageouts">
             Number of times neighbor info was deleted from LLDP neighbor
             table because of the TTL timer associated with a neighbor
             has expired.
+            Default is 0.
         </column>
     </group>
 
@@ -512,11 +518,11 @@
     <group title="Inventory Info">
       <column name="name">
       </column>
-      <column name="type">
-      </column>
       <column name="hw_desc_dir">
         Directory where the hardware description files for this subsystem
         are located.
+      </column>
+      <column name="type">
       </column>
       <column name="other_info" key="device_version" >
       </column>
@@ -579,7 +585,8 @@
     <p>
       A <ref table="Bridge"/> record represents an Ethernet switch with one or
       more ``ports,'' which are the <ref table="Port"/> records pointed to by
-      the <ref table="Bridge"/>'s <ref column="ports"/> column.
+      the <ref table="Bridge"/>'s <ref column="ports"/> column. In the first
+      release, only one default bridge (bridge_normal) is supported
     </p>
 
     <group title="Core Features">
@@ -680,6 +687,9 @@
       <column name="ports">
         Ports included in the VRF.
       </column>
+      <column name="bgp_routers">
+        BGP routers included in the VRF.
+      </column>
     </group>
    <group title="Common Columns">
       The overall purpose of these columns is described under <code>Common
@@ -716,11 +726,10 @@
     </group>
   </table>
 
-  <table name="Route_Map" title="Routing Map">
+  <table name="Route_Map" title="Route Map">
     <group title="Global Route Map Configuration">
       <column name="name">
-        This entry is a reference to the VRF table, to which this route
-	belongs.
+        Reference to the VRF table, to which this route belongs.
       </column>
     </group>
    <group title="Status">
@@ -781,10 +790,10 @@
    </group>
   </table>
 
-  <table name="Prefix_List" title="IP Address Prefix List">
+  <table name="Prefix_List" title="Prefix List">
     <group title="Global IP Address Prefix List Configuration">
       <column name="name">
-        This entry is a name of the prefix list.
+        Name of the prefix list.
       </column>
       <column name="description">
       </column>
@@ -827,106 +836,148 @@
    </group>
   </table>
 
-  <table name="RIB" title="Routing Information Base">
+  <table name="Route" title="Routes Information Base">
+    <p>
+      Global routes information base within an <ref table="Open_vSwitch"/>.
+    </p>
+    <p>
+        A <ref table="Route"/> record represents a route. This is a unique
+        record per (vrf, prefix, protocol) set.
+    </p>
     <group title="Global Routes Configuration">
       <column name="vrf">
-        This entry is a reference to the VRF table, to which this route
-	belongs.
-      </column>
-      <column name="selected_for_RIB">
-        This column contains a boolean which when set, indicates that
-	this row is a valid RIB entry.  This is to distinguish it from
-	other entries in the table, which may be there for private
-	reasons.
-      </column>
-      <column name="selected_to_FIB">
-        This is selected as the active route installed in in the
-	forwarding table.
+        Reference to the VRF table, to which this route belongs.
       </column>
       <column name="prefix">
-        The prefix represents the destination subnet.
-	Example: 10.10.X.X.  The database representation
-	of this is the string of the form 10.10.0.0.
+          IPv4 or IPv6 destination prefix and mask in the address/mask
+          format. Example 192.168.0.0/16
       </column>
-      <column name="prefix_len">
-        This is an integer which represents the netmask for the prefix.
+      <column name="from">
+          Protocol that is responsible for this entry. The value is
+          <code>BGP</code> if BGP created this entry, <code>static</code>
+          when the user configures a static route and <code>connected</code>
+          if it is a directly connected device.
       </column>
-      <column name="from_protocol">
-        This entry is a string which explains where this RIB table entry
-	came from.  It could have been discovered by BGP, RIP, OSPF etc,
-	or it could have been statically configured by the administrator.
+      <column name="protocol_private">
+          Indicates that this row is a protocol specific route entry.
+          The entries which have this value set, should not participate in
+          routing. Example: BGP can store routes for reference and future
+          selection but should not currently be used for forwarding.
+          Default is <code>false</code>.
+      </column>
+      <column name="selected">
+          Route table can have entries which may not be selected for
+          forwarding. This flag indicates if this entry is selected
+          as an active route for forwarding.
+          Default is <code>true</code>.
       </column>
       <column name="address_family">
-        This represents what address family the entry is for.  It can
-	be ipv4 or ipv6 etc.
+        Represents the address family for this entry.
+        Default value is <code>ipv4</code>.
       </column>
       <column name="sub_address_family">
-        This represents more information regarding this entry.  Unicast,
-	multicast, etc.
-      </column>
-      <column name="flags">
+        Represents more information regarding this entry.
+        Default is <code>unicast</code>.
       </column>
       <column name="distance">
+          Administrative distance for the route entry. This value is populated
+          every time a protocol or a user adds a new entry.
+          The default value is 1 which is the default distance for static
+          routes.
       </column>
       <column name="metric">
+          This is the BGP Multi Exit Discriminator (MED) attribute used in best
+          path selection. The MED provides a dynamic way to influence another AS
+          in the way to reach a certain route when there are multiple entry points
+          for that AS.  BGP decision process takes weight, local preference, AS path,
+          Origin and MED into account.  For selection, if all other factors are equal,
+          the exit point with the lowest MED is preferred.
+          Default value is 0
       </column>
-      <column name="message">
+      <column name="nexthops">
+          List of all the nexthops for this entry. This will be empty in case
+          of blackhole.
       </column>
-      <column name="next_num">
+   </group>
+   <group title="Protocol Specific">
+      <p>
+          The <code>protocol_specific</code> column contains key-value pairs that
+          are used by the owner of the entry. Example: If BGP created an entry
+          BGP can populate these key-value pairs for its internal use. These
+          values may not add value to other daemons
+      </p>
+      <column name="protocol_specific" key="bgp_flags"
+          type='{"type": "string"}'>
+          Route status flags. Allowed values are <code>history</code>,
+          <code>damped</code>,<code>multipath</code>
       </column>
-      <column name="ifindex_num">
+      <column name="protocol_specific" key="bgp_as_path"
+          type='{"type": "string"}'>
+          List of AS path number for a route. Example: 200,300,400
       </column>
-      <column name="nexthop_list">
-        This is a list (one or more) of all the nexthops for this entry.
+      <column name="protocol_specific" key="bgp_origin"
+          type='{"type": "string"}'>
+          Indicates whether a route is <code>IGP</code>, <code>EGP</code>
+          or <code>incomplete</code>.
       </column>
-      <column name="interface_list">
-        These are references to interfaces in the Interface table.
-	They represent all the interfaces this route can be reached from.
-      </column>
-      <column name="protocol_specific_data">
-        This is opaque to the rib.  Each protocol daemon can store any
-	number of key value pairs specific to that protocol in this cell
-	for any purpose.
+      <column name="protocol_specific" key="bgp_loc_pref"
+          type='{"type": "string"}'>
+          Local preference path attribute. Used by BGP to influence in the
+          best path selectionUsed by BGP to influence in the
+          best path selection..
       </column>
    </group>
   </table>
 
-  <table name="FIB" title="Forwarding Information Base">
-    <group title="Routes Configuration">
-      <column name="prefix">
-      </column>
-      <column name="nexthop">
-      </column>
-      <column name="origin">
-      </column>
-    </group>
-   <group title="Status">
-      <column name="status" >
-      </column>
-   </group>
-   <group title="Common Columns">
-      The overall purpose of these columns is described under <code>Common
-      Columns</code> at the beginning of this document.
-
-      <column name="other_config">
-      </column>
-      <column name="external_ids">
-      </column>
-   </group>
-  </table>
-
-  <table name="Nexthop">
+  <table name="Nexthop" title="Nexthops">
+    <p>
+      Global list of all the nexthops as used by the <ref table="Route"/> table.
+      Each entry in the <ref table="Route"/> can have a reference to one or
+      many(for ECMP) entries in this table.
+    </p>
     <group title="Configuration">
       <column name="ip_address">
+          IP address of the nexthop device.
       </column>
-      <column name="port">
+      <column name="ports">
+          List of outgoing ports. Nexthop entries of type <code>unicast</code>
+          can have atmost 1 port.
+      </column>
+      <column name="type">
+          Type of the nexthop.
+          Default is <code>unicast</code>.
+      </column>
+      <column name="selected">
+          Indicates if this nexthop is actively participating in forwarding.
+          Multiple nexthops can exist for each route entry but the routing protocol
+          can indicate if a particular nexthop should not be used in forwarding.
+          Default is <code>true</code>.
       </column>
       <column name="weight">
-        Weight of this nexthop. Default 1 for static routes.
+          Weight is used to differentially balance the packets. Example: For a route
+          if there are 2 nexthops nh1 with weight 5 and nh2 with weight 1, then
+          for every 5 packets that uses nh1, one packet will use nh2.
+          In the first release, the above case is not supported. Only ECMP is
+          supported.
+          Default is 0 (for static routes).
       </column>
     </group>
    <group title="Status">
-      <column name="status" >
+      <p>
+        Status information to indicate the current state of the nexthop.
+      </p>
+      <column name="status" key="arp_resolved"
+          type='{"type": "boolean"}'>
+          Indicate if ARP is resolved for this entry. If the ARP entry is
+          missing, this value is <code>false</code>
+      </column>
+      <column name="status" key="hw_configured"
+          type='{"type": "boolean"}'>
+          Indicate if nexthop programmed in the asic. If the ARP entry is
+          missing, this value is <code>false</code>
+      </column>
+      <column name="status" key="error">
+          Human readable error string.
       </column>
    </group>
    <group title="Common Columns">
@@ -940,10 +991,10 @@
    </group>
   </table>
 
-  <table name="BGP_Router" title="Border Gateway Protocol">
+  <table name="BGP_Router" title="BGP high level configuration">
     <group title="Configuration">
       This table will be extended based on BGP functionality that is present
-      in Quagga. The unique key is "VRF" and "ASN".
+      in Quagga.
       <column name="asn">
       Enable a BGP protocol process with the specified asn (AS number). After
       this statement you can input any BGP Commands. You can not create
@@ -951,14 +1002,14 @@
       multiple-instance (see Multiple instance). ASN Range: 1-4294967295.
       </column>
       <column name="router_id">
-      It is used to set router-id to bgp router. If bgpd connects to zebra it gets
+      This command specifies the router-ID. If bgpd connects to zebra it gets
       an interface and address information. In that case default router ID value
       is selected as the largest IP Address of the interfaces. When router zebra
-      is not enabled, router-id must be set manually in order to prevent setting
-      router id to 0.0.0.0.
+      is not enabled, it is required to set router-id by hand, so that router id
+      is not set to 0.0.0.0.
       </column>
       <column name="networks">
-      Announces networks for given bgp router.
+      This command adds the announcement network.
       router bgp 1
            network 10.0.0.0/8
       This configuration example says that network 10.0.0.0/8 will be announced to
@@ -967,31 +1018,23 @@
       A.B.C.D/M  IP prefix  e.g. 35.0.0.0/8.
       </column>
       <column name="redistribute">
-      Allows redistribution of routes from various protocols.
-      For example: static, connected. We can provide either static or connected
-      or use both.
+      Allows redistribution of routes from various protocols. For example: ISIS,
+      kernel, OSPF, RIP, static, connected.
       </column>
       <column name="always_compare_med">
-      Allow comparing MED (Multi-Exit Discriminitor) from different neighbors.
-      MED is an optional nontransitive attribute. MED is a hint to external
-      neighbors about the preferred path into an autonomous system (AS) that
-      has multiple entry points. The MED is also known as the external metric
-      of a route. A lower MED value is preferred over a higher value.
-      Default is false.
+      Allow comparing MED from different neighbors.
       </column>
       <column name="deterministic_med">
       Pick the best-MED path among paths advertised from the neighboring AS.
-      When enabled router will group all paths from the same AS and compare
-      them together before comparing them to paths from different ASes.
-      Default is false.
       </column>
-      <column name="gr_stale_timer">
-      Set the max time to hold onto restarting peer's stale paths.
-      Range: 1-3600 seconds.
-      Default stale path timer is 360 seconds.
+      <column name="graceful_restart">
+      Set the max time to hold onto restarting peer's stale paths. Range: 1-3600 seconds.
       </column>
-      <column name="vrf">
-      Provides VRF reference to given bgp instance.
+      <column name="bestpath">
+      Change the default bestpath selection.
+      </column>
+      <column name="neighbors">
+      Pointer to BGP neighbor table.
       </column>
     </group>
    <group title="Status">
@@ -1001,6 +1044,7 @@
    <group title="Common Columns">
       The overall purpose of these columns is described under <code>Common
       Columns</code> at the beginning of this document.
+
       <column name="other_config">
       </column>
       <column name="external_ids">
@@ -1100,7 +1144,7 @@
    </group>
   </table>
 
-  <table name="BGP_Peer_Group" title="BGP Peer_Group">
+  <table name="BGP_Peer_Group" title="BGP Peer_Groups">
     <group title="Peer_Group Attributes">
       <column name="name">
       Peer-group name.
@@ -1123,27 +1167,35 @@
    </group>
   </table>
 
-  <table name="Neighbor" title="Neighbor information">
+  <table name="Neighbor" title="L2 Neighbors">
+    <p>
+      List of all the connected neighbors.
+    </p>
     <group title="Neighbor information">
       <column name="vrf">
-        This entry is a reference to the VRF table, to which this neighbor
-        belongs.
+        Reference to the VRF table, to which this neighbor belongs.
       </column>
-      <column name="network_address">
+      <column name="ip_address">
         The IPv4 address or the IPv6 address of neighbor
       </column>
       <column name="address_family">
-        This represents what address family the entry is for.  It can
-        be ipv4 or ipv6 etc.
+          Address family of the neighbor.
       </column>
       <column name="mac">
-        MAC address learnt for this neighbor
+        MAC address learned for this neighbor.
       </column>
-      <column name="interface">
-        Name of interface where this neighbor was learnt
+      <column name="port">
+         Port on which this neighbor was learned.
       </column>
-      <column name="active">
-        Represents if traffic to the neighbor is active
+      <column name="state">
+        Current state of the neighbor entry.
+      </column>
+      <column name="status" key="dp_hit"
+          type='{"type": "boolean"}'>
+          Indicates if there is active traffic to the neighbor. This value
+          is periodically updated. If the value is set to <code>false</code>,
+          it indicates that there was no traffic to this neighbor recently.
+          Default is <code>true</code>
       </column>
    </group>
   </table>
@@ -1434,11 +1486,11 @@
       </group>
     </group>
    <group title="L3 Configuration">
-       <column name="ip_address">
+       <column name="ip4_address">
         The IPv4 address and subnet mask in the address/mask format.
         This is the primary IP address.
       </column>
-       <column name="ip_address_secondary">
+       <column name="ip4_address_secondary">
         This is a list of secondary IPv4 addresses and subnet mask
         in the address/mask format.
       </column>
