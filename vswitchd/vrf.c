@@ -66,9 +66,9 @@ struct net_address {
 
 struct port {
     struct hmap_node port_node; /* Element in struct vrf's "ports" hmap. */
-    char *ip_address;
+    char *ip4_address;
     char *ip6_address;
-    struct hmap secondary_ipaddr; /* List of secondary IP address*/
+    struct hmap secondary_ip4addr; /* List of secondary IP address*/
     struct hmap secondary_ip6addr; /*List of secondary IPv6 address*/
     struct vrf *vrf;
     char *name;
@@ -132,12 +132,12 @@ iface_lookup(const struct vrf *vrf, const char *name)
 }
 
 static struct net_address *
-ip_address_lookup (struct port *cfg, const char *address)
+ip4_address_lookup (struct port *cfg, const char *address)
 {
     struct net_address *addr;
 
     HMAP_FOR_EACH_WITH_HASH (addr, addr_node, hash_string(address, 0),
-                             &cfg->secondary_ipaddr) {
+                             &cfg->secondary_ip4addr) {
         if (!strcmp(addr->address, address)) {
             return addr;
         }
@@ -284,20 +284,20 @@ vrf_port_update_secondary_ipv4_address(struct vrf *vrf, struct port *port,
     /*
      * Collect the interested network addresses
      */
-    for (i = 0; i < cfg->n_ip_address_secondary; i++) {
-        if(!shash_add_once(&new_ip_list, cfg->ip_address_secondary[i],
-                           cfg->ip_address_secondary[i])) {
+    for (i = 0; i < cfg->n_ip4_address_secondary; i++) {
+        if(!shash_add_once(&new_ip_list, cfg->ip4_address_secondary[i],
+                           cfg->ip4_address_secondary[i])) {
             VLOG_WARN("Duplicate address in secondary list %s\n",
-                      cfg->ip_address_secondary[i]);
+                      cfg->ip4_address_secondary[i]);
         }
     }
 
     /*
      * Parse the existing list of addresses and remove obsolete ones
      */
-    HMAP_FOR_EACH_SAFE (addr, next, addr_node, &port->secondary_ipaddr) {
+    HMAP_FOR_EACH_SAFE (addr, next, addr_node, &port->secondary_ip4addr) {
         if (!shash_find_data(&new_ip_list, addr->address)) {
-            hmap_remove(&port->secondary_ipaddr, &addr->addr_node);
+            hmap_remove(&port->secondary_ip4addr, &addr->addr_node);
             vrf_port_delete_ip(vrf, addr->address, port);
             free(addr->address);
             free(addr);
@@ -310,13 +310,13 @@ vrf_port_update_secondary_ipv4_address(struct vrf *vrf, struct port *port,
     SHASH_FOR_EACH (addr_node, &new_ip_list) {
         struct net_address *addr;
         const char *address = addr_node->data;
-        if(!ip_address_lookup(port, address)) {
+        if(!ip4_address_lookup(port, address)) {
             /*
              * Add the new address to the list
              */
             addr = xzalloc(sizeof *addr);
             addr->address = xstrdup(address);
-            hmap_insert(&port->secondary_ipaddr, &addr->addr_node,
+            hmap_insert(&port->secondary_ip4addr, &addr->addr_node,
                         hash_string(addr->address, 0));
             vrf_port_configure_ip(vrf, addr->address, port);
         }
@@ -332,26 +332,26 @@ vrf_port_configure(struct vrf *vrf, struct port *port,
     /*
      * Configure primary network addresses
      */
-    if (port_cfg->ip_address) {
-        if (port->ip_address) {
-            if (strcmp(port->ip_address, port_cfg->ip_address) != 0) {
-                vrf_port_delete_ip(vrf, port->ip_address, port);
-                free(port->ip_address);
+    if (port_cfg->ip4_address) {
+        if (port->ip4_address) {
+            if (strcmp(port->ip4_address, port_cfg->ip4_address) != 0) {
+                vrf_port_delete_ip(vrf, port->ip4_address, port);
+                free(port->ip4_address);
 
-                port->ip_address = xstrdup(port_cfg->ip_address);
-                vrf_port_configure_ip(vrf, port->ip_address, port);
+                port->ip4_address = xstrdup(port_cfg->ip4_address);
+                vrf_port_configure_ip(vrf, port->ip4_address, port);
             }
         }
         else {
-            port->ip_address = xstrdup(port_cfg->ip_address);
-            vrf_port_configure_ip(vrf, port->ip_address, port);
+            port->ip4_address = xstrdup(port_cfg->ip4_address);
+            vrf_port_configure_ip(vrf, port->ip4_address, port);
         }
     }
     else {
-        if (port->ip_address != NULL) {
-            vrf_port_delete_ip(vrf, port->ip_address, port);
-            free(port->ip_address);
-            port->ip_address = NULL;
+        if (port->ip4_address != NULL) {
+            vrf_port_delete_ip(vrf, port->ip4_address, port);
+            free(port->ip4_address);
+            port->ip4_address = NULL;
         }
     }
 
@@ -381,10 +381,10 @@ vrf_port_configure(struct vrf *vrf, struct port *port,
     /*
      * Configure secondary network addresses
      */
-    OVSREC_IDL_GET_COLUMN(column, port_cfg, "ip_address_secondary");
+    OVSREC_IDL_GET_COLUMN(column, port_cfg, "ip4_address_secondary");
     if (column) {
         if (OVSREC_IDL_IS_COLUMN_MODIFIED(column, idl_seqno) ) {
-            VLOG_DBG("ip_address_secondary modified");
+            VLOG_DBG("ip4_address_secondary modified");
             vrf_port_update_secondary_ipv4_address(vrf, port, port_cfg);
         }
     }
@@ -662,18 +662,18 @@ port_destroy(struct port *port)
             iface_destroy(iface);
         }
 
-        if (port->ip_address) {
-            free(port->ip_address);
+        if (port->ip4_address) {
+            free(port->ip4_address);
         }
         if (port->ip6_address) {
             free(port->ip6_address);
         }
 
-        HMAP_FOR_EACH_SAFE (addr, next_addr, addr_node, &port->secondary_ipaddr) {
+        HMAP_FOR_EACH_SAFE (addr, next_addr, addr_node, &port->secondary_ip4addr) {
             free(addr->address);
             free(addr);
         }
-        hmap_destroy(&port->secondary_ipaddr);
+        hmap_destroy(&port->secondary_ip4addr);
 
         HMAP_FOR_EACH_SAFE (addr, next_addr, addr_node, &port->secondary_ip6addr) {
             free(addr->address);
@@ -697,7 +697,7 @@ port_create (struct vrf *vrf, const struct ovsrec_port *port_cfg)
     port->name = xstrdup(port_cfg->name);
     port->cfg = port_cfg;
     list_init(&port->ifaces);
-    hmap_init(&port->secondary_ipaddr);
+    hmap_init(&port->secondary_ip4addr);
     hmap_init(&port->secondary_ip6addr);
 
     hmap_insert(&vrf->ports, &port->port_node, hash_string(port->name, 0));
@@ -819,12 +819,12 @@ vrf_reconfigure_ports(struct vrf *vrf, const struct shash *wanted_ports)
             /* TODO: Fix this, combine ifs and make it one reconf */
             port = port_lookup(vrf, port_cfg->name);
             vrf_port_configure(vrf, port, port_cfg);
-            VLOG_DBG("Port has IP: %s vrf %s\n",port_cfg->ip_address,
+            VLOG_DBG("Port has IP: %s vrf %s\n",port_cfg->ip4_address,
                       vrf->name);
             /* port_add_network_address(port, port_cfg); */
         } else if (port && OVSREC_IDL_IS_ROW_MODIFIED(port_cfg, idl_seqno)) {
             /* Port table row modified */
-            VLOG_DBG("Port modified IP: %s vrf %s\n",port_cfg->ip_address,
+            VLOG_DBG("Port modified IP: %s vrf %s\n",port_cfg->ip4_address,
                      vrf->name);
             vrf_port_configure(vrf, port, port_cfg);
         }
