@@ -892,12 +892,8 @@
       },
       "indexes": [
         [
-          "vrf"
-        ],
-        [
-          "prefix"
-        ],
-        [
+          "prefix",
+          "vrf",
           "from"
         ]
       ],
@@ -1531,9 +1527,7 @@
       },
       "indexes": [
         [
-          "vrf"
-        ],
-        [
+          "vrf",
           "ip_address"
         ]
       ],
