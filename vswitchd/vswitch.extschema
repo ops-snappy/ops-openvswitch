@@ -1,7 +1,7 @@
 {
   "name": "OpenHalon",
   "version": "0.1.8",
-  "cksum": "3391999691 46816",
+  "cksum": "4144566225 53149",
   "tables": {
     "Open_vSwitch": {
       "columns": {
@@ -173,6 +173,14 @@
             "max": "unlimited"
           },
           "ephemeral": true
+        },
+        "aaa": {
+          "type": {
+            "key": "string",
+            "value": "string",
+            "min": 0,
+            "max": "unlimited"
+          }
         }
       },
       "isRoot": true,
@@ -440,168 +448,14 @@
         ]
       ]
     },
-    "RIB": {
+    "Route_Map": {
       "columns": {
-        "vrf": {
-          "type": {
-            "key": {
-              "type": "uuid",
-              "refTable": "VRF"
-            },
-            "min": 1,
-            "max": 1
-          }
-        },
-        "selected_for_RIB": {
-           "type": "boolean"
-        },
-        "selected_to_FIB": {
-          "type": {
-            "key": {
-              "type": "uuid",
-              "refTable": "FIB"
-            },
-            "min": 0,
-            "max": 1
-          }
-        },
-        "prefix": {
-          "type": "string"
-        },
-        "prefix_len": {
-          "type": "integer"
-        },
-        "from_protocol": {
+        "name": {
           "type": {
             "key": {
               "type": "string",
-              "enum": [
-                "set",
-                [
-                  "connected",
-                  "static",
-                  "BGP"
-                ]
-              ]
-            },
-            "min": 1,
-            "max": 1
-          }
-        },
-        "address_family": {
-          "type": {
-            "key": {
-              "type": "string",
-              "enum": [
-                "set",
-                [
-                  "ipv4",
-                  "ipv6"
-                ]
-              ]
-            },
-            "min": 1,
-            "max": 1
-          }
-        },
-        "sub_address_family": {
-          "type": {
-            "key": {
-              "type": "string",
-              "enum": [
-                "set",
-                [
-                  "unicast",
-                  "multicast",
-                  "vpn"
-                ]
-              ]
-            },
-            "min": 1,
-            "max": 1
-          }
-        },
-        "flags": {
-          "type": "integer"
-        },
-        "distance": {
-          "type": "integer"
-        },
-        "metric": {
-          "type": "integer"
-        },
-        "message": {
-          "type": "integer"
-        },
-        "next_num": {
-          "type": "integer"
-        },
-        "ifindex_num": {
-          "type": "integer"
-        },
-        "nexthop_list": {
-          "type": {
-            "key": {
-              "type": "uuid",
-              "refTable": "Nexthop"
-            },
-            "min": 0,
-            "max": "unlimited"
-          }
-        },
-        "interface_list": {
-          "type": {
-            "key": {
-              "type": "uuid",
-              "refTable": "Interface"
-            },
-            "min": 0,
-            "max": "unlimited"
-          }
-        },
-        "protocol_specific_data": {
-          "type": {
-            "key": "string",
-            "value": "string",
-            "min": 0,
-            "max": "unlimited"
-          }
-        }
-      },
-      "isRoot": true
-    },
-    "FIB": {
-      "columns": {
-        "prefix": {
-          "type": "string",
-          "mutable": false
-        },
-        "nexthop": {
-          "type": {
-            "key": {
-              "type": "uuid",
-              "refTable": "Nexthop"
-            },
-            "min": 1,
-            "max": 1
-          },
-          "mutable": false
-        },
-        "origin": {
-          "type": {
-            "key": {
-              "type": "string",
-              "enum": [
-                "set",
-                [
-                  "connected",
-                  "static",
-                  "BGP"
-                ]
-              ]
-            },
-            "min": 1,
-            "max": 1
+              "maxLength": 80
+            }
           }
         },
         "status": {
@@ -629,39 +483,483 @@
             "max": "unlimited"
           }
         }
-      }
+      },
+      "indexes": [
+        [
+          "name"
+        ]
+      ],
+      "isRoot": true
     },
-    "Nexthop": {
+    "Route_Map_Entries": {
       "columns": {
-        "ip_address": {
+        "route_map": {
           "type": {
             "key": {
-              "type": "string"
+              "type": "uuid",
+              "refTable": "Route_Map"
+            }
+          }
+        },
+        "description": {
+          "type": {
+            "key": {
+             "type": "string",
+             "maxLength": 80
+            }
+          }
+        },
+        "preference": {
+          "type": "integer"
+        },
+        "action": {
+          "type": {
+           "key": {
+              "type": "string",
+              "enum": [
+                "set",
+                [
+                  "permit",
+                  "deny"
+                ]
+              ]
+            },
+            "min": 1,
+            "max": 1
+          }
+        },
+        "exitpolicy": {
+          "type": {
+           "key": {
+              "type": "string",
+              "enum": [
+                "set",
+                [
+                  "goto",
+                  "next"
+                ]
+              ]
+            },
+            "min": 0,
+            "max": 1
+          }
+        },
+        "goto_target": {
+          "type": {
+            "key": {
+              "type": "uuid",
+              "refTable": "Route_Map_Entries"
+            },
+            "min": 0,
+            "max": 1
+          }
+        },
+        "call": {
+          "type": {
+            "key": {
+              "type": "uuid",
+              "refTable": "Route_Map_Entries"
+            },
+            "min": 0,
+            "max": 1
+          }
+        },
+        "match": {
+          "type": {
+            "key": "string",
+            "value": "string",
+            "min": 0,
+            "max": "unlimited"
+          }
+        },
+        "set": {
+          "type": {
+            "key": "string",
+            "value": "string",
+            "min": 0,
+            "max": "unlimited"
+          }
+        },
+        "status": {
+          "type": {
+            "key": "string",
+            "value": "string",
+            "min": 0,
+            "max": "unlimited"
+          },
+          "ephemeral": true
+        },
+        "other_config": {
+          "type": {
+            "key": "string",
+            "value": "string",
+            "min": 0,
+            "max": "unlimited"
+          }
+        },
+        "external_ids": {
+          "type": {
+            "key": "string",
+            "value": "string",
+            "min": 0,
+            "max": "unlimited"
+          }
+        }
+      },
+      "indexes": [
+        [
+          "route_map"
+        ],
+        [
+          "preference"
+        ]
+      ],
+      "isRoot": true
+    },
+    "Prefix_List": {
+      "columns": {
+        "name": {
+          "type": {
+            "key": {
+              "type": "string",
+              "maxLength": 80
+            }
+          }
+        },
+        "description": {
+          "type": {
+            "key": {
+             "type": "string",
+              "maxLength": 80
+            },
+            "min": 0,
+            "max": 1
+          }
+        },
+        "other_config": {
+          "type": {
+            "key": "string",
+            "value": "string",
+            "min": 0,
+            "max": "unlimited"
+          }
+        },
+        "external_ids": {
+          "type": {
+            "key": "string",
+            "value": "string",
+            "min": 0,
+            "max": "unlimited"
+          }
+        }
+      },
+      "indexes": [
+        [
+          "name"
+        ]
+      ],
+      "isRoot": true
+    },
+    "Prefix_List_Entries": {
+      "columns": {
+        "prefix_list": {
+          "type": {
+            "key": {
+              "type": "uuid",
+              "refTable": "Prefix_List"
+            }
+          }
+        },
+        "sequence": {
+          "type": {
+            "key": {
+              "type": "integer",
+              "minInteger": 1,
+              "maxInteger": 4294967295
+            },
+             "min": 1,
+             "max": 1
+          }
+        },
+        "le": {
+          "type": {
+            "key": {
+              "type": "integer",
+              "minInteger": 1,
+              "maxInteger": 32
+            },
+             "min": 1,
+             "max": 1
+          }
+        },
+        "ge": {
+          "type": {
+            "key": {
+              "type": "integer",
+              "minInteger": 1,
+              "maxInteger": 32
+            },
+             "min": 1,
+             "max": 1
+          }
+        },
+        "action": {
+          "type": {
+           "key": {
+              "type": "string",
+              "enum": [
+                "set",
+                [
+                  "permit",
+                  "deny"
+                ]
+              ]
+            },
+            "min": 1,
+            "max": 1
+          }
+        },
+        "prefix": {
+          "type": {
+            "key": {
+              "type": "string",
+              "maxLength": 43
+            },
+            "min": 1,
+            "max": 1
+          }
+        },
+        "other_config": {
+          "type": {
+            "key": "string",
+            "value": "string",
+            "min": 0,
+            "max": "unlimited"
+          }
+        },
+        "external_ids": {
+          "type": {
+            "key": "string",
+            "value": "string",
+            "min": 0,
+            "max": "unlimited"
+          }
+        }
+      },
+      "indexes": [
+        [
+          "prefix_list"
+        ],
+        [
+          "sequence"
+        ]
+      ],
+      "isRoot": true
+    },
+
+    "Route": {
+      "columns": {
+        "vrf": {
+          "type": {
+            "key": {
+              "type": "uuid",
+              "refTable": "VRF"
+            }
+          },
+          "mutable": false
+        },
+        "prefix": {
+          "type": {
+            "key": {
+              "type": "string",
+              "maxLength": 49
+            }
+          },
+          "mutable": false
+        },
+        "from": {
+          "type": {
+            "key": {
+              "type": "string",
+              "enum": [
+                "set",
+                [
+                  "connected",
+                  "static",
+                  "BGP"
+                ]
+              ]
+            }
+          },
+          "mutable": false
+        },
+       "protocol_private": {
+          "type": {
+            "key": {
+              "type": "boolean"
             },
             "min": 0,
             "max": 1
           },
           "mutable": false
         },
-        "port": {
+        "selected": {
           "type": {
             "key": {
-              "type": "string"
+              "type": "boolean"
+            },
+            "min": 0,
+            "max": 1
+          }
+        },
+        "address_family": {
+          "type": {
+            "key": {
+              "type": "string",
+              "enum": [
+                "set",
+                [
+                  "ipv4",
+                  "ipv6"
+                ]
+              ]
             },
             "min": 0,
             "max": 1
           },
           "mutable": false
         },
-        "weight": {
+        "sub_address_family": {
+          "type": {
+            "key": {
+              "type": "string",
+              "enum": [
+                "set",
+                [
+                  "unicast",
+                  "multicast",
+                  "vpn"
+                ]
+              ]
+            },
+            "min": 0,
+            "max": 1
+          },
+          "mutable": false
+        },
+        "distance": {
           "type": {
             "key": {
               "type": "integer",
               "minInteger": 0,
               "maxInteger": 255
             },
-             "min": 1,
-             "max": 1
+            "min": 0,
+            "max": 1
+          },
+          "mutable": false
+        },
+        "metric": {
+          "type": {
+            "key": {
+              "type": "integer",
+              "minInteger": 0,
+              "maxInteger": 4294967295
+            },
+            "min": 0,
+            "max": 1
+          },
+          "mutable": false
+        },
+        "nexthops": {
+          "type": {
+            "key": {
+              "type": "uuid",
+              "refTable": "Nexthop"
+            },
+            "min": 0,
+            "max": "unlimited"
+          }
+        },
+        "protocol_specific": {
+          "type": {
+            "key": "string",
+            "value": "string",
+            "min": 0,
+            "max": "unlimited"
+          }
+        }
+      },
+      "indexes": [
+        [
+          "vrf"
+        ],
+        [
+          "prefix"
+        ],
+        [
+          "from"
+        ]
+      ],
+      "isRoot": true
+    },
+    "Nexthop": {
+      "columns": {
+        "ip_address": {
+          "type": {
+            "key": {
+              "type": "string",
+              "maxLength": 45
+            },
+            "min": 0,
+            "max": 1
+          },
+          "mutable": false
+        },
+        "ports": {
+          "type": {
+            "key": {
+              "type": "uuid",
+              "refTable": "Port"
+            },
+            "min": 0,
+            "max": "unlimited"
+          },
+          "mutable": false
+        },
+        "type": {
+          "type": {
+            "key": {
+              "type": "string",
+              "enum": [
+                "set",
+                [
+                  "unicast"
+                ]
+              ]
+            },
+            "min": 0,
+            "max": 1
+          }
+        },
+        "selected": {
+          "type": {
+            "key": {
+              "type": "boolean"
+            },
+            "min": 0,
+            "max": 1
+          }
+        },
+        "weight": {
+          "type": {
+            "key": {
+              "type": "integer",
+              "minInteger": 0,
+              "maxInteger": 4294967295
+            },
+            "min": 0,
+            "max": 1
           }
         },
         "status": {
@@ -1158,18 +1456,15 @@
             "key": {
               "type": "uuid",
               "refTable": "VRF"
-            },
-            "min": 1,
-            "max": 1
+            }
           }
         },
-        "network_address": {
+        "ip_address": {
           "type": {
             "key": {
-              "type": "string"
-            },
-            "min": 1,
-            "max": 1
+              "type": "string",
+              "maxLength": 45
+            }
           }
         },
         "address_family": {
@@ -1183,9 +1478,7 @@
                   "ipv6"
                 ]
               ]
-            },
-            "min": 1,
-            "max": 1
+            }
           }
         },
         "mac": {
@@ -1197,25 +1490,53 @@
             "max": 1
           }
         },
-        "interface": {
+        "port": {
           "type": {
             "key": {
-              "type": "string"
+              "type": "uuid",
+              "refTable": "Port"
             },
             "min": 0,
             "max": 1
           }
         },
-        "active": {
+        "state": {
           "type": {
             "key": {
-              "type": "boolean"
+              "type": "string",
+              "enum": [
+                "set",
+                [
+                  "reachable",
+                  "stale",
+                  "incomplete",
+                  "failed",
+                  "permanent"
+                ]
+              ]
             },
             "min": 0,
             "max": 1
           }
+        },
+        "status": {
+          "type": {
+            "key": "string",
+            "value": "string",
+            "min": 0,
+            "max": "unlimited"
+          },
+          "ephemeral": true
         }
       },
+      "indexes": [
+        [
+          "vrf"
+        ],
+        [
+          "ip_address"
+        ]
+      ],
       "isRoot": true
     },
     "VLAN": {
@@ -1397,7 +1718,7 @@
             "max": 1
           }
         },
-        "ip_address": {
+        "ip4_address": {
           "type": {
             "key": {
               "type": "string",
@@ -1407,7 +1728,7 @@
             "max": 1
           }
         },
-        "ip_address_secondary": {
+        "ip4_address_secondary": {
           "type": {
             "key": {
               "type": "string",
