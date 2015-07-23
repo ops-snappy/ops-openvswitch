@@ -405,7 +405,14 @@ enum ovsrec_interface_hw_bond_config_enabled_e {
 #define OVSDB_RIB_PROT_SPECIFIC_DATA_BGP_ORIGIN     "rib_psd_bgp_origin"
 #define OVSDB_RIB_PROT_SPECIFIC_DATA_BGP_LOC_PREF   "rib_psd_bgp_loc_pref"
 
+/****************************** VRF TABLE ******************************/
+
 /* Default VRF name used during system bootup */
 #define OVSDB_VRF_DEFAULT_NAME                      "vrf_default"
+
+/****************************** BRIDGE TABLE ******************************/
+
+/* Default bridge name used during system bootup */
+#define OVSDB_BRIDGE_DEFAULT_NAME                   "bridge_normal"
 
 #endif /* OPENHALON_IDL_HEADER */
