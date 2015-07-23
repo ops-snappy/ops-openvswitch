@@ -393,16 +393,6 @@
             "max": "unlimited"
           }
         },
-        "bgp_routers": {
-          "type": {
-            "key": {
-              "type": "uuid",
-              "refTable": "BGP_Router"
-            },
-            "min": 0,
-            "max": "unlimited"
-          }
-        },
         "other_config": {
           "type": {
             "key": "string",
@@ -994,18 +984,16 @@
               "type": "integer",
               "minInteger": 1,
               "maxInteger": 4294967295
-             },
-             "min": 1,
-             "max": 1
+             }
           }
         },
         "router_id": {
           "type": {
             "key": {
               "type": "string",
-              "maxLength": 18
+              "maxLength": 15
             },
-            "min": 1,
+            "min": 0,
             "max": 1
           }
         },
@@ -1013,9 +1001,9 @@
           "type": {
             "key": {
               "type": "string",
-              "maxLength": 18
+              "maxLength": 49
             },
-            "min": 1,
+            "min": 0,
             "max": "unlimited"
           }
         },
@@ -1027,16 +1015,12 @@
                 "set",
                 [
                   "connected",
-                  "isis",
-                  "kernel",
-                  "ospf",
-                  "rip",
                   "static"
                 ]
               ]
             },
             "min": 0,
-            "max": 1
+            "max": 2
           }
         },
         "always_compare_med": {
@@ -1068,21 +1052,12 @@
              "max": 1
           }
         },
-        "bestpath": {
+        "vrf": {
           "type": {
             "key": {
-              "type": "string",
-              "enum": [
-                "set",
-                [
-                  "as_path",
-                  "compare_routerid",
-                  "med"
-                ]
-              ]
-            },
-            "min": 0,
-            "max": 1
+              "type": "uuid",
+              "refTable": "VRF"
+            }
           }
         },
         "status": {
@@ -1110,7 +1085,14 @@
             "max": "unlimited"
           }
         }
-      }
+      },
+      "indexes": [
+        [
+          "vrf",
+          "asn"
+        ]
+      ],
+      "isRoot": true
     },
     "BGP_Neighbor": {
       "columns": {
