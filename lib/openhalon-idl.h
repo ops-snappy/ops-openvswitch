@@ -411,7 +411,7 @@ enum ovsrec_interface_hw_bond_config_enabled_e {
 #define OVSDB_VRF_DEFAULT_NAME                      "vrf_default"
 #define OVSDB_VRF_NAME_MAXLEN                       32
 
-/****************************** NEIGHBOR TABLE *************************** /
+/****************************** NEIGHBOR TABLE ***************************/
 #define OVSDB_NEIGHBOR_STATUS_DP_HIT                "dp_hit"
 #define OVSDB_NEIGHBOR_STATUS_MAP_DP_HIT_DEFAULT    true
 
