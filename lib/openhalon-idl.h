@@ -31,6 +31,13 @@
 #ifndef OPENHALON_IDL_HEADER
 #define OPENHALON_IDL_HEADER 1
 
+/****************************** Global Definitions ******************************/
+
+/* Default VRF name used during system bootup */
+#define DEFAULT_VRF_NAME                      "vrf_default"
+/* Default bridge name used during system bootup */
+#define DEFAULT_BRIDGE_NAME                   "bridge_normal"
+
 /****************************** INTERFACE TABLE ******************************/
 
 #define OVSREC_INTERFACE_ERROR_UNINITIALIZED            "uninitialized"
@@ -407,17 +414,10 @@ enum ovsrec_interface_hw_bond_config_enabled_e {
 
 /****************************** VRF TABLE ******************************/
 
-/* Default VRF name used during system bootup */
-#define OVSDB_VRF_DEFAULT_NAME                      "vrf_default"
 #define OVSDB_VRF_NAME_MAXLEN                       32
 
 /****************************** NEIGHBOR TABLE ***************************/
 #define OVSDB_NEIGHBOR_STATUS_DP_HIT                "dp_hit"
 #define OVSDB_NEIGHBOR_STATUS_MAP_DP_HIT_DEFAULT    true
-
-/****************************** BRIDGE TABLE ******************************/
-
-/* Default bridge name used during system bootup */
-#define OVSDB_BRIDGE_DEFAULT_NAME                   "bridge_normal"
 
 #endif /* OPENHALON_IDL_HEADER */
