@@ -1,11 +1,11 @@
 {
   "name": "OpenHalon",
   "version": "0.1.8",
-  "cksum": "4144566225 53149",
   "tables": {
     "Open_vSwitch": {
       "columns": {
         "subsystems": {
+          "category": "child",
           "type": {
             "key": {
               "type": "uuid",
@@ -16,6 +16,7 @@
           }
         },
         "bridges": {
+          "category": "child",
           "type": {
             "key": {
               "type": "uuid",
@@ -26,6 +27,7 @@
           }
         },
         "vrfs": {
+          "category": "child",
           "type": {
             "key": {
               "type": "uuid",
@@ -36,6 +38,7 @@
           }
         },
         "management_vrf": {
+          "category": "child",
           "type": {
             "key": {
               "type": "uuid",
@@ -46,6 +49,7 @@
           }
         },
         "daemons": {
+          "category": "child",
           "type": {
             "key": {
               "type": "uuid",
@@ -56,6 +60,7 @@
           }
         },
         "ssl": {
+          "category": "child",
           "type": {
             "key": {
               "type": "uuid",
@@ -66,9 +71,11 @@
           }
         },
         "hostname": {
+          "category": "configuration",
           "type": "string"
         },
         "dns_servers": {
+          "category": "configuration",
           "type": {
             "key": {
               "type": "string"
@@ -90,6 +97,7 @@
           "type": "integer"
         },
         "statistics": {
+          "category": "statistics",
           "type": {
             "key": "string",
             "value": "string",
@@ -99,6 +107,7 @@
           "ephemeral": true
         },
         "lldp_statistics": {
+          "category": "statistics",
           "type": {
             "key": "string",
             "value": "string",
@@ -108,9 +117,11 @@
           "ephemeral": true
         },
         "boot_time": {
+          "category": "status",
           "type": "integer"
         },
         "switch_version": {
+          "category": "status",
           "type": {
             "key": {
               "type": "string"
@@ -120,6 +131,7 @@
           }
         },
         "db_version": {
+          "category": "status",
           "type": {
             "key": {
               "type": "string"
@@ -129,9 +141,11 @@
           }
         },
         "asset_tag_number": {
+          "category": "configuration",
           "type": "string"
         },
         "software_info": {
+          "category": "status",
           "type": {
             "key": "string",
             "value": "string",
@@ -140,6 +154,7 @@
           }
         },
         "manager_options": {
+          "category": "child",
           "type": {
             "key": {
               "type": "uuid",
@@ -150,6 +165,7 @@
           }
         },
         "other_config": {
+          "category": "configuration",
           "type": {
             "key": "string",
             "value": "string",
@@ -158,6 +174,7 @@
           }
         },
         "external_ids": {
+          "category": "configuration",
           "type": {
             "key": "string",
             "value": "string",
@@ -166,6 +183,7 @@
           }
         },
         "status": {
+          "category": "status",
           "type": {
             "key": "string",
             "value": "string",
@@ -175,6 +193,7 @@
           "ephemeral": true
         },
         "aaa": {
+          "category": "configuration",
           "type": {
             "key": "string",
             "value": "string",
@@ -189,10 +208,12 @@
     "Subsystem": {
       "columns": {
         "name": {
+          "category": "status",
           "type": "string",
           "mutable": false
         },
         "type": {
+          "category": "status",
           "type": {
             "key": {
               "type": "string",
@@ -215,6 +236,7 @@
           "type": "string"
         },
         "interfaces": {
+          "category": "child",
           "type": {
             "key": {
               "type": "uuid",
@@ -225,6 +247,7 @@
           }
         },
         "leds": {
+          "category": "child",
           "type": {
             "key": {
               "type": "uuid",
@@ -235,6 +258,7 @@
           }
         },
         "fans": {
+          "category": "child",
           "type": {
             "key": {
               "type": "uuid",
@@ -245,6 +269,7 @@
           }
         },
         "temp_sensors": {
+          "category": "child",
           "type": {
             "key": {
               "type": "uuid",
@@ -255,6 +280,7 @@
           }
         },
         "power_supplies": {
+          "category": "child",
           "type": {
             "key": {
               "type": "uuid",
@@ -265,12 +291,14 @@
           }
         },
         "asset_tag_number": {
+          "category": "configuration",
           "type": "string"
         },
         "hw_desc_dir": {
           "type": "string"
         },
         "other_info": {
+          "category": "status",
           "type": {
             "key": "string",
             "value": "string",
@@ -279,6 +307,7 @@
           }
         },
         "other_config": {
+          "category": "configuration",
           "type": {
             "key": "string",
             "value": "string",
@@ -287,6 +316,7 @@
           }
         },
         "external_ids": {
+          "category": "configuration",
           "type": {
             "key": "string",
             "value": "string",
@@ -304,10 +334,12 @@
     "Bridge": {
       "columns": {
         "name": {
+          "category": "configuration",
           "type": "string",
           "mutable": false
         },
         "ports": {
+          "category": "reference",
           "type": {
             "key": {
               "type": "uuid",
@@ -318,6 +350,7 @@
           }
         },
         "vlans": {
+          "category": "child",
           "type": {
             "key": {
               "type": "uuid",
@@ -328,12 +361,15 @@
           }
         },
         "datapath_type": {
+          "category": "configuration",
           "type": "string"
         },
         "datapath_version": {
+          "category": "status",
           "type": "string"
         },
         "datapath_id": {
+          "category": "status",
           "type": {
             "key": "string",
             "min": 0,
@@ -342,6 +378,7 @@
           "ephemeral": true
         },
         "status": {
+          "category": "status",
           "type": {
             "key": "string",
             "value": "string",
@@ -351,6 +388,7 @@
           "ephemeral": true
         },
         "other_config": {
+          "category": "configuration",
           "type": {
             "key": "string",
             "value": "string",
@@ -359,6 +397,7 @@
           }
         },
         "external_ids": {
+          "category": "configuration",
           "type": {
             "key": "string",
             "value": "string",
@@ -376,6 +415,7 @@
     "VRF": {
       "columns": {
         "name": {
+          "category": "configuration",
           "type": {
             "key": {
               "type": "string",
@@ -387,6 +427,7 @@
           "mutable": false
         },
         "ports": {
+          "category": "reference",
           "type": {
             "key": {
               "type": "uuid",
@@ -397,6 +438,7 @@
           }
         },
         "bgp_routers": {
+          "category": "child",
           "type": {
             "key": {
               "type": "uuid",
@@ -407,6 +449,7 @@
           }
         },
         "other_config": {
+          "category": "configuration",
           "type": {
             "key": "string",
             "value": "string",
@@ -415,6 +458,7 @@
           }
         },
         "external_ids": {
+          "category": "configuration",
           "type": {
             "key": "string",
             "value": "string",
@@ -432,6 +476,7 @@
     "Daemon": {
       "columns": {
         "name": {
+          "category": "status",
           "type": "string",
           "mutable": false
         },
@@ -451,6 +496,7 @@
     "Route_Map": {
       "columns": {
         "name": {
+          "category": "configuration",
           "type": {
             "key": {
               "type": "string",
@@ -459,6 +505,7 @@
           }
         },
         "status": {
+          "category": "status",
           "type": {
             "key": "string",
             "value": "string",
@@ -468,6 +515,7 @@
           "ephemeral": true
         },
         "other_config": {
+          "category": "configuration",
           "type": {
             "key": "string",
             "value": "string",
@@ -476,6 +524,7 @@
           }
         },
         "external_ids": {
+          "category": "configuration",
           "type": {
             "key": "string",
             "value": "string",
@@ -494,6 +543,7 @@
     "Route_Map_Entries": {
       "columns": {
         "route_map": {
+          "category": "parent",
           "type": {
             "key": {
               "type": "uuid",
@@ -502,6 +552,7 @@
           }
         },
         "description": {
+          "category": "configuration",
           "type": {
             "key": {
              "type": "string",
@@ -510,9 +561,11 @@
           }
         },
         "preference": {
+          "category": "configuration",
           "type": "integer"
         },
         "action": {
+          "category": "configuration",
           "type": {
            "key": {
               "type": "string",
@@ -529,6 +582,7 @@
           }
         },
         "exitpolicy": {
+          "category": "configuration",
           "type": {
            "key": {
               "type": "string",
@@ -545,6 +599,7 @@
           }
         },
         "goto_target": {
+          "category": "reference",
           "type": {
             "key": {
               "type": "uuid",
@@ -555,6 +610,7 @@
           }
         },
         "call": {
+          "category": "reference",
           "type": {
             "key": {
               "type": "uuid",
@@ -565,6 +621,7 @@
           }
         },
         "match": {
+          "category": "configuration",
           "type": {
             "key": "string",
             "value": "string",
@@ -573,6 +630,7 @@
           }
         },
         "set": {
+          "category": "configuration",
           "type": {
             "key": "string",
             "value": "string",
@@ -581,6 +639,7 @@
           }
         },
         "status": {
+          "category": "status",
           "type": {
             "key": "string",
             "value": "string",
@@ -590,6 +649,7 @@
           "ephemeral": true
         },
         "other_config": {
+          "category": "configuration",
           "type": {
             "key": "string",
             "value": "string",
@@ -598,6 +658,7 @@
           }
         },
         "external_ids": {
+          "category": "configuration",
           "type": {
             "key": "string",
             "value": "string",
@@ -619,6 +680,7 @@
     "Prefix_List": {
       "columns": {
         "name": {
+          "category": "configuration",
           "type": {
             "key": {
               "type": "string",
@@ -627,6 +689,7 @@
           }
         },
         "description": {
+          "category": "configuration",
           "type": {
             "key": {
              "type": "string",
@@ -637,6 +700,7 @@
           }
         },
         "other_config": {
+          "category": "configuration",
           "type": {
             "key": "string",
             "value": "string",
@@ -645,6 +709,7 @@
           }
         },
         "external_ids": {
+          "category": "configuration",
           "type": {
             "key": "string",
             "value": "string",
@@ -663,6 +728,7 @@
     "Prefix_List_Entries": {
       "columns": {
         "prefix_list": {
+          "category": "parent",
           "type": {
             "key": {
               "type": "uuid",
@@ -671,6 +737,7 @@
           }
         },
         "sequence": {
+          "category": "configuration",
           "type": {
             "key": {
               "type": "integer",
@@ -682,6 +749,7 @@
           }
         },
         "le": {
+          "category": "configuration",
           "type": {
             "key": {
               "type": "integer",
@@ -693,6 +761,7 @@
           }
         },
         "ge": {
+          "category": "configuration",
           "type": {
             "key": {
               "type": "integer",
@@ -704,6 +773,7 @@
           }
         },
         "action": {
+          "category": "configuration",
           "type": {
            "key": {
               "type": "string",
@@ -720,6 +790,7 @@
           }
         },
         "prefix": {
+          "category": "configuration",
           "type": {
             "key": {
               "type": "string",
@@ -730,6 +801,7 @@
           }
         },
         "other_config": {
+          "category": "configuration",
           "type": {
             "key": "string",
             "value": "string",
@@ -738,6 +810,7 @@
           }
         },
         "external_ids": {
+          "category": "configuration",
           "type": {
             "key": "string",
             "value": "string",
@@ -760,6 +833,7 @@
     "Route": {
       "columns": {
         "vrf": {
+          "category": "parent",
           "type": {
             "key": {
               "type": "uuid",
@@ -769,6 +843,7 @@
           "mutable": false
         },
         "prefix": {
+          "category": "configuration",
           "type": {
             "key": {
               "type": "string",
@@ -778,6 +853,7 @@
           "mutable": false
         },
         "from": {
+          "category": "status",
           "type": {
             "key": {
               "type": "string",
@@ -794,6 +870,7 @@
           "mutable": false
         },
        "protocol_private": {
+          "category": "status",
           "type": {
             "key": {
               "type": "boolean"
@@ -804,6 +881,7 @@
           "mutable": false
         },
         "selected": {
+          "category": "status",
           "type": {
             "key": {
               "type": "boolean"
@@ -813,6 +891,7 @@
           }
         },
         "address_family": {
+          "category": "configuration",
           "type": {
             "key": {
               "type": "string",
@@ -830,6 +909,7 @@
           "mutable": false
         },
         "sub_address_family": {
+          "category": "configuration",
           "type": {
             "key": {
               "type": "string",
@@ -848,6 +928,7 @@
           "mutable": false
         },
         "distance": {
+          "category": "configuration",
           "type": {
             "key": {
               "type": "integer",
@@ -860,6 +941,7 @@
           "mutable": false
         },
         "metric": {
+          "category": "status",
           "type": {
             "key": {
               "type": "integer",
@@ -872,6 +954,7 @@
           "mutable": false
         },
         "nexthops": {
+          "category": "child",
           "type": {
             "key": {
               "type": "uuid",
@@ -882,6 +965,7 @@
           }
         },
         "protocol_specific": {
+          "category": "status",
           "type": {
             "key": "string",
             "value": "string",
@@ -902,6 +986,7 @@
     "Nexthop": {
       "columns": {
         "ip_address": {
+          "category": "configuration",
           "type": {
             "key": {
               "type": "string",
@@ -913,6 +998,7 @@
           "mutable": false
         },
         "ports": {
+          "category": "reference",
           "type": {
             "key": {
               "type": "uuid",
@@ -924,6 +1010,7 @@
           "mutable": false
         },
         "type": {
+          "category": "configuration",
           "type": {
             "key": {
               "type": "string",
@@ -939,6 +1026,7 @@
           }
         },
         "selected": {
+          "category": "status",
           "type": {
             "key": {
               "type": "boolean"
@@ -948,6 +1036,7 @@
           }
         },
         "weight": {
+          "category": "configuration",
           "type": {
             "key": {
               "type": "integer",
@@ -959,6 +1048,7 @@
           }
         },
         "status": {
+          "category": "status",
           "type": {
             "key": "string",
             "value": "string",
@@ -968,6 +1058,7 @@
           "ephemeral": true
         },
         "other_config": {
+          "category": "configuration",
           "type": {
             "key": "string",
             "value": "string",
@@ -976,6 +1067,7 @@
           }
         },
         "external_ids": {
+          "category": "configuration",
           "type": {
             "key": "string",
             "value": "string",
@@ -988,6 +1080,7 @@
     "BGP_Router": {
       "columns": {
         "asn": {
+          "category": "configuration",
           "type": {
              "key": {
               "type": "integer",
@@ -999,6 +1092,7 @@
           }
         },
         "router_id": {
+          "category": "configuration",
           "type": {
             "key": {
               "type": "string",
@@ -1009,6 +1103,7 @@
           }
         },
         "networks": {
+          "category": "configuration",
           "type": {
             "key": {
               "type": "string",
@@ -1019,6 +1114,7 @@
           }
         },
          "redistribute": {
+          "category": "configuration",
           "type": {
             "key": {
               "type": "string",
@@ -1039,6 +1135,7 @@
           }
         },
         "always_compare_med": {
+          "category": "configuration",
           "type": {
             "key": {
               "type": "boolean"
@@ -1048,6 +1145,7 @@
           }
         },
         "deterministic_med": {
+          "category": "configuration",
           "type": {
             "key": {
               "type": "boolean"
@@ -1057,6 +1155,7 @@
           }
         },
        "graceful_restart": {
+          "category": "configuration",
          "type": {
            "key": {
               "type": "integer",
@@ -1068,6 +1167,7 @@
           }
         },
         "bestpath": {
+          "category": "configuration",
           "type": {
             "key": {
               "type": "string",
@@ -1085,6 +1185,7 @@
           }
         },
         "neighbors": {
+          "category": "child",
           "type": {
             "key": {
               "type": "uuid",
@@ -1095,6 +1196,7 @@
           }
         },
         "status": {
+          "category": "status",
           "type": {
             "key": "string",
             "value": "string",
@@ -1104,6 +1206,7 @@
           "ephemeral": true
         },
         "other_config": {
+          "category": "configuration",
           "type": {
             "key": "string",
             "value": "string",
@@ -1112,6 +1215,7 @@
           }
         },
         "external_ids": {
+          "category": "configuration",
           "type": {
             "key": "string",
             "value": "string",
@@ -1124,6 +1228,7 @@
     "BGP_neighbor": {
       "columns": {
         "peer_id": {
+          "category": "configuration",
           "type": {
             "key": {
               "type": "string",
@@ -1134,6 +1239,7 @@
           }
         },
         "remote_as": {
+          "category": "configuration",
           "type": {
             "key": {
               "type": "integer",
@@ -1145,6 +1251,7 @@
           }
         },
         "local_as": {
+          "category": "configuration",
           "type": {
             "key": {
               "type": "integer",
@@ -1156,6 +1263,7 @@
           }
         },
         "weight": {
+          "category": "configuration",
           "type": {
             "key": {
               "type": "integer",
@@ -1167,6 +1275,7 @@
           }
         },
         "to_bgp_peer_group": {
+          "category": "reference",
           "type": {
             "key": {
               "type": "uuid",
@@ -1207,6 +1316,7 @@
           }
         },
         "advertisement_interval": {
+          "category": "configuration",
           "type": {
             "key": {
               "type": "integer",
@@ -1218,6 +1328,7 @@
           }
         },
         "maximum_prefix": {
+          "category": "configuration",
           "type": {
             "key": {
               "type": "integer",
@@ -1229,6 +1340,7 @@
           }
         },
         "send_community": {
+          "category": "configuration",
           "type": {
             "key": {
               "type": "string",
@@ -1246,6 +1358,7 @@
           }
         },
        "shutdown": {
+          "category": "configuration",
           "type": {
             "key": {
               "type": "boolean"
@@ -1255,6 +1368,7 @@
           }
         },
         "capability": {
+          "category": "configuration",
           "type": {
             "key": {
               "type": "string",
@@ -1271,6 +1385,7 @@
           }
         },
         "override_capability": {
+          "category": "configuration",
           "type": {
             "key": {
               "type": "boolean"
@@ -1280,6 +1395,7 @@
           }
         },
         "soft_reconfiguration": {
+          "category": "configuration",
           "type": {
             "key": {
               "type": "string",
@@ -1295,6 +1411,7 @@
           }
         },
         "passive": {
+          "category": "configuration",
           "type": {
             "key": {
               "type": "boolean"
@@ -1304,6 +1421,7 @@
           }
         },
         "password": {
+          "category": "configuration",
           "type": {
             "key": {
               "type": "string",
@@ -1314,6 +1432,7 @@
           }
         },
         "strict_capability_match": {
+          "category": "configuration",
           "type": {
             "key": {
               "type": "boolean"
@@ -1323,6 +1442,7 @@
           }
         },
         "description": {
+          "category": "configuration",
           "type": {
             "key": {
               "type": "string",
@@ -1333,6 +1453,7 @@
           }
         },
         "timers": {
+          "category": "configuration",
           "type": {
             "key": "string",
             "value": "integer",
@@ -1341,6 +1462,7 @@
           }
         },
         "to_bgp_router": {
+          "category": "parent",
           "type": {
             "key": {
               "type": "uuid",
@@ -1351,6 +1473,7 @@
           }
         },
         "statistics": {
+          "category": "statistics",
           "type": {
             "key": "string",
             "value": "integer",
@@ -1360,6 +1483,7 @@
           "ephemeral": true
         },
        "status": {
+          "category": "status",
           "type": {
             "key": "string",
             "value": "string",
@@ -1369,6 +1493,7 @@
           "ephemeral": true
         },
         "other_config": {
+          "category": "configuration",
           "type": {
             "key": "string",
             "value": "string",
@@ -1377,6 +1502,7 @@
           }
         },
         "external_ids": {
+          "category": "configuration",
           "type": {
             "key": "string",
             "value": "string",
@@ -1436,6 +1562,7 @@
           }
         },
         "external_ids": {
+          "category": "configuration",
           "type": {
             "key": "string",
             "value": "string",
@@ -1448,6 +1575,7 @@
     "Neighbor": {
       "columns": {
         "vrf": {
+          "category": "parent",
           "type": {
             "key": {
               "type": "uuid",
@@ -1456,6 +1584,7 @@
           }
         },
         "ip_address": {
+          "category": "status",
           "type": {
             "key": {
               "type": "string",
@@ -1464,6 +1593,7 @@
           }
         },
         "address_family": {
+          "category": "status",
           "type": {
             "key": {
               "type": "string",
@@ -1478,6 +1608,7 @@
           }
         },
         "mac": {
+          "category": "status",
           "type": {
             "key": {
               "type": "string"
@@ -1487,6 +1618,7 @@
           }
         },
         "port": {
+          "category": "reference",
           "type": {
             "key": {
               "type": "uuid",
@@ -1497,6 +1629,7 @@
           }
         },
         "state": {
+          "category": "status",
           "type": {
             "key": {
               "type": "string",
@@ -1516,6 +1649,7 @@
           }
         },
         "status": {
+          "category": "status",
           "type": {
             "key": "string",
             "value": "string",
@@ -1536,10 +1670,12 @@
     "VLAN": {
       "columns": {
         "name": {
+          "category": "configuration",
           "type": "string",
           "mutable": false
         },
         "id": {
+          "category": "configuration",
           "type": {
             "key": { "type": "integer",
                      "minInteger": 1,
@@ -1548,6 +1684,7 @@
           "mutable": false
         },
         "description": {
+          "category": "configuration",
           "type": {
             "key": "string",
             "min": 0,
@@ -1555,6 +1692,7 @@
           }
         },
         "admin": {
+          "category": "configuration",
           "type": {
             "key": {
               "type": "string",
@@ -1579,6 +1717,7 @@
           }
         },
         "oper_state": {
+          "category": "status",
           "type": {
             "key": {
               "type": "string",
@@ -1596,6 +1735,7 @@
           }
         },
         "oper_state_reason": {
+          "category": "status",
           "type": {
             "key": {
               "type": "string",
@@ -1614,6 +1754,7 @@
           }
         },
         "other_config": {
+          "category": "configuration",
           "type": {
             "key": "string",
             "value": "string",
@@ -1622,6 +1763,7 @@
           }
         },
         "external_ids": {
+          "category": "configuration",
           "type": {
             "key": "string",
             "value": "string",
@@ -1642,10 +1784,12 @@
     "Port": {
       "columns": {
         "name": {
+          "category": "configuration",
           "type": "string",
           "mutable": false
         },
         "interfaces": {
+          "category": "reference",
           "type": {
             "key": {
               "type": "uuid",
@@ -1656,6 +1800,7 @@
           }
         },
         "trunks": {
+          "category": "configuration",
           "type": {
             "key": {
               "type": "integer",
@@ -1667,6 +1812,7 @@
           }
         },
         "tag": {
+          "category": "configuration",
           "type": {
             "key": {
               "type": "integer",
@@ -1678,6 +1824,7 @@
           }
         },
         "vlan_mode": {
+          "category": "configuration",
           "type": {
             "key": {
               "type": "string",
@@ -1696,6 +1843,7 @@
           }
         },
         "vlan_options": {
+          "category": "configuration",
           "type": {
             "key": "string",
             "value": "string",
@@ -1704,6 +1852,7 @@
           }
         },
         "mac": {
+          "category": "configuration",
           "type": {
             "key": {
               "type": "string"
@@ -1713,6 +1862,7 @@
           }
         },
         "ip4_address": {
+          "category": "configuration",
           "type": {
             "key": {
               "type": "string",
@@ -1723,6 +1873,7 @@
           }
         },
         "ip4_address_secondary": {
+          "category": "configuration",
           "type": {
             "key": {
               "type": "string",
@@ -1733,6 +1884,7 @@
           }
         },
         "ip6_address": {
+          "category": "configuration",
           "type": {
             "key": {
               "type": "string",
@@ -1743,6 +1895,7 @@
           }
         },
         "ip6_address_secondary": {
+          "category": "configuration",
           "type": {
             "key": {
               "type": "string",
@@ -1753,6 +1906,7 @@
           }
         },
         "bond_mode": {
+          "category": "configuration",
           "type": {
             "key": {
               "type": "string",
@@ -1770,6 +1924,7 @@
           }
         },
         "bond_options": {
+          "category": "configuration",
           "type": {
             "key": "string",
             "value": "string",
@@ -1778,6 +1933,7 @@
           }
         },
         "lacp": {
+          "category": "configuration",
           "type": {
             "key": {
               "type": "string",
@@ -1795,6 +1951,7 @@
           }
         },
         "bond_active_slave": {
+          "category": "configuration",
           "type": {
             "key": {
               "type": "string"
@@ -1804,6 +1961,7 @@
           }
         },
         "status": {
+          "category": "status",
           "type": {
             "key": "string",
             "value": "string",
@@ -1813,6 +1971,7 @@
           "ephemeral": true
         },
         "statistics": {
+          "category": "statistics",
           "type": {
             "key": "string",
             "value": "integer",
@@ -1830,6 +1989,7 @@
           }
         },
         "other_config": {
+          "category": "configuration",
           "type": {
             "key": "string",
             "value": "string",
@@ -1838,6 +1998,7 @@
           }
         },
         "external_ids": {
+          "category": "configuration",
           "type": {
             "key": "string",
             "value": "string",
@@ -1855,13 +2016,16 @@
     "Interface": {
       "columns": {
         "name": {
+          "category": "configuration",
           "type": "string",
           "mutable": false
         },
         "type": {
+          "category": "configuration",
           "type": "string"
         },
         "mac_in_use": {
+          "category": "status",
           "type": {
             "key": {
               "type": "string"
@@ -1872,6 +2036,7 @@
           "ephemeral": true
         },
         "lacp_current": {
+          "category": "status",
           "type": {
             "key": {
               "type": "boolean"
@@ -1882,6 +2047,7 @@
           "ephemeral": true
         },
         "statistics": {
+          "category": "statistics",
           "type": {
             "key": "string",
             "value": "integer",
@@ -1891,6 +2057,7 @@
           "ephemeral": true
         },
         "lldp_statistics": {
+          "category": "statistics",
           "type": {
             "key": "string",
             "value": "integer",
@@ -1900,6 +2067,7 @@
           "ephemeral": true
         },
         "status": {
+          "category": "status",
           "type": {
             "key": "string",
             "value": "string",
@@ -1909,6 +2077,7 @@
           "ephemeral": true
         },
         "split_parent": {
+          "category": "reference",
           "type": {
             "key": {
               "type": "uuid",
@@ -1919,6 +2088,7 @@
           }
         },
         "split_children": {
+          "category": "reference",
           "type": {
             "key": {
               "type": "uuid",
@@ -1929,6 +2099,7 @@
           }
         },
         "lldp_neighbor_info": {
+          "category": "status",
           "type": {
             "key": "string",
             "value": "string",
@@ -1937,6 +2108,7 @@
           }
         },
         "admin_state": {
+          "category": "status",
           "type": {
             "key": {
               "type": "string",
@@ -1954,6 +2126,7 @@
           "ephemeral": true
         },
         "link_state": {
+          "category": "status",
           "type": {
             "key": {
               "type": "string",
@@ -1971,6 +2144,7 @@
           "ephemeral": true
         },
         "link_resets": {
+          "category": "statistics",
           "type": {
             "key": {
               "type": "integer"
@@ -1981,6 +2155,7 @@
           "ephemeral": true
         },
         "link_speed": {
+          "category": "status",
           "type": {
             "key": "integer",
             "min": 0,
@@ -1989,6 +2164,7 @@
           "ephemeral": true
         },
         "duplex": {
+          "category": "status",
           "type": {
             "key": {
               "type": "string",
@@ -2006,6 +2182,7 @@
           "ephemeral": true
         },
         "pause": {
+          "category": "status",
           "type": {
             "key": {
               "type": "string",
@@ -2025,6 +2202,7 @@
           "ephemeral": true
         },
         "mtu": {
+          "category": "status",
           "type": {
             "key": "integer",
             "min": 0,
@@ -2033,6 +2211,7 @@
           "ephemeral": true
         },
         "error": {
+          "category": "status",
           "type": {
             "key": "string",
             "min": 0,
@@ -2040,6 +2219,7 @@
           }
         },
         "options": {
+          "category": "configuration",
           "type": {
             "key": "string",
             "value": "string",
@@ -2048,6 +2228,7 @@
           }
         },
         "other_config": {
+          "category": "configuration",
           "type": {
             "key": "string",
             "value": "string",
@@ -2056,6 +2237,7 @@
           }
         },
         "hw_intf_info": {
+          "category": "status",
           "type": {
             "key": "string",
             "value": "string",
@@ -2064,6 +2246,7 @@
           }
         },
         "user_config": {
+          "category": "configuration",
           "type": {
             "key": "string",
             "value": "string",
@@ -2080,6 +2263,7 @@
           }
         },
         "lacp_status": {
+          "category": "status",
           "type": {
             "key": "string",
             "value": "string",
@@ -2096,6 +2280,7 @@
           }
         },
         "pm_info": {
+          "category": "status",
           "type": {
             "key": "string",
             "value": "string",
@@ -2104,6 +2289,7 @@
           }
         },
         "external_ids": {
+          "category": "configuration",
           "type": {
             "key": "string",
             "value": "string",
@@ -2121,10 +2307,12 @@
     "Fan": {
       "columns": {
         "name": {
+          "category": "status",
           "type": "string",
           "mutable": false
         },
         "speed": {
+          "category": "configuration",
           "type": {
             "key": {
               "type": "string",
@@ -2144,6 +2332,7 @@
           }
         },
         "direction": {
+          "category": "configuration",
           "type": {
             "key": {
               "type": "string",
@@ -2160,6 +2349,7 @@
           }
         },
         "rpm": {
+          "category": "status",
           "type": {
             "key": {
               "type": "integer"
@@ -2170,6 +2360,7 @@
           "ephemeral": true
         },
         "status": {
+          "category": "status",
           "type": {
             "key": {
               "type": "string",
@@ -2196,6 +2387,7 @@
           }
         },
         "other_config": {
+          "category": "configuration",
           "type": {
             "key": "string",
             "value": "string",
@@ -2204,6 +2396,7 @@
           }
         },
         "external_ids": {
+          "category": "configuration",
           "type": {
             "key": "string",
             "value": "string",
@@ -2216,10 +2409,12 @@
     "LED": {
       "columns": {
         "id": {
+          "category": "status",
           "type": "string",
           "mutable": false
         },
         "state": {
+          "category": "status",
           "type": {
             "key": {
               "type": "string",
@@ -2237,6 +2432,7 @@
           }
         },
         "status": {
+          "category": "status",
           "type": {
             "key": {
               "type": "string",
@@ -2263,6 +2459,7 @@
           }
         },
         "other_config": {
+          "category": "configuration",
           "type": {
             "key": "string",
             "value": "string",
@@ -2271,6 +2468,7 @@
           }
         },
         "external_ids": {
+          "category": "configuration",
           "type": {
             "key": "string",
             "value": "string",
@@ -2283,22 +2481,28 @@
     "Temp_sensor": {
       "columns": {
         "name": {
+          "category": "status",
           "type": "string",
           "mutable": false
         },
         "location": {
+          "category": "status",
           "type": "string"
         },
         "temperature": {
+          "category": "status",
           "type": "integer"
         },
         "min": {
+          "category": "status",
           "type": "integer"
         },
         "max": {
+          "category": "status",
           "type": "integer"
         },
         "status": {
+          "category": "status",
           "type": {
             "key": {
               "type": "string",
@@ -2322,6 +2526,7 @@
           "ephemeral": true
         },
         "fan_state": {
+          "category": "status",
           "type": {
             "key": {
               "type": "string",
@@ -2349,6 +2554,7 @@
           }
         },
         "other_config": {
+          "category": "configuration",
           "type": {
             "key": "string",
             "value": "string",
@@ -2357,6 +2563,7 @@
           }
         },
         "external_ids": {
+          "category": "configuration",
           "type": {
             "key": "string",
             "value": "string",
@@ -2374,10 +2581,12 @@
     "Power_supply": {
       "columns": {
         "name": {
+          "category": "status",
           "type": "string",
           "mutable": false
         },
         "status": {
+          "category": "status",
           "type": {
             "key": {
               "type": "string",
@@ -2406,6 +2615,7 @@
           }
         },
         "other_config": {
+          "category": "configuration",
           "type": {
             "key": "string",
             "value": "string",
@@ -2414,6 +2624,7 @@
           }
         },
         "external_ids": {
+          "category": "configuration",
           "type": {
             "key": "string",
             "value": "string",
@@ -2431,9 +2642,11 @@
     "Manager": {
       "columns": {
         "target": {
+          "category": "configuration",
           "type": "string"
         },
         "max_backoff": {
+          "category": "configuration",
           "type": {
             "key": {
               "type": "integer",
@@ -2444,6 +2657,7 @@
           }
         },
         "inactivity_probe": {
+          "category": "configuration",
           "type": {
             "key": "integer",
             "min": 0,
@@ -2451,6 +2665,7 @@
           }
         },
         "connection_mode": {
+          "category": "configuration",
           "type": {
             "key": {
               "type": "string",
@@ -2467,6 +2682,7 @@
           }
         },
         "other_config": {
+          "category": "configuration",
           "type": {
             "key": "string",
             "value": "string",
@@ -2475,6 +2691,7 @@
           }
         },
         "external_ids": {
+          "category": "configuration",
           "type": {
             "key": "string",
             "value": "string",
@@ -2483,10 +2700,12 @@
           }
         },
         "is_connected": {
+          "category": "status",
           "type": "boolean",
           "ephemeral": true
         },
         "status": {
+          "category": "status",
           "type": {
             "key": "string",
             "value": "string",
@@ -2505,18 +2724,23 @@
     "SSL": {
       "columns": {
         "private_key": {
+          "category": "configuration",
           "type": "string"
         },
         "certificate": {
+          "category": "configuration",
           "type": "string"
         },
         "ca_cert": {
+          "category": "configuration",
           "type": "string"
         },
         "bootstrap_ca_cert": {
+          "category": "configuration",
           "type": "boolean"
         },
         "external_ids": {
+          "category": "configuration",
           "type": {
             "key": "string",
             "value": "string",
