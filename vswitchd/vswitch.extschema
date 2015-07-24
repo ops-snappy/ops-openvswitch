@@ -1096,14 +1096,6 @@
     },
     "BGP_Neighbor": {
       "columns": {
-        "vrf": {
-          "type": {
-            "key": {
-              "type": "uuid",
-              "refTable": "VRF"
-            }
-          }
-        },
         "bgp_router": {
           "type": {
             "key": {
@@ -1338,7 +1330,7 @@
         }
       },
       "indexes": [
-        [ "vrf", "bgp_router", "is_peer_group", "name" ]
+        [ "bgp_router", "name" ]
       ]
     },
     "Neighbor": {

@@ -1056,11 +1056,6 @@
 
     <group title="Neighbor Configuration">
 
-      <column name="vrf">
-      This identifies the VRF instance this entry belongs to.
-      All entries belong to a VRF instance.
-      </column>
-
       <column name="bgp_router">
       This identifies the BGP router instance this entry belongs to.
       All entries belong to a BGP router instance.
