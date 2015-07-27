@@ -58,6 +58,9 @@ struct netdev {
     int n_rxq;
     int ref_cnt;                        /* Times this devices was opened. */
     struct shash_node *node;            /* Pointer to element in global map. */
+#ifdef HALON
+    struct shash_node *refd_node;  /* Pointer to element in netdev_refd map */
+#endif
     struct ovs_list saved_flags_list; /* Contains "struct netdev_saved_flags". */
 };
 
@@ -615,14 +618,6 @@ struct netdev_class {
                                        void *aux),
                             void *aux);
 
-
-#ifdef HALON
-    /* Enable L3 on the interface. */
-    int (*enable_l3)(const struct netdev *netdev, int vrf_id);
-
-    /* Disable L3 on the interface. */
-    int (*disable_l3)(const struct netdev *netdev, int vrf_id);
-#endif
 
     /* If 'netdev' has an assigned IPv4 address, sets '*address' to that
      * address and '*netmask' to the associated netmask.

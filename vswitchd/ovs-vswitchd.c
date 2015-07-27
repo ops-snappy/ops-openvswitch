@@ -53,7 +53,6 @@
 #include "lib/netdev-dpdk.h"
 #ifdef HALON
 #include "subsystem.h"
-#include "vrf.h"
 #endif
 
 VLOG_DEFINE_THIS_MODULE(vswitchd);
@@ -113,7 +112,6 @@ main(int argc, char *argv[])
     bridge_init(remote);
 #ifdef HALON
     subsystem_init();
-    vrf_init();
 
     wait_for_config_complete();
 
@@ -135,7 +133,6 @@ main(int argc, char *argv[])
         bridge_run();
 #ifdef HALON
         subsystem_run();
-        vrf_run();
 #endif
         unixctl_server_run(unixctl);
         netdev_run();
@@ -145,7 +142,6 @@ main(int argc, char *argv[])
         bridge_wait();
 #ifdef HALON
         subsystem_wait();
-        vrf_wait();
 #endif
         unixctl_server_wait(unixctl);
         netdev_wait();
@@ -161,7 +157,6 @@ main(int argc, char *argv[])
     bridge_exit();
 #ifdef HALON
     subsystem_exit();
-    vrf_exit();
 #endif
     unixctl_server_destroy(unixctl);
     plugins_destroy();

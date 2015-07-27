@@ -1601,10 +1601,6 @@ netdev_bsd_update_flags(struct netdev *netdev_, enum netdev_flags off,
     NULL, /* queue_dump_done */                      \
     NULL, /* dump_queue_stats */                     \
                                                      \
-#ifdef HALON
-    NULL, /* enable_l3 */                            \
-    NULL, /* enable_l3 */                            \
-#endif
     netdev_bsd_get_in4,                              \
     netdev_bsd_set_in4,                              \
     netdev_bsd_get_in6,                              \
