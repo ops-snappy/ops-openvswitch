@@ -31,6 +31,13 @@
 #ifndef OPENHALON_IDL_HEADER
 #define OPENHALON_IDL_HEADER 1
 
+/****************************** Global Definitions ******************************/
+
+/* Default VRF name used during system bootup */
+#define DEFAULT_VRF_NAME                      "vrf_default"
+/* Default bridge name used during system bootup */
+#define DEFAULT_BRIDGE_NAME                   "bridge_normal"
+
 /****************************** INTERFACE TABLE ******************************/
 
 #define OVSREC_INTERFACE_ERROR_UNINITIALIZED            "uninitialized"
@@ -42,7 +49,6 @@
 #define OVSREC_INTERFACE_ERROR_LANES_NOT_SPLIT          "lanes_not_split"
 #define OVSREC_INTERFACE_ERROR_INVALID_MTU              "invalid_mtu"
 #define OVSREC_INTERFACE_ERROR_INVALID_SPEEDS           "invalid_speeds"
-#define OVSREC_INTERFACE_ERROR_INVALID_AUTONEG          "invalid_autoneg"
 #define OVSREC_INTERFACE_ERROR_AUTONEG_NOT_SUPPORTED    "autoneg_not_supported"
 #define OVSREC_INTERFACE_ERROR_AUTONEG_REQUIRED         "autoneg_required"
 #define OVSREC_INTERFACE_ERROR_OK                       "ok"
@@ -57,7 +63,6 @@ enum ovsrec_interface_error_e {
     INTERFACE_ERROR_LANES_NOT_SPLIT,
     INTERFACE_ERROR_INVALID_MTU,
     INTERFACE_ERROR_INVALID_SPEEDS,
-    INTERFACE_ERROR_INVALID_AUTONEG,
     INTERFACE_ERROR_AUTONEG_NOT_SUPPORTED,
     INTERFACE_ERROR_AUTONEG_REQUIRED,
     INTERFACE_ERROR_OK
@@ -407,7 +412,12 @@ enum ovsrec_interface_hw_bond_config_enabled_e {
 #define OVSDB_RIB_PROT_SPECIFIC_DATA_BGP_ORIGIN     "rib_psd_bgp_origin"
 #define OVSDB_RIB_PROT_SPECIFIC_DATA_BGP_LOC_PREF   "rib_psd_bgp_loc_pref"
 
-/* Default VRF name used during system bootup */
-#define OVSDB_VRF_DEFAULT_NAME                      "vrf_default"
+/****************************** VRF TABLE ******************************/
+
+#define OVSDB_VRF_NAME_MAXLEN                       32
+
+/****************************** NEIGHBOR TABLE ***************************/
+#define OVSDB_NEIGHBOR_STATUS_DP_HIT                "dp_hit"
+#define OVSDB_NEIGHBOR_STATUS_MAP_DP_HIT_DEFAULT    true
 
 #endif /* OPENHALON_IDL_HEADER */
