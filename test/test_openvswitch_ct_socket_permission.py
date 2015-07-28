@@ -34,9 +34,7 @@ class socketFilePermissionTests( HalonTest ):
                                              build=True)
 
   def socket_file_permission_verify(self):
-    info("\n\n=====================================================================\n")
-    info("*** Test to verify DB socket file permissions ***\n")
-    info("=====================================================================\n")
+    info("########## Verify DB socket file permissions ##########\n")
     # configuring Halon, in the future it would be through
     # proper Halon commands
     s1 = self.net.switches[ 0 ]
@@ -52,13 +50,13 @@ class socketFilePermissionTests( HalonTest ):
               info("Test failed!")
               return
 
-    info("Test passed!\n")
-    info("File permissions and group are valid for socket files.\n")
+    info("########## File permissions and group are valid for socket files ##########\n")
 
 
 class Test_socket_file_permissions:
-  # Create the Mininet topology based on mininet.
-  test = socketFilePermissionTests()
+
+  def setup_class(cls):
+    Test_socket_file_permissions.test = socketFilePermissionTests()
 
   # Test for socket file permissions
   def test_socket_file_permission_verify(self):

@@ -34,9 +34,7 @@ class slowRoutingTests( HalonTest ):
                                              build=True)
 
   def slow_routing_direct_connected(self):
-    info("\n\n=====================================================================\n")
-    info("*** Test to verify slow path routing for directly connected hosts ***\n")
-    info("=====================================================================\n")
+    info("########## Verify slow path routing for directly connected hosts ##########\n")
     # configuring Halon, in the future it would be through
     # proper Halon commands
     s1 = self.net.switches[ 0 ]
@@ -48,24 +46,27 @@ class slowRoutingTests( HalonTest ):
 
     # Configure interface 1 on switch s1
     s1.cmdCLI("interface 1")
-    s1.cmdCLI("vrf attach vrf_default")
+    #s1.cmdCLI("no shutdown")
     s1.cmdCLI("ip address 192.168.1.1/24")
     s1.cmdCLI("ipv6 address 2000::1/120")
     s1.cmdCLI("exit")
 
     # Configure interface 2 on switch s1
     s1.cmdCLI("interface 2")
-    s1.cmdCLI("vrf attach vrf_default")
+    #s1.cmdCLI("no shutdown")
     s1.cmdCLI("ip address 192.168.2.1/24")
     s1.cmdCLI("ipv6 address 2002::1/120")
     s1.cmdCLI("exit")
 
-    # Configure interface 1
-    s1.cmd("/usr/bin/ovs-vsctl set interface 1 pm_info:connector=SFP_RJ45 pm_info:connector_status=supported")
+    # HALON_TODO: Using "no shutdown" needs sleep of 10 seconds.
+    # Uncomment below line and remove ovs-vsctl command once issue is resolved
+
+    #time.sleep(10)
+
+    # Bring interface 1 up
     s1.cmd("/usr/bin/ovs-vsctl set interface 1 user_config:admin=up")
 
-    # Configure interface 2
-    s1.cmd("/usr/bin/ovs-vsctl set interface 2 pm_info:connector=SFP_RJ45 pm_info:connector_status=supported")
+    # Bring interface 2 up
     s1.cmd("/usr/bin/ovs-vsctl set interface 2 user_config:admin=up")
 
     # Configure host 1
@@ -126,21 +127,18 @@ class slowRoutingTests( HalonTest ):
     assert status, "Ping Failed"
     info("Ping Success\n")
 
-    info("=================================\n")
-    info("*** End of slow routing test ***\n")
-    info("=================================\n")
+    info("########## Slow path routing for directly connected hosts passed ##########\n")
 
 class Test_slow_routing:
-  # Create the Mininet topology based on mininet.
-  test = slowRoutingTests()
+
+  def setup_class(cls):
+    Test_slow_routing.test = slowRoutingTests()
 
   # Test for slow routing between directly connected hosts
   def test_slow_routing_direct_connected(self):
     self.test.slow_routing_direct_connected()
 
   def teardown_class(cls):
-    # Stop the Docker containers, and
-    # mininet topology
     Test_slow_routing.test.net.stop()
 
   def __del__(self):
