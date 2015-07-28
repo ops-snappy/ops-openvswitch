@@ -48,6 +48,26 @@
             "max": 1
           }
         },
+        "management_mac": {
+          "category": "status",
+          "type": {
+            "key": {
+             "type": "string",
+             "minLength": 17,
+             "maxLength": 17
+            }
+          }
+        },
+        "system_mac": {
+          "category": "status",
+          "type": {
+            "key": {
+             "type": "string",
+             "minLength": 17,
+             "maxLength": 17
+            }
+          }
+        },
         "daemons": {
           "category": "child",
           "type": {
@@ -160,6 +180,15 @@
               "type": "uuid",
               "refTable": "Manager"
             },
+            "min": 0,
+            "max": "unlimited"
+          }
+        },
+        "lacp_config": {
+          "category": "configuration",
+          "type": {
+            "key": "string",
+            "value": "string",
             "min": 0,
             "max": "unlimited"
           }
@@ -294,6 +323,20 @@
           "category": "configuration",
           "type": "string"
         },
+        "next_mac_address": {
+          "category": "status",
+          "type": {
+            "key": {
+             "type": "string",
+             "minLength": 17,
+             "maxLength": 17
+            }
+          }
+        },
+        "macs_remaining": {
+          "category": "status",
+          "type": "integer"
+        },
         "hw_desc_dir": {
           "type": "string"
         },
@@ -420,9 +463,7 @@
             "key": {
               "type": "string",
               "maxLength": 32
-            },
-            "min": 1,
-            "max": 1
+            }
           },
           "mutable": false
         },
@@ -576,9 +617,7 @@
                   "deny"
                 ]
               ]
-            },
-            "min": 1,
-            "max": 1
+            }
           }
         },
         "exitpolicy": {
@@ -743,9 +782,7 @@
               "type": "integer",
               "minInteger": 1,
               "maxInteger": 4294967295
-            },
-             "min": 1,
-             "max": 1
+            }
           }
         },
         "le": {
@@ -755,9 +792,7 @@
               "type": "integer",
               "minInteger": 1,
               "maxInteger": 32
-            },
-             "min": 1,
-             "max": 1
+            }
           }
         },
         "ge": {
@@ -767,9 +802,7 @@
               "type": "integer",
               "minInteger": 1,
               "maxInteger": 32
-            },
-             "min": 1,
-             "max": 1
+            }
           }
         },
         "action": {
@@ -784,9 +817,7 @@
                   "deny"
                 ]
               ]
-            },
-            "min": 1,
-            "max": 1
+            }
           }
         },
         "prefix": {
@@ -795,9 +826,7 @@
             "key": {
               "type": "string",
               "maxLength": 43
-            },
-            "min": 1,
-            "max": 1
+            }
           }
         },
         "other_config": {
@@ -1086,9 +1115,7 @@
               "type": "integer",
               "minInteger": 1,
               "maxInteger": 4294967295
-             },
-             "min": 1,
-             "max": 1
+             }
           }
         },
         "router_id": {
@@ -1097,9 +1124,7 @@
             "key": {
               "type": "string",
               "maxLength": 18
-            },
-            "min": 1,
-            "max": 1
+            }
           }
         },
         "networks": {
@@ -1233,9 +1258,7 @@
             "key": {
               "type": "string",
               "maxLength": 18
-            },
-            "min": 1,
-            "max": 1
+            }
           }
         },
         "remote_as": {
@@ -1245,9 +1268,7 @@
               "type": "integer",
               "minInteger": 1,
               "maxInteger": 4294967295
-            },
-             "min": 1,
-             "max": 1
+            }
           }
         },
         "local_as": {
@@ -1519,9 +1540,7 @@
             "key": {
               "type": "string",
               "maxLength": 80
-            },
-             "min": 1,
-             "max": 1
+            }
           }
         },
         "to_bgp_router": {
@@ -1729,9 +1748,7 @@
                   "down"
                 ]
               ]
-            },
-            "min": 1,
-            "max": 1
+            }
           }
         },
         "oper_state_reason": {
@@ -1748,9 +1765,7 @@
                   "no_member_port"
                 ]
               ]
-            },
-            "min": 1,
-            "max": 1
+            }
           }
         },
         "other_config": {
@@ -2326,9 +2341,7 @@
                   "max"
                 ]
               ]
-            },
-            "min": 1,
-            "max": 1
+            }
           }
         },
         "direction": {
@@ -2343,9 +2356,7 @@
                   "f2b"
                 ]
               ]
-            },
-            "min": 1,
-            "max": 1
+            }
           }
         },
         "rpm": {
@@ -2372,9 +2383,7 @@
                   "fault"
                 ]
               ]
-            },
-            "min": 1,
-            "max": 1
+            }
           },
           "ephemeral": true
         },
@@ -2426,9 +2435,7 @@
                   "flashing"
                 ]
               ]
-            },
-            "min": 1,
-            "max": 1
+            }
           }
         },
         "status": {
@@ -2444,9 +2451,7 @@
                   "fault"
                 ]
               ]
-            },
-            "min": 1,
-            "max": 1
+            }
           },
           "ephemeral": true
         },
@@ -2519,9 +2524,7 @@
                   "emergency"
                 ]
               ]
-            },
-            "min": 1,
-            "max": 1
+            }
           },
           "ephemeral": true
         },
@@ -2539,9 +2542,7 @@
                     "max"
                 ]
               ]
-            },
-            "min": 1,
-            "max": 1
+            }
           },
           "ephemeral": true
         },
@@ -2600,9 +2601,7 @@
                   "unknown"
                 ]
               ]
-            },
-            "min": 1,
-            "max": 1
+            }
           },
           "ephemeral": true
         },

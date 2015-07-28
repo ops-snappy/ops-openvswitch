@@ -78,6 +78,15 @@
       <column name="vrfs">
       </column>
 
+      <column name="management_mac">
+        Ethernet MAC address for the management interface port for this system.
+      </column>
+
+      <column name="system_mac">
+        Ethernet MAC address available to use anywhere a non-unique MAC is
+        needed.
+      </column>
+
       <column name="daemons">
       </column>
 
@@ -105,6 +114,21 @@
           Default value is 5000 ms.
         </p>
       </column>
+
+    <group title="LACP Configurations">
+      <column name="lacp_config" key="lacp-system-id">
+        The LACP system ID of this <ref table="Bridge"/>.  The system ID of a
+        LACP bond is used to identify itself to its partners.  Must be a
+        nonzero MAC address. Defaults to the bridge Ethernet address if
+        unset.
+      </column>
+      <column name="lacp_config" key="lacp-system-priority"
+              type='{"type": "integer", "minInteger": 0, "maxInteger": 65535}'>
+        The LACP system priority of this <ref table="Bridge"/>.  In LACP
+        negotiations, link status decisions are made by the system with the
+        numerically lower priority. Defaults to 65534.
+      </column>
+   </group>
 
     <group title="LLDP Configurations">
       <column name="other_config" key="lldp_enable"
@@ -523,6 +547,16 @@
       <column name="power_supplies">
       </column>
       <column name="asset_tag_number">
+      </column>
+    </group>
+    <group title="Hardware Configuration">
+      <column name="next_mac_address">
+        Next available (unused) Ethernet MAC address from the MAC address pool
+        for this subsystem.
+      </column>
+      <column name="macs_remaining">
+        The number of available (unused) Ethernet MAC address from the MAC
+        address pool for this subsystem.
       </column>
     </group>
     <group title="Inventory Info">
