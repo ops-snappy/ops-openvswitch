@@ -339,6 +339,15 @@ enum ovsrec_interface_hw_bond_config_enabled_e {
 #define INTERFACE_OTHER_CONFIG_MAP_LLDP_ENABLE_DIR_TX           "tx"
 #define INTERFACE_OTHER_CONFIG_MAP_LLDP_ENABLE_DIR_RXTX         "rxtx"
 
+#define INTERFACE_LACP_STATUS_MAP_ACTOR_SYSTEM_ID       "actor_system_id"
+#define INTERFACE_LACP_STATUS_MAP_ACTOR_PORT_ID         "actor_port_id"
+#define INTERFACE_LACP_STATUS_MAP_ACTOR_KEY             "actor_key"
+#define INTERFACE_LACP_STATUS_MAP_ACTOR_STATE           "actor_state"
+#define INTERFACE_LACP_STATUS_MAP_PARTNER_SYSTEM_ID     "partner_system_id"
+#define INTERFACE_LACP_STATUS_MAP_PARTNER_PORT_ID       "partner_port_id"
+#define INTERFACE_LACP_STATUS_MAP_PARTNER_KEY           "partner_key"
+#define INTERFACE_LACP_STATUS_MAP_PARTNER_STATE         "partner_state"
+
 /****************************** PORT TABLE *******************************/
 
 #define PORT_STATUS_BOND_HW_HANDLE                              "bond_hw_handle"
