@@ -428,4 +428,16 @@ enum ovsrec_interface_hw_bond_config_enabled_e {
 #define OVSDB_NEIGHBOR_STATUS_DP_HIT                "dp_hit"
 #define OVSDB_NEIGHBOR_STATUS_MAP_DP_HIT_DEFAULT    true
 
+/* Management Interface Column */
+#define OPEN_VSWITCH_MGMT_INTF_MAP_MODE                 "mode"
+#define OPEN_VSWITCH_MGMT_INTF_MAP_MODE_DHCP            "dhcp"
+#define OPEN_VSWITCH_MGMT_INTF_MAP_MODE_STATIC          "static"
+
+#define OPEN_VSWITCH_MGMT_INTF_MAP_NAME                 "name"
+#define OPEN_VSWITCH_MGMT_INTF_MAP_IP                   "ip"
+#define OPEN_VSWITCH_MGMT_INTF_MAP_SUBNET_MASK          "subnet-mask"
+#define OPEN_VSWITCH_MGMT_INTF_MAP_DEFAULT_GATEWAY      "default-gateway"
+#define OPEN_VSWITCH_MGMT_INTF_MAP_DNS_SERVER_1         "dns-server-1"
+#define OPEN_VSWITCH_MGMT_INTF_MAP_DNS_SERVER_2         "dns-server-2"
+
 #endif /* OPENHALON_IDL_HEADER */

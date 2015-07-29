@@ -78,6 +78,15 @@
       <column name="vrfs">
       </column>
 
+      <column name="management_mac">
+        Ethernet MAC address for the management interface port for this system.
+      </column>
+
+      <column name="system_mac">
+        Ethernet MAC address available to use anywhere a non-unique MAC is
+        needed.
+      </column>
+
       <column name="daemons">
       </column>
 
@@ -105,6 +114,21 @@
           Default value is 5000 ms.
         </p>
       </column>
+
+    <group title="LACP Configurations">
+      <column name="lacp_config" key="lacp-system-id">
+        The LACP system ID of this <ref table="Bridge"/>.  The system ID of a
+        LACP bond is used to identify itself to its partners.  Must be a
+        nonzero MAC address. Defaults to the bridge Ethernet address if
+        unset.
+      </column>
+      <column name="lacp_config" key="lacp-system-priority"
+              type='{"type": "integer", "minInteger": 0, "maxInteger": 65535}'>
+        The LACP system priority of this <ref table="Bridge"/>.  In LACP
+        negotiations, link status decisions are made by the system with the
+        numerically lower priority. Defaults to 65534.
+      </column>
+   </group>
 
     <group title="LLDP Configurations">
       <column name="other_config" key="lldp_enable"
@@ -237,6 +261,14 @@
       </column>
    </group>
 
+      <column name="mgmt_intf_status">
+        This column holds the status of the management interface IP parameters.
+        This column contains key-value pairs that report the mangement interface
+        IP attributes like IP address, subnet, default gateway, primary and
+        secondary name server. These values are either statically configured by
+        the user or populated by the DHCP client.
+        The keys of this column is same as that of mgmt_intf column.
+      </column>
       <column name="next_cfg">
         Sequence number for client to increment.  When a client modifies
         any part of the database configuration and wishes to wait for
@@ -499,6 +531,41 @@
         connection should be configured.  See the <ref table="Manager"/> table
         for more information.
       </column>
+      <column name="mgmt_intf">
+        This column is a map of string-string pairs
+        Management interface column contains the attributes of management
+        interface. The keys are name, mode, ip, subnet mask, default gateway,
+        dns server IPv4 addresses. This column holds values that are configured
+        by the user.
+      </column>
+      <column name="mgmt_intf" key="name" >
+        The value for this key is a valid interface name that is to be
+        configured as management interface
+      </column>
+      <column name="mgmt_intf" key="mode" >
+        The value is static or dhcp based on the mode in which the management
+        ip is to be obtained. Default value is dhcp.
+      </column>
+      <column name="mgmt_intf" key="ip" >
+        The value for this key is interface IP of the management interface
+      </column>
+      <column name="mgmt_intf" key="subnet-mask" >
+        The value for this key is subnet mask of the interface IP of management
+        interface
+      </column>
+      <column name="mgmt_intf" key="subnet-mask" >
+        The value for this key is subnet mask of the interface IP of management
+        interface
+      </column>
+      <column name="mgmt_intf" key="default-gateway" >
+        The value for this key is default gateway IPv4 address
+      </column>
+      <column name="mgmt_intf" key="dns-server-1" >
+        The value for this key is Primary nameserver IPv4 address
+      </column>
+      <column name="mgmt_intf" key="dns-server-2" >
+        The value for this key is Secondary nameserver IPv4 address
+      </column>
     </group>
 
     <group title="Common Columns">
@@ -523,6 +590,16 @@
       <column name="power_supplies">
       </column>
       <column name="asset_tag_number">
+      </column>
+    </group>
+    <group title="Hardware Configuration">
+      <column name="next_mac_address">
+        Next available (unused) Ethernet MAC address from the MAC address pool
+        for this subsystem.
+      </column>
+      <column name="macs_remaining">
+        The number of available (unused) Ethernet MAC address from the MAC
+        address pool for this subsystem.
       </column>
     </group>
     <group title="Inventory Info">

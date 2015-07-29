@@ -22,7 +22,8 @@ if __name__ == '__main__':
     # delete the keys
     delete_keys(ovsschema, ['category', 'relation'])
 
-    ovsschema.pop('cksum')
+    if 'cksum' in ovsschema:
+        ovsschema.pop('cksum')
     if len(sys.argv) < 3:
         print("Error: Script needs 2 argument (input-schema output-schema)")
     else:
