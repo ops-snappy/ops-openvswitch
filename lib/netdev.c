@@ -1880,8 +1880,7 @@ netdev_get_change_seq(const struct netdev *netdev)
 /* Assigns ipv4 or ipv6 addr to given kernel interface.
 */
 int
-netdev_set_ip_address(struct netdev *netdev, const char *ip_netmask,
-                       const char *name)
+netdev_set_ip_address(const char *ip_netmask, const char *name)
 {
     char   cmd_str[256];
 
@@ -1896,8 +1895,7 @@ netdev_set_ip_address(struct netdev *netdev, const char *ip_netmask,
 /* Delete ipv4 or ipv6 addr of a given kernel interface.
 */
 int
-netdev_delete_ip_address(struct netdev *netdev, const char *ip_netmask,
-                         const char *name)
+netdev_delete_ip_address(const char *ip_netmask, const char *name)
 {
     char   cmd_str[256];
 

@@ -176,8 +176,7 @@ vrf_port_configure_ip(struct vrf *vrf, char *ip_address,
     }
 
     /* Call Provider */
-    if (!netdev_set_ip_address(iface->netdev, ip_address,
-                               port->name)) {
+    if (!netdev_set_ip_address(ip_address, port->name)) {
         VLOG_INFO("VRF %s: configured IP address %s",
                   vrf->name, ip_address);
 
@@ -204,8 +203,7 @@ vrf_port_delete_ip(struct vrf *vrf, char *ip_address,
     }
 
     /* Call Provider */
-    if (!netdev_delete_ip_address(iface->netdev, ip_address,
-                                  port->name)) {
+    if (!netdev_delete_ip_address(ip_address, port->name)) {
         VLOG_INFO("VRF %s: deleted configured IP address %s",
                   vrf->name, ip_address);
 
@@ -219,7 +217,7 @@ vrf_port_delete_ip(struct vrf *vrf, char *ip_address,
 
 static void
 vrf_port_update_secondary_ipv6_address(struct vrf *vrf, struct port *port,
-                                       struct ovsrec_port *cfg)
+                                       const struct ovsrec_port *cfg)
 {
     struct shash new_ip6_list;
     struct net_address *addr, *next;
@@ -272,7 +270,7 @@ vrf_port_update_secondary_ipv6_address(struct vrf *vrf, struct port *port,
 
 static void
 vrf_port_update_secondary_ipv4_address(struct vrf *vrf, struct port *port,
-                                       struct ovsrec_port *cfg)
+                                       const struct ovsrec_port *cfg)
 {
     struct shash new_ip_list;
     struct net_address *addr, *next;
@@ -325,7 +323,7 @@ vrf_port_update_secondary_ipv4_address(struct vrf *vrf, struct port *port,
 
 static void
 vrf_port_configure(struct vrf *vrf, struct port *port,
-                   struct ovsrec_port *port_cfg)
+                   const struct ovsrec_port *port_cfg)
 {
     const struct ovsdb_idl_column *column;
 
@@ -561,8 +559,7 @@ error:
 /* Returns the correct network device type for interface 'iface' in vrf
  * 'vrf'. */
 static const char *
-iface_get_type(const struct ovsrec_interface *iface,
-               const struct ovsrec_vrf *vrf)
+iface_get_type(const struct ovsrec_interface *iface)
 {
     const char *type;
 
@@ -609,7 +606,7 @@ iface_create(struct vrf *vrf, const struct ovsrec_interface *iface_cfg,
     iface->name = xstrdup(iface_cfg->name);
     iface->netdev = netdev;
     iface->cfg = iface_cfg;
-    iface->type = iface_get_type(iface_cfg, vrf->cfg);
+    iface->type = iface_get_type(iface_cfg);
 
     iface_refresh_netdev_status(iface);
 
@@ -777,7 +774,6 @@ vrf_collect_wanted_ports(struct vrf *vrf,
 static void
 vrf_del_ports(struct vrf *vrf, const struct shash *wanted_ports)
 {
-    struct shash_node *port_node;
     struct port *port, *next;
 
     HMAP_FOR_EACH_SAFE (port, next, port_node, &vrf->ports) {
@@ -834,7 +830,7 @@ vrf_reconfigure_ports(struct vrf *vrf, const struct shash *wanted_ports)
 static void
 vrf_reconfigure(const struct ovsrec_open_vswitch *ovs_cfg)
 {
-    struct vrf *vrf, *next_vrf;
+    struct vrf *vrf;
 
     COVERAGE_INC(vrf_reconfigure);
 
