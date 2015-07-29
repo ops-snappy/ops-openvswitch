@@ -2543,12 +2543,15 @@ iface_refresh_netdev_status(struct iface *iface)
 static void
 iface_refresh_ofproto_status(struct iface *iface)
 {
+#ifndef HALON_TEMP
     int current;
+#endif
 
     if (iface_is_synthetic(iface)) {
         return;
     }
 
+#ifndef HALON_TEMP
     current = ofproto_port_is_lacp_current(iface->port->bridge->ofproto,
                                            iface->ofp_port);
     if (current >= 0) {
@@ -2558,7 +2561,6 @@ iface_refresh_ofproto_status(struct iface *iface)
         ovsrec_interface_set_lacp_current(iface->cfg, NULL, 0);
     }
 
-#ifndef HALON_TEMP
     if (ofproto_port_cfm_status_changed(iface->port->bridge->ofproto,
                                         iface->ofp_port)
         || status_txn_try_again) {
@@ -4719,8 +4721,8 @@ iface_clear_db_record(const struct ovsrec_interface *if_cfg, char *errp)
         ovsrec_interface_set_cfm_fault(if_cfg, NULL, 0);
         ovsrec_interface_set_cfm_fault_status(if_cfg, NULL, 0);
         ovsrec_interface_set_cfm_remote_mpids(if_cfg, NULL, 0);
-#endif
         ovsrec_interface_set_lacp_current(if_cfg, NULL, 0);
+#endif
         ovsrec_interface_set_statistics(if_cfg, NULL, NULL, 0);
 #ifndef HALON_TEMP
         ovsrec_interface_set_ifindex(if_cfg, NULL, 0);
