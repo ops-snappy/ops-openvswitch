@@ -351,6 +351,7 @@ enum ovsrec_interface_hw_bond_config_enabled_e {
 /****************************** PORT TABLE *******************************/
 
 #define PORT_STATUS_BOND_HW_HANDLE                              "bond_hw_handle"
+#define PORT_HW_CONFIG_MAP_INTERNAL_VLAN_ID                     "internal_vlan_id"
 
 /****************************** SUBSYSTEM TABLE *******************************/
 
@@ -401,6 +402,15 @@ enum ovsrec_interface_hw_bond_config_enabled_e {
                                             "lldp_tlv_port_proto_id_enable"
 
 #define OPEN_VSWITCH_OTHER_CONFIG_MAP_LLDP_TLV_DEFAULT        true
+
+/* VLAN internal range */
+#define OPEN_VSWITCH_OTHER_CONFIG_MAP_MIN_INTERNAL_VLAN                     "min_internal_vlan"
+#define OPEN_VSWITCH_OTHER_CONFIG_MAP_MIN_INTERNAL_VLAN_ID                  "1024"
+#define OPEN_VSWITCH_OTHER_CONFIG_MAP_MAX_INTERNAL_VLAN                     "max_internal_vlan"
+#define OPEN_VSWITCH_OTHER_CONFIG_MAP_MAX_INTERNAL_VLAN_ID                  "4094"
+#define OPEN_VSWITCH_OTHER_CONFIG_MAP_INTERNAL_VLAN_POLICY                  "internal_vlan_policy"
+#define OPEN_VSWITCH_OTHER_CONFIG_MAP_INTERNAL_VLAN_POLICY_ASCENDING_DEF    "ascending"
+#define OPEN_VSWITCH_OTHER_CONFIG_MAP_INTERNAL_VLAN_POLICY_DESCENDING       "descending"
 
 /* lldp global statistics */
 
