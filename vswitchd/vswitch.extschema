@@ -221,6 +221,24 @@
           },
           "ephemeral": true
         },
+        "mgmt_intf": {
+          "category": "configuration",
+          "type": {
+            "key": "string",
+            "value": "string",
+            "min": 0,
+            "max": "unlimited"
+          }
+        },
+        "mgmt_intf_status": {
+          "category": "status",
+          "type": {
+            "key": "string",
+            "value": "string",
+            "min": 0,
+            "max": "unlimited"
+          }
+        },
         "aaa": {
           "category": "configuration",
           "type": {
