@@ -410,8 +410,11 @@ enum ovsrec_interface_hw_bond_config_enabled_e {
 #define OPEN_VSWITCH_OTHER_CONFIG_MAP_INTERNAL_VLAN_POLICY_ASCENDING_DEFAULT    "ascending"
 #define OPEN_VSWITCH_OTHER_CONFIG_MAP_INTERNAL_VLAN_POLICY_DESCENDING       "descending"
 
-/* lldp global statistics */
+/* lacp global configuration parameters */
+#define OPEN_VSWITCH_LACP_CONFIG_MAP_LACP_SYSTEM_ID        "lacp-system-id"
+#define OPEN_VSWITCH_LACP_CONFIG_MAP_LACP_SYSTEM_PRIORITY  "lacp-system-priority"
 
+/* lldp global statistics */
 #define OVSDB_STATISTICS_LLDP_TABLE_INSERTS         "lldp_table_inserts"
 #define OVSDB_STATISTICS_LLDP_TABLE_DELETES         "lldp_table_deletes"
 #define OVSDB_STATISTICS_LLDP_TABLE_DROPS           "lldp_table_drops"
