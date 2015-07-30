@@ -291,7 +291,7 @@
           }
         },
         "interfaces": {
-          "category": "child",
+          "category": "reference",
           "type": {
             "key": {
               "type": "uuid",
