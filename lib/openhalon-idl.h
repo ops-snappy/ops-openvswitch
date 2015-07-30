@@ -419,17 +419,16 @@ enum ovsrec_interface_hw_bond_config_enabled_e {
 #define OVSDB_STATISTICS_LLDP_TABLE_DROPS           "lldp_table_drops"
 #define OVSDB_STATISTICS_LLDP_TABLE_AGEOUTS         "lldp_table_ageouts"
 
-/* Message column global definitions for RIB table, to be used by Zebra */
-#define OVSDB_RIB_MESSAGE_NEXTHOP                   0x01
-#define OVSDB_RIB_MESSAGE_INDEX                     0x02
-#define OVSDB_RIB_MESSAGE_DISTANCE                  0x04
-#define OVSDB_RIB_MESSAGE_METRIC                    0x08
 
-/* RIB table global protocol specific column definitions */
-#define OVSDB_RIB_PROT_SPECIFIC_DATA_BGP_FLAGS      "rib_psd_bgp_flags"
-#define OVSDB_RIB_PROT_SPECIFIC_DATA_BGP_AS_PATH    "rib_psd_bgp_as_path"
-#define OVSDB_RIB_PROT_SPECIFIC_DATA_BGP_ORIGIN     "rib_psd_bgp_origin"
-#define OVSDB_RIB_PROT_SPECIFIC_DATA_BGP_LOC_PREF   "rib_psd_bgp_loc_pref"
+/* ROUTE table global protocol specific column definitions */
+#define OVSDB_ROUTE_PROTOCOL_SPECIFIC_BGP_FLAGS          "BGP_flags"
+#define OVSDB_ROUTE_PROTOCOL_SPECIFIC_BGP_AS_PATH        "BGP_AS_path"
+#define OVSDB_ROUTE_PROTOCOL_SPECIFIC_BGP_ORIGIN         "BGP_origin"
+#define OVSDB_ROUTE_PROTOCOL_SPECIFIC_BGP_LOC_PREF       "BGP_loc_pref"
+#define OVSDB_ROUTE_PROTOCOL_SPECIFIC_BGP_PEER_ID        "BGP_peer_ID"
+#define OVSDB_ROUTE_PROTOCOL_SPECIFIC_BGP_INTERNAL       "BGP_internal"
+#define OVSDB_ROUTE_PROTOCOL_SPECIFIC_BGP_IBGP           "BGP_iBGP"
+
 
 /****************************** VRF TABLE ******************************/
 
