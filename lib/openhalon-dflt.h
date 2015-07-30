@@ -30,4 +30,10 @@
  * always be greater than or equal to 5 seconds. */
 #define DFLT_OPEN_VSWITCH_OTHER_CONFIG_STATS_UPDATE_INTERVAL        5000
 
+/* Default min_vlan ID for internal VLAN range */
+#define DFLT_OPEN_VSWITCH_OTHER_CONFIG_MAP_MIN_INTERNAL_VLAN_ID     1024
+
+/* Default max_vlan ID for internal VLAN range */
+#define DFLT_OPEN_VSWITCH_OTHER_CONFIG_MAP_MAX_INTERNAL_VLAN_ID     4094
+
 #endif /* OPENHALON_DFLT_HEADER */
