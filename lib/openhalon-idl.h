@@ -31,6 +31,13 @@
 #ifndef OPENHALON_IDL_HEADER
 #define OPENHALON_IDL_HEADER 1
 
+/****************************** Global Definitions ******************************/
+
+/* Default VRF name used during system bootup */
+#define DEFAULT_VRF_NAME                      "vrf_default"
+/* Default bridge name used during system bootup */
+#define DEFAULT_BRIDGE_NAME                   "bridge_normal"
+
 /****************************** INTERFACE TABLE ******************************/
 
 #define OVSREC_INTERFACE_ERROR_UNINITIALIZED            "uninitialized"
@@ -42,7 +49,6 @@
 #define OVSREC_INTERFACE_ERROR_LANES_NOT_SPLIT          "lanes_not_split"
 #define OVSREC_INTERFACE_ERROR_INVALID_MTU              "invalid_mtu"
 #define OVSREC_INTERFACE_ERROR_INVALID_SPEEDS           "invalid_speeds"
-#define OVSREC_INTERFACE_ERROR_INVALID_AUTONEG          "invalid_autoneg"
 #define OVSREC_INTERFACE_ERROR_AUTONEG_NOT_SUPPORTED    "autoneg_not_supported"
 #define OVSREC_INTERFACE_ERROR_AUTONEG_REQUIRED         "autoneg_required"
 #define OVSREC_INTERFACE_ERROR_OK                       "ok"
@@ -57,7 +63,6 @@ enum ovsrec_interface_error_e {
     INTERFACE_ERROR_LANES_NOT_SPLIT,
     INTERFACE_ERROR_INVALID_MTU,
     INTERFACE_ERROR_INVALID_SPEEDS,
-    INTERFACE_ERROR_INVALID_AUTONEG,
     INTERFACE_ERROR_AUTONEG_NOT_SUPPORTED,
     INTERFACE_ERROR_AUTONEG_REQUIRED,
     INTERFACE_ERROR_OK
@@ -334,9 +339,19 @@ enum ovsrec_interface_hw_bond_config_enabled_e {
 #define INTERFACE_OTHER_CONFIG_MAP_LLDP_ENABLE_DIR_TX           "tx"
 #define INTERFACE_OTHER_CONFIG_MAP_LLDP_ENABLE_DIR_RXTX         "rxtx"
 
+#define INTERFACE_LACP_STATUS_MAP_ACTOR_SYSTEM_ID       "actor_system_id"
+#define INTERFACE_LACP_STATUS_MAP_ACTOR_PORT_ID         "actor_port_id"
+#define INTERFACE_LACP_STATUS_MAP_ACTOR_KEY             "actor_key"
+#define INTERFACE_LACP_STATUS_MAP_ACTOR_STATE           "actor_state"
+#define INTERFACE_LACP_STATUS_MAP_PARTNER_SYSTEM_ID     "partner_system_id"
+#define INTERFACE_LACP_STATUS_MAP_PARTNER_PORT_ID       "partner_port_id"
+#define INTERFACE_LACP_STATUS_MAP_PARTNER_KEY           "partner_key"
+#define INTERFACE_LACP_STATUS_MAP_PARTNER_STATE         "partner_state"
+
 /****************************** PORT TABLE *******************************/
 
 #define PORT_STATUS_BOND_HW_HANDLE                              "bond_hw_handle"
+#define PORT_HW_CONFIG_MAP_INTERNAL_VLAN_ID                     "internal_vlan_id"
 
 /****************************** SUBSYSTEM TABLE *******************************/
 
@@ -388,6 +403,15 @@ enum ovsrec_interface_hw_bond_config_enabled_e {
 
 #define OPEN_VSWITCH_OTHER_CONFIG_MAP_LLDP_TLV_DEFAULT        true
 
+/* VLAN internal range */
+#define OPEN_VSWITCH_OTHER_CONFIG_MAP_MIN_INTERNAL_VLAN                     "min_internal_vlan"
+#define OPEN_VSWITCH_OTHER_CONFIG_MAP_MIN_INTERNAL_VLAN_ID                  "1024"
+#define OPEN_VSWITCH_OTHER_CONFIG_MAP_MAX_INTERNAL_VLAN                     "max_internal_vlan"
+#define OPEN_VSWITCH_OTHER_CONFIG_MAP_MAX_INTERNAL_VLAN_ID                  "4094"
+#define OPEN_VSWITCH_OTHER_CONFIG_MAP_INTERNAL_VLAN_POLICY                  "internal_vlan_policy"
+#define OPEN_VSWITCH_OTHER_CONFIG_MAP_INTERNAL_VLAN_POLICY_ASCENDING_DEF    "ascending"
+#define OPEN_VSWITCH_OTHER_CONFIG_MAP_INTERNAL_VLAN_POLICY_DESCENDING       "descending"
+
 /* lldp global statistics */
 
 #define OVSDB_STATISTICS_LLDP_TABLE_INSERTS         "lldp_table_inserts"
@@ -407,7 +431,24 @@ enum ovsrec_interface_hw_bond_config_enabled_e {
 #define OVSDB_RIB_PROT_SPECIFIC_DATA_BGP_ORIGIN     "rib_psd_bgp_origin"
 #define OVSDB_RIB_PROT_SPECIFIC_DATA_BGP_LOC_PREF   "rib_psd_bgp_loc_pref"
 
-/* Default VRF name used during system bootup */
-#define OVSDB_VRF_DEFAULT_NAME                      "vrf_default"
+/****************************** VRF TABLE ******************************/
+
+#define OVSDB_VRF_NAME_MAXLEN                       32
+
+/****************************** NEIGHBOR TABLE ***************************/
+#define OVSDB_NEIGHBOR_STATUS_DP_HIT                "dp_hit"
+#define OVSDB_NEIGHBOR_STATUS_MAP_DP_HIT_DEFAULT    true
+
+/* Management Interface Column */
+#define OPEN_VSWITCH_MGMT_INTF_MAP_MODE                 "mode"
+#define OPEN_VSWITCH_MGMT_INTF_MAP_MODE_DHCP            "dhcp"
+#define OPEN_VSWITCH_MGMT_INTF_MAP_MODE_STATIC          "static"
+
+#define OPEN_VSWITCH_MGMT_INTF_MAP_NAME                 "name"
+#define OPEN_VSWITCH_MGMT_INTF_MAP_IP                   "ip"
+#define OPEN_VSWITCH_MGMT_INTF_MAP_SUBNET_MASK          "subnet-mask"
+#define OPEN_VSWITCH_MGMT_INTF_MAP_DEFAULT_GATEWAY      "default-gateway"
+#define OPEN_VSWITCH_MGMT_INTF_MAP_DNS_SERVER_1         "dns-server-1"
+#define OPEN_VSWITCH_MGMT_INTF_MAP_DNS_SERVER_2         "dns-server-2"
 
 #endif /* OPENHALON_IDL_HEADER */
