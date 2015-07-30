@@ -1305,9 +1305,7 @@
               "type": "integer",
               "minInteger": 1,
               "maxInteger": 4294967295
-            },
-             "min": 1,
-             "max":"unlimited"
+            }
           }
         },
         "local_as": {
@@ -1496,7 +1494,8 @@
       },
       "indexes": [
         [ "bgp_router", "name" ]
-      ]
+      ],
+      "isRoot": true
     },
     "Neighbor": {
       "columns": {
