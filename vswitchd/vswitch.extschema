@@ -239,6 +239,17 @@
             "max": "unlimited"
           }
         },
+        "radius_servers": {
+          "category": "child",
+          "type": {
+            "key": {
+              "type": "uuid",
+              "refTable": "Radius_Server"
+             },
+            "min": 0,
+            "max": 64
+          }
+        },
         "aaa": {
           "category": "configuration",
           "type": {
@@ -2655,6 +2666,67 @@
         }
       },
       "maxRows": 1
+    },
+    "Radius_Server": {
+      "columns": {
+        "ip_address": {
+          "category": "configuration",
+           "type": "string",
+           "mutable": false
+        },
+        "udp_port": {
+          "category": "configuration",
+           "type": {
+            "key": {
+              "type": "integer",
+              "minInteger": 0,
+              "maxInteger": 65535
+            },
+            "min": 0,
+            "max": 1
+          }
+        },
+        "passkey": {
+          "category": "configuration",
+           "type": {
+             "key": {
+               "type": "string",
+               "maxLength": 32
+             },
+             "min": 0,
+             "max": 1
+           }
+        },
+        "timeout": {
+          "category": "configuration",
+           "type": {
+            "key": {
+               "type": "integer",
+               "minInteger": 1,
+               "maxInteger": 60
+            },
+            "min": 0,
+            "max": 1
+          }
+        },
+        "retries": {
+          "category": "configuration",
+           "type": {
+            "key": {
+               "type": "integer",
+               "minInteger": 0,
+               "maxInteger": 5
+            },
+            "min": 0,
+            "max": 1
+          }
+        }
+      },
+      "indexes": [
+        [
+          "ip_address"
+        ]
+      ]
     }
   }
 }

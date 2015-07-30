@@ -566,6 +566,10 @@
       <column name="mgmt_intf" key="dns-server-2" >
         The value for this key is Secondary nameserver IPv4 address
       </column>
+      <column name="radius_servers">
+        Specifies radius servers configuration. See the <ref table="Radius_Server"/>
+        table for more information.
+      </column>
     </group>
 
     <group title="Common Columns">
@@ -2257,6 +2261,35 @@
       <column name="external_ids">
       </column>
    </group>
+  </table>
+
+  <table name="Radius_Server" title="Radius server configuration">
+      These radius servers are being used for authenticating when users
+      wants to login to the box.
+
+      <column name="ip_address">
+          IP address of the radius server configured.
+      </column>
+
+      <column name="udp_port" >
+          Specifies the udp port number for authentication. Default udp port
+          number for authentication is 1812.
+      </column>
+
+      <column name="passkey" >
+          Specifies the passkey between radius client and radius server
+          for authentication. Default passkey is testing123-1.
+      </column>
+
+      <column name="timeout" >
+          Specifies the timeout between authentication requests to radius server.
+          Default timeout is 5 seconds.
+      </column>
+
+      <column name="retries" >
+          Specifies the number of retries to radius server if there is no response.
+          Default retry value is 1.
+      </column>
   </table>
 
   <table name="Manager" title="OVSDB management connection.">
