@@ -405,11 +405,9 @@ enum ovsrec_interface_hw_bond_config_enabled_e {
 
 /* VLAN internal range */
 #define OPEN_VSWITCH_OTHER_CONFIG_MAP_MIN_INTERNAL_VLAN                     "min_internal_vlan"
-#define OPEN_VSWITCH_OTHER_CONFIG_MAP_MIN_INTERNAL_VLAN_ID                  "1024"
 #define OPEN_VSWITCH_OTHER_CONFIG_MAP_MAX_INTERNAL_VLAN                     "max_internal_vlan"
-#define OPEN_VSWITCH_OTHER_CONFIG_MAP_MAX_INTERNAL_VLAN_ID                  "4094"
 #define OPEN_VSWITCH_OTHER_CONFIG_MAP_INTERNAL_VLAN_POLICY                  "internal_vlan_policy"
-#define OPEN_VSWITCH_OTHER_CONFIG_MAP_INTERNAL_VLAN_POLICY_ASCENDING_DEF    "ascending"
+#define OPEN_VSWITCH_OTHER_CONFIG_MAP_INTERNAL_VLAN_POLICY_ASCENDING_DEFAULT    "ascending"
 #define OPEN_VSWITCH_OTHER_CONFIG_MAP_INTERNAL_VLAN_POLICY_DESCENDING       "descending"
 
 /* lldp global statistics */
