@@ -130,6 +130,10 @@ enum ovsrec_interface_pm_info_power_mode_e {
     INTERFACE_PM_INFO_POWER_MODE_LOW
 };
 
+#define INTERFACE_OTHER_CONFIG_MAP_LACP_PORT_ID                 "lacp-port-id"
+#define INTERFACE_OTHER_CONFIG_MAP_LACP_PORT_PRIORITY           "lacp-port-priority"
+#define INTERFACE_OTHER_CONFIG_MAP_LACP_AGGREGATION_KEY         "lacp-aggregation-key"
+
 #define INTERFACE_USER_CONFIG_MAP_ADMIN                         "admin"
 
 #define OVSREC_INTERFACE_USER_CONFIG_ADMIN_DOWN                 "down"
@@ -352,6 +356,11 @@ enum ovsrec_interface_hw_bond_config_enabled_e {
 
 #define PORT_STATUS_BOND_HW_HANDLE                              "bond_hw_handle"
 #define PORT_HW_CONFIG_MAP_INTERNAL_VLAN_ID                     "internal_vlan_id"
+
+#define PORT_OTHER_CONFIG_MAP_LACP_TIME                         "lacp-time"
+
+#define PORT_OTHER_CONFIG_LACP_TIME_SLOW                        "slow"
+#define PORT_OTHER_CONFIG_LACP_TIME_FAST                        "fast"
 
 /****************************** SUBSYSTEM TABLE *******************************/
 
