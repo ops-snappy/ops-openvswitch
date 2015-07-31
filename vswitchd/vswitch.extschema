@@ -2727,6 +2727,42 @@
           "ip_address"
         ]
       ]
+    },
+    "CLI_Alias": {
+      "columns": {
+        "alias_name": {
+          "category": "configuration",
+          "type": "string"
+        },
+        "alias_definition": {
+          "category": "configuration",
+          "type": "string"
+        },
+        "other_config": {
+          "category": "configuration",
+          "type": {
+            "key": "string",
+            "value": "string",
+            "min": 0,
+            "max": "unlimited"
+          }
+        },
+        "external_ids": {
+          "category": "configuration",
+          "type": {
+            "key": "string",
+            "value": "string",
+            "min": 0,
+            "max": "unlimited"
+          }
+        }
+      },
+      "indexes": [
+        [
+          "alias_name"
+        ]
+      ],
+      "isRoot": true
     }
   }
 }
