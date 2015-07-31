@@ -2474,7 +2474,7 @@ cmd_del_vlan(struct vsctl_context *ctx)
     }
 
     ds_put_format(&ctx->output, "Deleting VLAN %d on bridge %s\n",
-                  vid, bridge->br_cfg->name, vlan);
+                  vid, bridge->br_cfg->name);
 
     bridge_delete_vlan(bridge->br_cfg, vlan);
 }
@@ -2653,7 +2653,7 @@ add_vrf_port(struct vsctl_context *ctx,
         if (ctx->subsystems_exist) {
             struct vsctl_iface *iface;
             iface = find_orphan_vrf_iface(ctx, iface_names[i], true);
-            ifaces[i] = iface->iface_cfg;
+            ifaces[i] = (struct ovsrec_interface *)iface->iface_cfg;
         } else {
             ifaces[i] = ovsrec_interface_insert(ctx->txn);
             ovsrec_interface_set_name(ifaces[i], iface_names[i]);
@@ -2985,7 +2985,7 @@ add_port(struct vsctl_context *ctx,
         if (ctx->subsystems_exist) {
             struct vsctl_iface *iface;
             iface = find_orphan_iface(ctx, iface_names[i], true);
-            ifaces[i] = iface->iface_cfg;
+            ifaces[i] = (struct ovsrec_interface *)iface->iface_cfg;
         } else
 #endif
         {

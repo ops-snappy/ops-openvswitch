@@ -847,6 +847,14 @@ bond_check_admissibility(struct bond *bond, const void *slave_,
          * bond slaves. */
         verdict = BV_DROP_IF_MOVED;
         goto out;
+
+#ifdef HALON
+        /* Halon doesn't use software based data path. So we will never reach
+         * this code path. Making this change to avoid compiler warnings. */
+    case BM_L3_SRC_DST_HASH:
+    case BM_L2_SRC_DST_HASH:
+        goto out;
+#endif
     }
 
     OVS_NOT_REACHED();
