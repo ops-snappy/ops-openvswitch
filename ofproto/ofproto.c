@@ -7004,6 +7004,48 @@ ofproto_unixctl_list(struct unixctl_conn *conn, int argc OVS_UNUSED,
     ds_destroy(&results);
 }
 
+#ifdef HALON
+static void
+ofproto_print_details(struct ds *ds, const struct ofproto *ofproto)
+{
+    const struct ofport *port;
+
+    ds_put_format(ds, "---- %s ----\n", ofproto->name);
+    ds_put_format(ds, "type: %s\n", ofproto->type);
+
+    HMAP_FOR_EACH (port, hmap_node, &ofproto->ports) {
+        ds_put_format(ds, "   port: %s\n", netdev_get_name(port->netdev));
+    }
+}
+
+static void
+ofproto_unixctl_show(struct unixctl_conn *conn,
+                  int argc, const char *argv[],
+                  void *aux OVS_UNUSED)
+{
+    const struct ofproto *ofproto;
+    struct ds ds = DS_EMPTY_INITIALIZER;
+    bool printed = false;
+
+    HMAP_FOR_EACH (ofproto, hmap_node, &all_ofprotos) {
+        if (argc < 2 || !strcmp(ofproto->name, argv[1])) {
+            ofproto_print_details(&ds, ofproto);
+            printed = true;
+        }
+    }
+
+    if (argc > 1 && !printed) {
+        unixctl_command_reply_error(conn, "no such ofproto");
+        goto out;
+    }
+
+    unixctl_command_reply(conn, ds_cstr(&ds));
+
+out:
+    ds_destroy(&ds);
+}
+#endif
+
 static void
 ofproto_unixctl_init(void)
 {
@@ -7015,6 +7057,11 @@ ofproto_unixctl_init(void)
 
     unixctl_command_register("ofproto/list", "", 0, 0,
                              ofproto_unixctl_list, NULL);
+
+#ifdef HALON
+    unixctl_command_register("ofproto/show", "[name]", 0, 1,
+                             ofproto_unixctl_show, NULL);
+#endif
 }
 
 /* Linux VLAN device support (e.g. "eth0.10" for VLAN 10.)

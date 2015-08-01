@@ -1266,8 +1266,6 @@ netdev_vport_range(struct unixctl_conn *conn, int argc,
     NULL,                       /* queue_dump_done */       \
     NULL,                       /* dump_queue_stats */      \
                                                             \
-    ENABLE_L3                   /* enable_l3 */             \
-    DISABLE_L3                  /* disable_l3 */            \
     NULL,                       /* get_in4 */               \
     NULL,                       /* set_in4 */               \
     NULL,                       /* get_in6 */               \

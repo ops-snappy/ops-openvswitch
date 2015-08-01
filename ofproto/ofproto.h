@@ -383,6 +383,9 @@ enum port_option_args {
     /* Port Bond (LAG) configuration option change */
     PORT_OPT_BOND,
 
+    /* hw_config driven mostly by vland */
+    PORT_HW_CONFIG,
+
     /* Array size */
     PORT_OPT_MAX
 };

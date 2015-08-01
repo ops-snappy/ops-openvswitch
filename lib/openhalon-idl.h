@@ -372,6 +372,7 @@ enum ovsrec_interface_hw_bond_config_enabled_e {
 
 #define VLAN_HW_CONFIG_MAP_ENABLE_FALSE                         "false"
 #define VLAN_HW_CONFIG_MAP_ENABLE_TRUE                          "true"
+#define VLAN_INTERNAL_USAGE_L3PORT                              "l3port"
 
 /************************* OPEN vSWITCH TABLE  ***************************/
 

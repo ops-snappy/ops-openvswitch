@@ -68,6 +68,15 @@ static struct ovs_mutex netdev_mutex = OVS_MUTEX_INITIALIZER;
 static struct shash netdev_shash OVS_GUARDED_BY(netdev_mutex)
     = SHASH_INITIALIZER(&netdev_shash);
 
+#ifdef HALON
+/* Contains alls netdevs, even those that are "netdev_remove"d, but are
+ * still not unrefed and freed. Allows netdev_open to resurrect those netdevs
+ * avoiding creation of duplicates */
+static struct shash netdev_refd_shash OVS_GUARDED_BY(netdev_mutex)
+    = SHASH_INITIALIZER(&netdev_refd_shash);
+#endif
+
+
 /* Protects 'netdev_classes' against insertions or deletions.
  *
  * This is a recursive mutex to allow recursive acquisition when calling into
@@ -366,40 +375,57 @@ netdev_open(const char *name, const char *type, struct netdev **netdevp)
     if (!netdev) {
         struct netdev_registered_class *rc;
 
-        rc = netdev_lookup_class(type && type[0] ? type : "system");
-        if (rc) {
-            netdev = rc->class->alloc();
-            if (netdev) {
-                memset(netdev, 0, sizeof *netdev);
-                netdev->netdev_class = rc->class;
-                netdev->name = xstrdup(name);
-                netdev->change_seq = 1;
-                netdev->node = shash_add(&netdev_shash, name, netdev);
+#ifdef HALON
+        /* may be netdev was "netdev_remove"d, but still exists */
+        netdev = shash_find_data(&netdev_refd_shash, name);
+        if (!netdev) {
+#endif
+            rc = netdev_lookup_class(type && type[0] ? type : "system");
+            if (rc) {
+                netdev = rc->class->alloc();
+                if (netdev) {
+                    memset(netdev, 0, sizeof *netdev);
+                    netdev->netdev_class = rc->class;
+                    netdev->name = xstrdup(name);
+                    netdev->change_seq = 1;
+                    netdev->node = shash_add(&netdev_shash, name, netdev);
+#ifdef HALON
+                    netdev->refd_node = shash_add(&netdev_refd_shash, name, netdev);
+#endif
+                    /* By default enable one tx and rx queue per netdev. */
+                    netdev->n_txq = netdev->netdev_class->send ? 1 : 0;
+                    netdev->n_rxq = netdev->netdev_class->rxq_alloc ? 1 : 0;
 
-                /* By default enable one tx and rx queue per netdev. */
-                netdev->n_txq = netdev->netdev_class->send ? 1 : 0;
-                netdev->n_rxq = netdev->netdev_class->rxq_alloc ? 1 : 0;
+                    list_init(&netdev->saved_flags_list);
 
-                list_init(&netdev->saved_flags_list);
-
-                error = rc->class->construct(netdev);
-                if (!error) {
-                    rc->ref_cnt++;
-                    netdev_change_seq_changed(netdev);
+                    error = rc->class->construct(netdev);
+                    if (!error) {
+                        rc->ref_cnt++;
+                        netdev_change_seq_changed(netdev);
+                    } else {
+                        free(netdev->name);
+                        ovs_assert(list_is_empty(&netdev->saved_flags_list));
+                        shash_delete(&netdev_shash, netdev->node);
+#ifdef HALON
+                        shash_delete(&netdev_refd_shash, netdev->refd_node);
+#endif
+                        rc->class->dealloc(netdev);
+                    }
                 } else {
-                    free(netdev->name);
-                    ovs_assert(list_is_empty(&netdev->saved_flags_list));
-                    shash_delete(&netdev_shash, netdev->node);
-                    rc->class->dealloc(netdev);
+                    error = ENOMEM;
                 }
             } else {
-                error = ENOMEM;
+                VLOG_WARN("could not create netdev %s of unknown type %s",
+                          name, type);
+                error = EAFNOSUPPORT;
             }
+#ifdef HALON
         } else {
-            VLOG_WARN("could not create netdev %s of unknown type %s",
-                      name, type);
-            error = EAFNOSUPPORT;
+            /* netdev is resurrected after it was previously "netdev_remove"d */
+            netdev->node = shash_add(&netdev_shash, name, netdev);
+            error = 0;
         }
+#endif
     } else {
         error = 0;
     }
@@ -502,30 +528,6 @@ netdev_set_hw_intf_config(struct netdev *netdev, const struct smap *args)
     return 0;
 }
 
-int
-netdev_enable_l3(const struct netdev *netdev, int vrf_id)
-{
-    int rc;
-
-    rc = netdev->netdev_class->enable_l3 ?
-                netdev->netdev_class->enable_l3(netdev, vrf_id) : EOPNOTSUPP;
-    VLOG_DBG("Enable L3 rc=(%d)", rc);
-
-    return rc;
-}
-
-int
-netdev_disable_l3(const struct netdev *netdev, int vrf_id)
-{
-    int rc;
-
-    rc = netdev->netdev_class->disable_l3 ?
-                netdev->netdev_class->disable_l3(netdev, vrf_id) : EOPNOTSUPP;
-    VLOG_DBG("Disable L3 rc=(%d)", rc);
-
-    return rc;
-}
-
 #endif
 /* Returns the current configuration for 'netdev' in 'args'.  The caller must
  * have already initialized 'args' with smap_init().  Returns 0 on success, in
@@ -590,6 +592,13 @@ netdev_unref(struct netdev *dev)
         if (dev->node) {
             shash_delete(&netdev_shash, dev->node);
         }
+
+#ifdef HALON
+        if (dev->refd_node) {
+            shash_delete(&netdev_refd_shash, dev->refd_node);
+        }
+#endif
+
         free(dev->name);
         dev->netdev_class->dealloc(dev);
         ovs_mutex_unlock(&netdev_mutex);
@@ -1875,65 +1884,3 @@ netdev_get_change_seq(const struct netdev *netdev)
 {
     return netdev->change_seq;
 }
-
-#ifdef HALON
-/* Assigns ipv4 or ipv6 addr to given kernel interface.
-*/
-int
-netdev_set_ip_address(const char *ip_netmask, const char *name)
-{
-    char   cmd_str[256];
-
-    /* Configure Kernel and Provider */
-    memset(cmd_str, 0, 256);
-    snprintf(cmd_str, 255, "ip addr add %s dev %s", ip_netmask, name);
-    VLOG_DBG("System command to assign kernel ip=%s", cmd_str);
-
-    return (system(cmd_str));
-}
-
-/* Delete ipv4 or ipv6 addr of a given kernel interface.
-*/
-int
-netdev_delete_ip_address(const char *ip_netmask, const char *name)
-{
-    char   cmd_str[256];
-
-    /* Configure Kernel and Provider */
-    memset(cmd_str, 0, 256);
-    snprintf(cmd_str, 255, "ip addr del %s dev %s", ip_netmask, name);
-    VLOG_DBG("System Command to delete kernel ip=%s", cmd_str);
-
-    return (system(cmd_str));
-}
-
-/* Enable v4 and v6 routing in the kernel
- */
-int
-netdev_enable_ip_routing(void)
-{
-    char   cmd_str[256];
-
-    /* Configure Kernel to enable routing */
-    memset(cmd_str, 0, 256);
-    snprintf(cmd_str, 255, "sysctl --load=/etc/halon/sysctl.d/halon-vrf-sysctl-set.conf");
-    VLOG_DBG("System command to enable routing: %s",cmd_str);
-
-    return (system(cmd_str));
-}
-
-/* Disable v4 and v6 routing in the kernel
- */
-int
-netdev_disable_ip_routing(void)
-{
-    char   cmd_str[256];
-
-    /* Configure Kernel to disable routing */
-    memset(cmd_str, 0, 256);
-    snprintf(cmd_str, 255, "sysctl --load=/etc/halon/sysctl.d/halon-vrf-sysctl-unset.conf");
-    VLOG_DBG("System command to disable routing: %s",cmd_str);
-
-    return (system(cmd_str));
-}
-#endif

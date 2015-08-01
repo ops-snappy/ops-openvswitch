@@ -168,6 +168,34 @@ struct bridge {
 /* All bridges, indexed by name. */
 static struct hmap all_bridges = HMAP_INITIALIZER(&all_bridges);
 
+#ifdef HALON
+/* Even though VRF is a separate entity from a user and schema
+ * perspective, it's essentially very similar to bridge. It has ports,
+ * bundles, mirros, might provide sFlow, NetFLow etc.
+ *
+ * In the future, it may also provide OpenFlow datapath, with OFP_NORMAL
+ * falling back to the regular routing. Current code makes basic preparation
+ * for this option by establising ofproto, and managing ports through it,
+ * but not taking care of Openflow configuration itself. The use of ofproto
+ * also allows ofproto providers to share common port/bundle/mirrors/etc
+ * code more easily.
+ *
+ * VRFs also have quite a few principal differences like routes, neightbours,
+ * routing protocols and not having VLANs.
+ * In order to reuse as much of Bridge code as possible, struct vrf
+ * "inherits" struct bridge. While configuration of VRF has to read
+ * from a different table, port_configure, mirror_configure and may
+ * other functions would be shared with the bridge. */
+struct vrf {
+    struct bridge up;
+    struct hmap_node node;      /* In 'all_vrfs'. */
+    const struct ovsrec_vrf *cfg;
+};
+
+/* All vrfs, indexed by name. */
+static struct hmap all_vrfs = HMAP_INITIALIZER(&all_vrfs);
+#endif
+
 /* OVSDB IDL used to obtain configuration. */
 #ifdef HALON
 struct ovsdb_idl *idl;
@@ -259,6 +287,15 @@ static void bridge_add_ports(struct bridge *,
                              const struct shash *wanted_ports);
 
 #ifdef HALON
+static void add_del_vrfs(const struct ovsrec_open_vswitch *);
+static void vrf_create(const struct ovsrec_vrf *);
+static void vrf_destroy(struct vrf *);
+static struct vrf *vrf_lookup(const char *name);
+static void vrf_collect_wanted_ports(struct vrf *,
+                                        struct shash *wanted_ports);
+static void vrf_delete_or_reconfigure_ports(struct vrf *);
+static void vrf_del_ports(struct vrf *,
+                             const struct shash *wanted_ports);
 static bool enable_lacp(struct port *port, bool *activep);
 static void bridge_configure_vlans(struct bridge *br);
 static unixctl_cb_func vlan_unixctl_show;
@@ -442,6 +479,30 @@ bridge_init_ofproto(const struct ovsrec_open_vswitch *cfg)
                 }
             }
         }
+
+#ifdef HALON
+        for (i = 0; i < cfg->n_vrfs; i++) {
+            const struct ovsrec_vrf *vrf_cfg = cfg->vrfs[i];
+            int j;
+
+            for (j = 0; j < vrf_cfg->n_ports; j++) {
+                struct ovsrec_port *port_cfg = vrf_cfg->ports[j];
+                int k;
+
+                for (k = 0; k < port_cfg->n_interfaces; k++) {
+                    struct ovsrec_interface *if_cfg = port_cfg->interfaces[k];
+                    struct iface_hint *iface_hint;
+
+                    iface_hint = xmalloc(sizeof *iface_hint);
+                    iface_hint->br_name = vrf_cfg->name;
+                    iface_hint->br_type = "vrf";
+                    iface_hint->ofp_port = iface_pick_ofport(if_cfg);
+                    shash_add(&iface_hints, if_cfg->name, iface_hint);
+                }
+            }
+        }
+
+#endif
     }
 
     ofproto_init(&iface_hints);
@@ -690,7 +751,10 @@ bridge_reconfigure(const struct ovsrec_open_vswitch *ovs_cfg)
     struct sockaddr_in *managers;
 #endif
     struct bridge *br, *next;
-#ifndef HALON_TEMP
+
+#ifdef HALON
+    struct vrf *vrf, *vrf_next;
+#else
     int sflow_bridge_number;
     size_t n_managers;
 #endif
@@ -717,6 +781,11 @@ bridge_reconfigure(const struct ovsrec_open_vswitch *ovs_cfg)
      * This is mostly an update to bridge data structures. Nothing is pushed
      * down to ofproto or lower layers. */
     add_del_bridges(ovs_cfg);
+
+#ifdef HALON
+    add_del_vrfs(ovs_cfg);
+#endif
+
 #ifndef HALON_TEMP
     splinter_vlans = collect_splinter_vlans(ovs_cfg);
 #endif
@@ -730,6 +799,13 @@ bridge_reconfigure(const struct ovsrec_open_vswitch *ovs_cfg)
     }
 #ifndef HALON_TEMP
     free(splinter_vlans);
+#endif
+
+#ifdef HALON
+    HMAP_FOR_EACH (vrf, node, &all_vrfs) {
+        vrf_collect_wanted_ports(vrf, &vrf->up.wanted_ports);
+        vrf_del_ports(vrf, &vrf->up.wanted_ports);
+    }
 #endif
     /* Start pushing configuration changes down to the ofproto layer:
      *
@@ -749,6 +825,15 @@ bridge_reconfigure(const struct ovsrec_open_vswitch *ovs_cfg)
             bridge_delete_or_reconfigure_ports(br);
         }
     }
+
+#ifdef HALON
+    HMAP_FOR_EACH (vrf, node, &all_vrfs) {
+        if (vrf->up.ofproto) {
+            vrf_delete_or_reconfigure_ports(vrf);
+        }
+    }
+#endif
+
 
     /* Finish pushing configuration changes to the ofproto layer:
      *
@@ -771,12 +856,42 @@ bridge_reconfigure(const struct ovsrec_open_vswitch *ovs_cfg)
             }
         }
     }
+
+#ifdef HALON
+    HMAP_FOR_EACH_SAFE (vrf, vrf_next, node, &all_vrfs) {
+        if (!vrf->up.ofproto) {
+            int error;
+
+            error = ofproto_create(vrf->up.name, "vrf", &vrf->up.ofproto);
+            if (error) {
+                VLOG_ERR("failed to create vrf %s: %s", br->name,
+                         ovs_strerror(error));
+                shash_destroy(&vrf->up.wanted_ports);
+                vrf_destroy(vrf);
+            } else {
+                /* Trigger storing datapath version. */
+                seq_change(connectivity_seq_get());
+            }
+        }
+    }
+#endif
+
+
     HMAP_FOR_EACH (br, node, &all_bridges) {
         bridge_add_ports(br, &br->wanted_ports);
         shash_destroy(&br->wanted_ports);
     }
 
+#ifdef HALON
+    HMAP_FOR_EACH (vrf, node, &all_vrfs) {
+        bridge_add_ports(&vrf->up, &vrf->up.wanted_ports);
+        shash_destroy(&vrf->up.wanted_ports);
+    }
+#endif
+
     reconfigure_system_stats(ovs_cfg);
+
+//CONTINUE
 
     /* Complete the configuration. */
 #ifndef HALON_TEMP
@@ -848,6 +963,39 @@ bridge_reconfigure(const struct ovsrec_open_vswitch *ovs_cfg)
 #endif
         bridge_configure_dp_desc(br);
     }
+
+#ifdef HALON
+    HMAP_FOR_EACH (vrf, node, &all_vrfs) {
+        struct port *port;
+
+        VLOG_DBG("config vrf - %s", vrf->up.name);
+        HMAP_FOR_EACH (port, hmap_node, &vrf->up.ports) {
+            struct iface *iface;
+
+            /* For a bond port, reconfigure the port if any of the
+               member interface rows change. */
+            bool port_iface_changed = false;
+            LIST_FOR_EACH (iface, port_elem, &port->ifaces) {
+                if (OVSREC_IDL_IS_ROW_MODIFIED(iface->cfg, idl_seqno)) {
+                    port_iface_changed = true;
+                    break;
+                }
+            }
+            if (OVSREC_IDL_IS_ROW_MODIFIED(port->cfg, idl_seqno) ||
+                (port_iface_changed == true)) {
+                VLOG_DBG("config port - %s", port->name);
+                port_configure(port);
+
+                LIST_FOR_EACH (iface, port_elem, &port->ifaces) {
+                    /* Clear eventual previous errors */
+                    ovsrec_interface_set_error(iface->cfg, NULL);
+                }
+            }
+        }
+    }
+#endif
+
+
 #ifndef HALON_TEMP
     free(managers);
 #endif
@@ -865,6 +1013,9 @@ static void
 bridge_delete_ofprotos(void)
 {
     struct bridge *br;
+#ifdef HALON
+    struct vrf *vrf;
+#endif
     struct sset names;
     struct sset types;
     const char *type;
@@ -879,9 +1030,17 @@ bridge_delete_ofprotos(void)
         ofproto_enumerate_names(type, &names);
         SSET_FOR_EACH (name, &names) {
             br = bridge_lookup(name);
+#ifndef HALON
             if (!br || strcmp(type, br->type)) {
                 ofproto_delete(name, type);
             }
+#else
+            vrf = vrf_lookup(name);
+            if ((!br || strcmp(type, br->type)) &&
+                (!vrf || strcmp(type, "vrf"))) {
+                ofproto_delete(name, type);
+            }
+#endif
         }
     }
     sset_destroy(&names);
@@ -1036,6 +1195,100 @@ bridge_delete_or_reconfigure_ports(struct bridge *br)
     }
     sset_destroy(&ofproto_ports);
 }
+
+#ifdef HALON
+static void
+vrf_delete_or_reconfigure_ports(struct vrf *vrf)
+{
+    struct ofproto_port ofproto_port;
+    struct ofproto_port_dump dump;
+
+    struct sset ofproto_ports;
+    struct port *port, *port_next;
+
+    /* List of "ofp_port"s to delete.  We make a list instead of deleting them
+     * right away because ofproto implementations aren't necessarily able to
+     * iterate through a changing list of ports in an entirely robust way. */
+    ofp_port_t *del;
+    size_t n, allocated;
+    size_t i;
+
+    del = NULL;
+    n = allocated = 0;
+    sset_init(&ofproto_ports);
+
+    /* Main task: Iterate over the ports in 'br->ofproto' and remove the ports
+     * that are not configured in the database.  (This commonly happens when
+     * ports have been deleted, e.g. with "ovs-vsctl del-port".)
+     *
+     * Side tasks: Reconfigure the ports that are still in 'br'.  Delete ports
+     * that have the wrong OpenFlow port number (and arrange to add them back
+     * with the correct OpenFlow port number). */
+    OFPROTO_PORT_FOR_EACH (&ofproto_port, &dump, vrf->up.ofproto) {
+#ifndef HALON_TEMP
+        ofp_port_t requested_ofp_port;
+#endif
+        struct iface *iface;
+
+        sset_add(&ofproto_ports, ofproto_port.name);
+
+        iface = iface_lookup(&vrf->up, ofproto_port.name);
+        if (!iface) {
+            /* No such iface is configured, so we should delete this
+             * ofproto_port. */
+            goto delete;
+        }
+
+        if  (strcmp(ofproto_port.type, iface->type)
+            || netdev_set_config(iface->netdev, &iface->cfg->options, NULL)
+            ) {
+            /* The interface is the wrong type or can't be configured.
+             * Delete it. */
+            goto delete;
+        }
+
+        /* Keep it. */
+        continue;
+
+    delete:
+        iface_destroy(iface);
+        del = add_ofp_port(ofproto_port.ofp_port, del, &n, &allocated);
+    }
+    for (i = 0; i < n; i++) {
+        ofproto_port_del(vrf->up.ofproto, del[i]);
+    }
+    free(del);
+
+    /* Iterate over this module's idea of interfaces in 'br'.  Remove any ports
+     * that we didn't see when we iterated through the datapath, i.e. ports
+     * that disappeared underneath use.  This is an unusual situation, but it
+     * can happen in some cases:
+     *
+     *     - An admin runs a command like "ovs-dpctl del-port" (which is a bad
+     *       idea but could happen).
+     *
+     *     - The port represented a device that disappeared, e.g. a tuntap
+     *       device destroyed via "tunctl -d", a physical Ethernet device
+     *       whose module was just unloaded via "rmmod", or a virtual NIC for a
+     *       VM whose VM was just terminated. */
+    HMAP_FOR_EACH_SAFE (port, port_next, hmap_node, &vrf->up.ports) {
+        struct iface *iface, *iface_next;
+
+        VLOG_DBG("Iterating over port: %s", port->name);
+        LIST_FOR_EACH_SAFE (iface, iface_next, port_elem, &port->ifaces) {
+            VLOG_DBG("Iterating over interface: %s", iface->name);
+            if (!sset_contains(&ofproto_ports, iface->name)) {
+                iface_destroy__(iface);
+            }
+        }
+
+        if (list_is_empty(&port->ifaces)) {
+            port_destroy(port);
+        }
+    }
+    sset_destroy(&ofproto_ports);
+}
+#endif
 
 static void
 bridge_add_ports__(struct bridge *br, const struct shash *wanted_ports
@@ -1251,6 +1504,7 @@ port_configure(struct port *port)
        its address in bundle setting */
     s.port_options[PORT_OPT_VLAN] = &cfg->vlan_options;
     s.port_options[PORT_OPT_BOND] = &cfg->bond_options;
+    s.port_options[PORT_HW_CONFIG] = &cfg->hw_config;
 #endif
 
     /* Register. */
@@ -2003,6 +2257,52 @@ add_del_bridges(const struct ovsrec_open_vswitch *cfg)
 
     shash_destroy(&new_br);
 }
+
+#ifdef HALON
+static void
+add_del_vrfs(const struct ovsrec_open_vswitch *cfg)
+{
+    struct vrf *vrf, *next;
+    struct shash new_vrf;
+    size_t i;
+
+    /* Collect new vrfs' names */
+    shash_init(&new_vrf);
+    for (i = 0; i < cfg->n_vrfs; i++) {
+        static struct vlog_rate_limit rl = VLOG_RATE_LIMIT_INIT(1, 5);
+        const struct ovsrec_vrf *vrf_cfg = cfg->vrfs[i];
+
+        if (strchr(vrf_cfg->name, '/')) {
+            /* Prevent remote ovsdb-server users from accessing arbitrary
+             * directories, e.g. consider a vrf named "../../../etc/". */
+            VLOG_WARN_RL(&rl, "ignoring vrf with invalid name \"%s\"",
+                         vrf_cfg->name);
+        } else if (!shash_add_once(&new_vrf, vrf_cfg->name, vrf_cfg)) {
+            VLOG_WARN_RL(&rl, "vrf %s specified twice", vrf_cfg->name);
+        }
+    }
+
+    /* Get rid of deleted vrfs
+     * Update 'cfg' of vrfs that still exist. */
+    HMAP_FOR_EACH_SAFE (vrf, next, node, &all_vrfs) {
+        vrf->cfg = shash_find_data(&new_vrf, vrf->up.name);
+        if (!vrf->cfg) {
+            vrf_destroy(vrf);
+        }
+    }
+
+    /* Add new vrfs. */
+    for (i = 0; i < cfg->n_vrfs; i++) {
+        const struct ovsrec_vrf *vrf_cfg = cfg->vrfs[i];
+        struct vrf *vrf = vrf_lookup(vrf_cfg->name);
+        if (!vrf) {
+            vrf_create(vrf_cfg);
+        }
+    }
+
+    shash_destroy(&new_vrf);
+}
+#endif
 
 /* Configures 'netdev' based on the "options" column in 'iface_cfg'.
  * Returns 0 if successful, otherwise a positive errno value. */
@@ -2912,7 +3212,7 @@ port_refresh_rstp_status(struct port *port)
     ovsrec_port_set_rstp_statistics(port->cfg, keys, int_values,
             ARRAY_SIZE(int_values));
 }
-#endif
+
 static void
 port_refresh_bond_status(struct port *port, bool force_update)
 {
@@ -2932,6 +3232,7 @@ port_refresh_bond_status(struct port *port, bool force_update)
         ds_destroy(&mac_s);
     }
 }
+#endif
 
 static bool
 enable_system_stats(const struct ovsrec_open_vswitch *cfg)
@@ -3054,6 +3355,9 @@ run_stats_update(void)
         if (!stats_txn) {
             struct bridge *br;
 
+#ifdef HALON_TEMP
+            struct vrf *vrf;
+#endif
             stats_txn = ovsdb_idl_txn_create(idl);
             HMAP_FOR_EACH (br, node, &all_bridges) {
                 struct port *port;
@@ -3076,6 +3380,20 @@ run_stats_update(void)
                 }
 #endif
             }
+
+#ifdef HALON
+            HMAP_FOR_EACH (vrf, node, &all_vrfs) {
+                struct port *port;
+                HMAP_FOR_EACH (port, hmap_node, &vrf->up.ports) {
+                    struct iface *iface;
+
+                    LIST_FOR_EACH (iface, port_elem, &port->ifaces) {
+                        iface_refresh_stats(iface);
+                    }
+                }
+            }
+#endif
+
 #ifndef HALON_TEMP
             refresh_controller_status();
 #endif
@@ -3102,7 +3420,9 @@ run_status_update(void)
         seq = seq_read(connectivity_seq_get());
         if (seq != connectivity_seqno || status_txn_try_again) {
             struct bridge *br;
-
+#ifdef HALON
+            struct vrf *vrf;
+#endif
             connectivity_seqno = seq;
             status_txn = ovsdb_idl_txn_create(idl);
             HMAP_FOR_EACH (br, node, &all_bridges) {
@@ -3119,14 +3439,29 @@ run_status_update(void)
 #ifndef HALON_TEMP
                     port_refresh_stp_status(port);
                     port_refresh_rstp_status(port);
-#endif
                     port_refresh_bond_status(port, status_txn_try_again);
+#endif
                     LIST_FOR_EACH (iface, port_elem, &port->ifaces) {
                         iface_refresh_netdev_status(iface);
                         iface_refresh_ofproto_status(iface);
                     }
                 }
             }
+
+#ifdef HALON
+            HMAP_FOR_EACH (vrf, node, &all_vrfs) {
+                struct port *port;
+
+                HMAP_FOR_EACH (port, hmap_node, &vrf->up.ports) {
+                    struct iface *iface;
+
+                    LIST_FOR_EACH (iface, port_elem, &port->ifaces) {
+                        iface_refresh_netdev_status(iface);
+                        iface_refresh_ofproto_status(iface);
+                    }
+                }
+            }
+ #endif
         }
     }
 
@@ -3178,6 +3513,9 @@ static void
 bridge_run__(void)
 {
     struct bridge *br;
+#ifdef HALON
+    struct vrf *vrf;
+#endif
     struct sset types;
     const char *type;
 
@@ -3193,6 +3531,12 @@ bridge_run__(void)
     HMAP_FOR_EACH (br, node, &all_bridges) {
         ofproto_run(br->ofproto);
     }
+
+#ifdef HALON
+    HMAP_FOR_EACH (vrf, node, &all_vrfs) {
+        ofproto_run(vrf->up.ofproto);
+    }
+#endif
 }
 
 void
@@ -3211,7 +3555,9 @@ bridge_run(void)
     if (ovsdb_idl_is_lock_contended(idl)) {
         static struct vlog_rate_limit rl = VLOG_RATE_LIMIT_INIT(1, 1);
         struct bridge *br, *next_br;
-
+#ifdef HALON
+        struct vrf *vrf, *next_vrf;
+#endif
         VLOG_ERR_RL(&rl, "another ovs-vswitchd process is running, "
                     "disabling this process (pid %ld) until it goes away",
                     (long int) getpid());
@@ -3219,6 +3565,12 @@ bridge_run(void)
         HMAP_FOR_EACH_SAFE (br, next_br, node, &all_bridges) {
             bridge_destroy(br);
         }
+
+#ifdef HALON
+        HMAP_FOR_EACH_SAFE (vrf, next_vrf, node, &all_vrfs) {
+            vrf_destroy(vrf);
+        }
+#endif
         /* Since we will not be running system_stats_run() in this process
          * with the current situation of multiple ovs-vswitchd daemons,
          * disable system stats collection. */
@@ -3509,6 +3861,32 @@ bridge_create(const struct ovsrec_bridge *br_cfg)
     hmap_insert(&all_bridges, &br->node, hash_string(br->name, 0));
 }
 
+#ifdef HALON
+static void
+vrf_create(const struct ovsrec_vrf *vrf_cfg)
+{
+    struct vrf *vrf;
+
+    ovs_assert(!vrf_lookup(vrf_cfg->name));
+    vrf = xzalloc(sizeof *vrf);
+
+    vrf->up.name = xstrdup(vrf_cfg->name);
+    vrf->up.type = xstrdup("vrf");
+    vrf->cfg = vrf_cfg;
+
+    /* Derive the default Ethernet address from the bridge's UUID.  This should
+     * be unique and it will be stable between ovs-vswitchd runs.  */
+    memcpy(vrf->up.default_ea, &vrf_cfg->header_.uuid, ETH_ADDR_LEN);
+    eth_addr_mark_random(vrf->up.default_ea);
+
+    hmap_init(&vrf->up.ports);
+    hmap_init(&vrf->up.ifaces);
+    hmap_init(&vrf->up.iface_by_name);
+    hmap_insert(&all_vrfs, &vrf->node, hash_string(vrf->up.name, 0));
+}
+#endif
+
+
 static void
 bridge_destroy(struct bridge *br)
 {
@@ -3543,6 +3921,30 @@ bridge_destroy(struct bridge *br)
     }
 }
 
+
+#ifdef HALON
+static void
+vrf_destroy(struct vrf *vrf)
+{
+    if (vrf) {
+        struct port *port, *next_port;
+
+        HMAP_FOR_EACH_SAFE (port, next_port, hmap_node, &vrf->up.ports) {
+            port_destroy(port);
+        }
+
+        hmap_remove(&all_vrfs, &vrf->node);
+        ofproto_destroy(vrf->up.ofproto);
+        hmap_destroy(&vrf->up.ifaces);
+        hmap_destroy(&vrf->up.ports);
+        hmap_destroy(&vrf->up.iface_by_name);
+        free(vrf->up.name);
+        free(vrf);
+    }
+}
+
+#endif
+
 static struct bridge *
 bridge_lookup(const char *name)
 {
@@ -3555,6 +3957,21 @@ bridge_lookup(const char *name)
     }
     return NULL;
 }
+
+#ifdef HALON
+static struct vrf *
+vrf_lookup(const char *name)
+{
+    struct vrf *vrf;
+
+    HMAP_FOR_EACH_WITH_HASH (vrf, node, hash_string(name, 0), &all_vrfs) {
+        if (!strcmp(vrf->up.name, name)) {
+            return vrf;
+        }
+    }
+    return NULL;
+}
+#endif
 
 /* Handle requests for a listing of all flows known by the OpenFlow
  * stack, including those normally hidden. */
@@ -3676,6 +4093,26 @@ bridge_collect_wanted_ports(struct bridge *br,
     }
 #endif
 }
+
+#ifdef HALON
+static void
+vrf_collect_wanted_ports(struct vrf *vrf,
+                         struct shash *wanted_ports)
+{
+    size_t i;
+
+    shash_init(wanted_ports);
+
+    for (i = 0; i < vrf->cfg->n_ports; i++) {
+        const char *name = vrf->cfg->ports[i]->name;
+        if (!shash_add_once(wanted_ports, name, vrf->cfg->ports[i])) {
+            VLOG_WARN("bridge %s: %s specified twice as bridge port",
+                      vrf->up.name, name);
+        }
+    }
+}
+#endif
+
 /* Deletes "struct port"s and "struct iface"s under 'br' which aren't
  * consistent with 'br->cfg'.  Updates 'br->if_cfg_queue' with interfaces which
  * 'br' needs to complete its configuration. */
@@ -3720,6 +4157,50 @@ bridge_del_ports(struct bridge *br, const struct shash *wanted_ports)
         }
     }
 }
+
+#ifdef HALON
+static void
+vrf_del_ports(struct vrf *vrf, const struct shash *wanted_ports)
+{
+    struct shash_node *port_node;
+    struct port *port, *next;
+
+    /* Get rid of deleted ports.
+     * Get rid of deleted interfaces on ports that still exist. */
+    HMAP_FOR_EACH_SAFE (port, next, hmap_node, &vrf->up.ports) {
+        port->cfg = shash_find_data(wanted_ports, port->name);
+        if (!port->cfg) {
+            port_destroy(port);
+        } else {
+            port_del_ifaces(port);
+        }
+    }
+
+    /* Update iface->cfg and iface->type in interfaces that still exist. */
+    SHASH_FOR_EACH (port_node, wanted_ports) {
+        const struct ovsrec_port *port = port_node->data;
+        size_t i;
+
+        for (i = 0; i < port->n_interfaces; i++) {
+            const struct ovsrec_interface *cfg = port->interfaces[i];
+            struct iface *iface = iface_lookup(&vrf->up, cfg->name);
+            const char *type = iface_get_type(cfg, NULL);
+
+            if (iface) {
+                iface->cfg = cfg;
+                iface->type = type;
+            } else if (!strcmp(type, "null")) {
+                VLOG_WARN_ONCE("%s: The null interface type is deprecated and"
+                               " may be removed in February 2013. Please email"
+                               " dev@openvswitch.org with concerns.",
+                               cfg->name);
+            } else {
+                /* We will add new interfaces later. */
+            }
+        }
+    }
+}
+#endif
 
 #ifndef HALON_TEMP
 /* Initializes 'oc' appropriately as a management service controller for
@@ -4548,7 +5029,8 @@ iface_is_internal(const struct ovsrec_interface *iface,
                   const struct ovsrec_bridge *br)
 {
     /* The local port and "internal" ports are always "internal". */
-    return !strcmp(iface->type, "internal") || !strcmp(iface->name, br->name);
+    return !strcmp(iface->type, "internal") ||
+           (br && !strcmp(iface->name, br->name));
 }
 
 /* Returns the correct network device type for interface 'iface' in bridge
@@ -4568,7 +5050,7 @@ iface_get_type(const struct ovsrec_interface *iface,
         type = iface->type[0] ? iface->type : "system";
     }
 
-    return ofproto_port_open_type(br->datapath_type, type);
+    return ofproto_port_open_type(br ? br->datapath_type : "vrf", type);
 }
 
 static void
@@ -4589,11 +5071,9 @@ iface_destroy__(struct iface *iface)
         list_remove(&iface->port_elem);
         hmap_remove(&br->iface_by_name, &iface->name_node);
 
-#ifndef HALON_TEMP
         /* The user is changing configuration here, so netdev_remove needs to be
          * used as opposed to netdev_close */
         netdev_remove(iface->netdev);
-#endif
 
         free(iface->name);
         free(iface);
