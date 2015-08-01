@@ -147,6 +147,7 @@ AC_CONFIG_FILES([
     lib/libovscommon.sym])
 
 OVS_ENABLE_OPTION([-Wall])
+OVS_ENABLE_OPTION([-Werror])
 OVS_ENABLE_OPTION([-Wextra])
 OVS_ENABLE_OPTION([-Wno-sign-compare])
 OVS_ENABLE_OPTION([-Wpointer-arith])

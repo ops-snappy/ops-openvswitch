@@ -339,7 +339,7 @@ static void port_del_ifaces(struct port *);
 static void port_destroy(struct port *);
 static struct port *port_lookup(const struct bridge *, const char *name);
 static void port_configure(struct port *);
-#ifndef HALON_TEMP
+#ifndef HALON
 static struct lacp_settings *port_configure_lacp(struct port *,
                                                  struct lacp_settings *);
 #endif
@@ -357,6 +357,8 @@ static struct mirror *mirror_create(struct bridge *,
 static void mirror_destroy(struct mirror *);
 static bool mirror_configure(struct mirror *);
 static void mirror_refresh_stats(struct mirror *);
+#endif
+#ifndef HALON
 static void iface_configure_lacp(struct iface *, struct lacp_slave_settings *);
 #endif
 static bool iface_create(struct bridge *, const struct ovsrec_interface *,
@@ -4635,6 +4637,9 @@ static void
 vlan_create(struct bridge *br, const struct ovsrec_vlan *vlan_cfg)
 {
     struct vlan *new_vlan = NULL;
+#ifndef HALON
+    const char *hw_cfg_enable;
+#endif
 
     /* Allocate structure to save state information for this VLAN. */
     new_vlan = xzalloc(sizeof(struct vlan));

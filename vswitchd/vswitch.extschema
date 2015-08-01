@@ -279,9 +279,6 @@
             "max": 1
           }
         },
-        "hw_desc_dir": {
-          "type": "string"
-        },
         "interfaces": {
           "category": "child",
           "type": {
@@ -491,17 +488,6 @@
             "key": {
               "type": "uuid",
               "refTable": "Port"
-            },
-            "min": 0,
-            "max": "unlimited"
-          }
-        },
-        "bgp_routers": {
-          "category": "child",
-          "type": {
-            "key": {
-              "type": "uuid",
-              "refTable": "BGP_Router"
             },
             "min": 0,
             "max": "unlimited"
@@ -1141,8 +1127,10 @@
           "type": {
             "key": {
               "type": "string",
-              "maxLength": 18
-            }
+              "maxLength": 15
+            },
+            "min": 0,
+            "max": 1
           }
         },
         "networks": {
@@ -1150,9 +1138,9 @@
           "type": {
             "key": {
               "type": "string",
-              "maxLength": 18
+              "maxLength": 49
             },
-            "min": 1,
+            "min": 0,
             "max": "unlimited"
           }
         },
@@ -1165,16 +1153,12 @@
                 "set",
                 [
                   "connected",
-                  "isis",
-                  "kernel",
-                  "ospf",
-                  "rip",
                   "static"
                 ]
               ]
             },
             "min": 0,
-            "max": 1
+            "max": 2
           }
         },
         "always_compare_med": {
@@ -1197,8 +1181,8 @@
             "max": 1
           }
         },
-       "graceful_restart": {
-          "category": "configuration",
+       "gr_stale_timer": {
+         "category": "configuration",
          "type": {
            "key": {
               "type": "integer",
@@ -1209,33 +1193,13 @@
              "max": 1
           }
         },
-        "bestpath": {
-          "category": "configuration",
-          "type": {
-            "key": {
-              "type": "string",
-              "enum": [
-                "set",
-                [
-                  "as_path",
-                  "compare_routerid",
-                  "med"
-                ]
-              ]
-            },
-            "min": 0,
-            "max": 1
-          }
-        },
-        "neighbors": {
-          "category": "child",
-          "type": {
+        "vrf": {
+         "category": "parent",
+         "type": {
             "key": {
               "type": "uuid",
-              "refTable": "BGP_neighbor"
-            },
-            "min": 0,
-            "max": "unlimited"
+              "refTable": "VRF"
+            }
           }
         },
         "status": {
@@ -1266,17 +1230,72 @@
             "max": "unlimited"
           }
         }
-      }
+      },
+      "indexes": [
+        [
+          "vrf",
+          "asn"
+        ]
+      ],
+      "isRoot": true
     },
-    "BGP_neighbor": {
+    "BGP_Neighbor": {
       "columns": {
-        "peer_id": {
+        "bgp_router": {
+          "category": "parent",
+          "type": {
+            "key": {
+              "type": "uuid",
+              "refTable": "BGP_Router"
+            }
+          }
+        },
+        "is_peer_group": {
+          "type": {
+            "key": {
+              "type": "boolean"
+            }
+          }
+        },
+        "name": {
           "category": "configuration",
           "type": {
             "key": {
               "type": "string",
-              "maxLength": 18
+              "maxLength":80
             }
+          }
+        },
+        "description": {
+          "category": "configuration",
+          "type": {
+            "key": {
+              "type": "string",
+              "maxLength": 80
+            },
+            "min": 0,
+            "max": 1
+          }
+        },
+        "bgp_peer_group": {
+          "category": "reference",
+          "type": {
+            "key": {
+              "type": "uuid",
+              "refTable": "BGP_Neighbor"
+            },
+            "min": 0,
+            "max": 1
+          }
+        },
+        "local_interface": {
+          "type": {
+            "key": {
+              "type": "uuid",
+              "refTable": "Interface"
+            },
+            "min": 0,
+            "max": 1
           }
         },
         "remote_as": {
@@ -1313,18 +1332,7 @@
              "max": 1
           }
         },
-        "to_bgp_peer_group": {
-          "category": "reference",
-          "type": {
-            "key": {
-              "type": "uuid",
-              "refTable": "BGP_Peer_Group"
-            },
-            "min": 0,
-            "max": 1
-          }
-        },
-        "activate": {
+        "active": {
           "type": {
             "key": {
               "type": "boolean"
@@ -1333,17 +1341,7 @@
             "max": 1
           }
         },
-        "interface": {
-          "type": {
-            "key": {
-              "type": "uuid",
-              "refTable": "Interface"
-            },
-            "min": 0,
-            "max": 1
-          }
-        },
-        "port": {
+        "tcp_port_number": {
           "type": {
             "key": {
               "type": "integer",
@@ -1366,41 +1364,13 @@
             "max": 1
           }
         },
-        "maximum_prefix": {
+        "maximum_prefix_limit": {
           "category": "configuration",
           "type": {
             "key": {
               "type": "integer",
               "minInteger": 1,
               "maxInteger": 4294967295
-            },
-            "min": 0,
-            "max": 1
-          }
-        },
-        "send_community": {
-          "category": "configuration",
-          "type": {
-            "key": {
-              "type": "string",
-              "enum": [
-                "set",
-                [
-                  "both",
-                  "extended",
-                  "standard"
-                ]
-              ]
-            },
-            "min": 0,
-            "max": 1
-          }
-        },
-       "shutdown": {
-          "category": "configuration",
-          "type": {
-            "key": {
-              "type": "boolean"
             },
             "min": 0,
             "max": 1
@@ -1433,17 +1403,11 @@
             "max": 1
           }
         },
-        "soft_reconfiguration": {
+        "inbound_soft_reconfiguration": {
           "category": "configuration",
           "type": {
             "key": {
-              "type": "string",
-              "enum": [
-                "set",
-                [
-                  "inbound"
-                ]
-              ]
+              "type": "boolean"
             },
             "min": 0,
             "max": 1
@@ -1480,17 +1444,6 @@
             "max": 1
           }
         },
-        "description": {
-          "category": "configuration",
-          "type": {
-            "key": {
-              "type": "string",
-              "maxLength": 80
-            },
-            "min": 0,
-            "max": 1
-          }
-        },
         "timers": {
           "category": "configuration",
           "type": {
@@ -1498,17 +1451,6 @@
             "value": "integer",
             "min": 0,
             "max": 2
-          }
-        },
-        "to_bgp_router": {
-          "category": "parent",
-          "type": {
-            "key": {
-              "type": "uuid",
-              "refTable": "BGP_Router"
-            },
-            "min": 0,
-            "max": 1
           }
         },
         "statistics": {
@@ -1549,65 +1491,11 @@
             "max": "unlimited"
           }
         }
-      }
-    },
-    "BGP_Peer_Group": {
-      "columns": {
-        "name": {
-          "type": {
-            "key": {
-              "type": "string",
-              "maxLength": 80
-            }
-          }
-        },
-        "to_bgp_router": {
-          "type": {
-            "key": {
-              "type": "uuid",
-              "refTable": "BGP_Router"
-            },
-            "min": 0,
-            "max": 1
-          }
-        },
-        "to_bgp_neighbor": {
-          "type": {
-            "key": {
-              "type": "uuid",
-              "refTable": "BGP_neighbor"
-            },
-            "min": 0,
-            "max": "unlimited"
-          }
-        },
-       "status": {
-          "type": {
-            "key": "string",
-            "value": "string",
-            "min": 0,
-            "max": "unlimited"
-          },
-          "ephemeral": true
-        },
-        "other_config": {
-          "type": {
-            "key": "string",
-            "value": "string",
-            "min": 0,
-            "max": "unlimited"
-          }
-        },
-        "external_ids": {
-          "category": "configuration",
-          "type": {
-            "key": "string",
-            "value": "string",
-            "min": 0,
-            "max": "unlimited"
-          }
-        }
-      }
+      },
+      "indexes": [
+        [ "bgp_router", "name" ]
+      ],
+      "isRoot": true
     },
     "Neighbor": {
       "columns": {
