@@ -1504,6 +1504,7 @@ port_configure(struct port *port)
        its address in bundle setting */
     s.port_options[PORT_OPT_VLAN] = &cfg->vlan_options;
     s.port_options[PORT_OPT_BOND] = &cfg->bond_options;
+    s.port_options[PORT_HW_CONFIG] = &cfg->hw_config;
 #endif
 
     /* Register. */
