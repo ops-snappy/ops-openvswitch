@@ -130,6 +130,10 @@ enum ovsrec_interface_pm_info_power_mode_e {
     INTERFACE_PM_INFO_POWER_MODE_LOW
 };
 
+#define INTERFACE_OTHER_CONFIG_MAP_LACP_PORT_ID                 "lacp-port-id"
+#define INTERFACE_OTHER_CONFIG_MAP_LACP_PORT_PRIORITY           "lacp-port-priority"
+#define INTERFACE_OTHER_CONFIG_MAP_LACP_AGGREGATION_KEY         "lacp-aggregation-key"
+
 #define INTERFACE_USER_CONFIG_MAP_ADMIN                         "admin"
 
 #define OVSREC_INTERFACE_USER_CONFIG_ADMIN_DOWN                 "down"
@@ -353,6 +357,11 @@ enum ovsrec_interface_hw_bond_config_enabled_e {
 #define PORT_STATUS_BOND_HW_HANDLE                              "bond_hw_handle"
 #define PORT_HW_CONFIG_MAP_INTERNAL_VLAN_ID                     "internal_vlan_id"
 
+#define PORT_OTHER_CONFIG_MAP_LACP_TIME                         "lacp-time"
+
+#define PORT_OTHER_CONFIG_LACP_TIME_SLOW                        "slow"
+#define PORT_OTHER_CONFIG_LACP_TIME_FAST                        "fast"
+
 /****************************** SUBSYSTEM TABLE *******************************/
 
 #define SUBSYSTEM_OTHER_INFO_MAX_TRANSMISSION_UNIT       "max_transmission_unit"
@@ -405,15 +414,16 @@ enum ovsrec_interface_hw_bond_config_enabled_e {
 
 /* VLAN internal range */
 #define OPEN_VSWITCH_OTHER_CONFIG_MAP_MIN_INTERNAL_VLAN                     "min_internal_vlan"
-#define OPEN_VSWITCH_OTHER_CONFIG_MAP_MIN_INTERNAL_VLAN_ID                  "1024"
 #define OPEN_VSWITCH_OTHER_CONFIG_MAP_MAX_INTERNAL_VLAN                     "max_internal_vlan"
-#define OPEN_VSWITCH_OTHER_CONFIG_MAP_MAX_INTERNAL_VLAN_ID                  "4094"
 #define OPEN_VSWITCH_OTHER_CONFIG_MAP_INTERNAL_VLAN_POLICY                  "internal_vlan_policy"
-#define OPEN_VSWITCH_OTHER_CONFIG_MAP_INTERNAL_VLAN_POLICY_ASCENDING_DEF    "ascending"
+#define OPEN_VSWITCH_OTHER_CONFIG_MAP_INTERNAL_VLAN_POLICY_ASCENDING_DEFAULT    "ascending"
 #define OPEN_VSWITCH_OTHER_CONFIG_MAP_INTERNAL_VLAN_POLICY_DESCENDING       "descending"
 
-/* lldp global statistics */
+/* lacp global configuration parameters */
+#define OPEN_VSWITCH_LACP_CONFIG_MAP_LACP_SYSTEM_ID        "lacp-system-id"
+#define OPEN_VSWITCH_LACP_CONFIG_MAP_LACP_SYSTEM_PRIORITY  "lacp-system-priority"
 
+/* lldp global statistics */
 #define OVSDB_STATISTICS_LLDP_TABLE_INSERTS         "lldp_table_inserts"
 #define OVSDB_STATISTICS_LLDP_TABLE_DELETES         "lldp_table_deletes"
 #define OVSDB_STATISTICS_LLDP_TABLE_DROPS           "lldp_table_drops"

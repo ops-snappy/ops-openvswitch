@@ -566,6 +566,10 @@
       <column name="mgmt_intf" key="dns-server-2" >
         The value for this key is Secondary nameserver IPv4 address
       </column>
+      <column name="radius_servers">
+        Specifies radius servers configuration. See the <ref table="Radius_Server"/>
+        table for more information.
+      </column>
     </group>
 
     <group title="Common Columns">
@@ -2275,6 +2279,35 @@
    </group>
   </table>
 
+  <table name="Radius_Server" title="Radius server configuration">
+      These radius servers are being used for authenticating when users
+      wants to login to the box.
+
+      <column name="ip_address">
+          IP address of the radius server configured.
+      </column>
+
+      <column name="udp_port" >
+          Specifies the udp port number for authentication. Default udp port
+          number for authentication is 1812.
+      </column>
+
+      <column name="passkey" >
+          Specifies the passkey between radius client and radius server
+          for authentication. Default passkey is testing123-1.
+      </column>
+
+      <column name="timeout" >
+          Specifies the timeout between authentication requests to radius server.
+          Default timeout is 5 seconds.
+      </column>
+
+      <column name="retries" >
+          Specifies the number of retries to radius server if there is no response.
+          Default retry value is 1.
+      </column>
+  </table>
+
   <table name="Manager" title="OVSDB management connection.">
     <p>
       Configuration for a database connection to an Open Halon database
@@ -2592,6 +2625,35 @@
       by the CA certificate thus obtained.  <em>This option exposes the
       SSL connection to a man-in-the-middle attack obtaining the initial
       CA certificate.</em>  It may still be useful for bootstrapping.
+    </column>
+
+    <group title="Common Columns">
+      The overall purpose of these columns is described under <code>Common
+      Columns</code> at the beginning of this document.
+
+      <column name="external_ids"/>
+    </group>
+  </table>
+
+  <table name="CLI_Alias">
+    Alias configurations for the command line interface.
+
+    <column name="alias_name">
+      Shortcut name configured by the user for a set of commands.
+    </column>
+
+    <column name="alias_definition">
+      The list of commands to be executed when the shortcut is used.
+      Different commands can be separated by ";". Runtime arguments can be
+      specified using $1, $2 etc. Any extra arguments, will be added at the
+      end of last command.
+      Eg: Execute the command "alias mycmd hostname $1; console length $2;
+      console width $3" to configure "mycmd" as shortcut.
+      On executing "mycmd Switch1 80 24", it will be expanded to
+      "hostname Switch1; console length 80; console width 24".
+      "mycmd" will be stored in alias_name" and
+      "hostname $1; console length $2; console width $3" will be saved in
+      alias_definition.
     </column>
 
     <group title="Common Columns">
