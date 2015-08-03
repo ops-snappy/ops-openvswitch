@@ -1371,6 +1371,7 @@ port_configure(struct port *port)
     s.slaves = xmalloc(list_size(&port->ifaces) * sizeof *s.slaves);
 #ifdef HALON
     cfg_slave_count = list_size(&port->ifaces);
+    s.slaves_entered = cfg_slave_count;
     s.n_slaves_tx_enable = 0;
     s.slaves_tx_enable = xmalloc(cfg_slave_count * sizeof *s.slaves);
 

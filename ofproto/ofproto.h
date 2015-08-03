@@ -429,6 +429,7 @@ struct ofproto_bundle_settings {
     ofp_port_t *slaves_tx_enable; /* OpenFlow port numbers for slaves in
                                      tx_enable state. */
     size_t n_slaves_tx_enable;    /* Number of slaves in tx_enable state. */
+    size_t slaves_entered;         /* Number of slaves entered while adding a bond*/
 #endif
 };
 
