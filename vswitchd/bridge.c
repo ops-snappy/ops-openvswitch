@@ -864,7 +864,7 @@ bridge_reconfigure(const struct ovsrec_open_vswitch *ovs_cfg)
 
             error = ofproto_create(vrf->up.name, "vrf", &vrf->up.ofproto);
             if (error) {
-                VLOG_ERR("failed to create vrf %s: %s", br->name,
+                VLOG_ERR("failed to create vrf %s: %s", vrf->up.name,
                          ovs_strerror(error));
                 shash_destroy(&vrf->up.wanted_ports);
                 vrf_destroy(vrf);
