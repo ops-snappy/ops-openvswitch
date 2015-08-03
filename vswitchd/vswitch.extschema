@@ -1164,6 +1164,27 @@
             "max": "unlimited"
           }
         },
+        "maximum_paths": {
+          "category": "configuration",
+          "type": {
+             "key": {
+              "type": "integer",
+              "minInteger": 1,
+              "maxInteger": 255
+             },
+            "min": 0,
+            "max": 1
+          }
+        },
+        "timers": {
+          "category": "configuration",
+          "type": {
+            "key": "string",
+            "value": "integer",
+            "min": 0,
+            "max": 2
+          }
+        },
          "redistribute": {
           "category": "configuration",
           "type": {

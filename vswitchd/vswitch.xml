@@ -1114,6 +1114,21 @@
       <column name="networks">
       Announces networks for given bgp router.
       </column>
+      <column name="maximum_paths">
+      Number of paths BGP may install into the routing table. If not specified, BGP selects a
+      single path.
+      Default is 1.
+      </column>
+      <column name="timers" key="keepalive"
+             type='{"type":"integer", "minInteger": 0, "maxInteger" : 65535}'>
+      Specifies BGP keepalive time in seconds.
+      Default is 60 seconds.
+      </column>
+      <column name="timers" key="holdtime"
+              type='{"type":"integer", "minInteger": 0, "maxInteger" : 65535}'>
+      Specifies BGP hold time in seconds.
+      Default is 180 seconds.
+      </column>
       <column name="redistribute">
       Allows redistribution of routes from various protocols.
       For example: static, connected. Enabling of redistribution protocols is not mutually
