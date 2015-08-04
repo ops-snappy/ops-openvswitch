@@ -434,11 +434,14 @@ enum ovsrec_interface_hw_bond_config_enabled_e {
 #define OPEN_VSWITCH_OTHER_CONFIG_MAP_LLDP_TLV_DEFAULT        true
 
 /* VLAN internal range */
-#define OPEN_VSWITCH_OTHER_CONFIG_MAP_MIN_INTERNAL_VLAN                     "min_internal_vlan"
-#define OPEN_VSWITCH_OTHER_CONFIG_MAP_MAX_INTERNAL_VLAN                     "max_internal_vlan"
-#define OPEN_VSWITCH_OTHER_CONFIG_MAP_INTERNAL_VLAN_POLICY                  "internal_vlan_policy"
-#define OPEN_VSWITCH_OTHER_CONFIG_MAP_INTERNAL_VLAN_POLICY_ASCENDING_DEFAULT    "ascending"
-#define OPEN_VSWITCH_OTHER_CONFIG_MAP_INTERNAL_VLAN_POLICY_DESCENDING       "descending"
+#define OPEN_VSWITCH_OTHER_CONFIG_MAP_MIN_INTERNAL_VLAN     "min_internal_vlan"
+#define OPEN_VSWITCH_OTHER_CONFIG_MAP_MAX_INTERNAL_VLAN     "max_internal_vlan"
+#define OPEN_VSWITCH_OTHER_CONFIG_MAP_INTERNAL_VLAN_POLICY  "internal_vlan_policy"
+
+#define OPEN_VSWITCH_OTHER_CONFIG_MAP_INTERNAL_VLAN_POLICY_ASCENDING_DEFAULT \
+                                                            "ascending"
+#define OPEN_VSWITCH_OTHER_CONFIG_MAP_INTERNAL_VLAN_POLICY_DESCENDING        \
+                                                            "descending"
 
 /* lacp global configuration parameters */
 #define OPEN_VSWITCH_LACP_CONFIG_MAP_LACP_SYSTEM_ID        "lacp-system-id"

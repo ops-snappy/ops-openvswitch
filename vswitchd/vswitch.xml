@@ -115,6 +115,37 @@
         </p>
       </column>
 
+      <column name="other_config" key="min_internal_vlan"
+              type='{"type": "integer", "minInteger": 1, "maxInteger": 4094}'>
+        <p>
+            This key specifies a lower bound of the VLAN range, which is being used for internal system purposes.
+        </p>
+        <p>
+            Default value is 1024.
+        </p>
+      </column>
+
+      <column name="other_config" key="max_internal_vlan"
+              type='{"type": "integer", "minInteger": 1, "maxInteger": 4094}'>
+        <p>
+            This key specifies an upper bound of the VLAN range, which is being used for internal system purposes.
+        </p>
+        <p>
+            Default value is 4094.
+        </p>
+      </column>
+
+      <column name="other_config" key="internal_vlan_policy"
+              type='{"type": "string"}'>
+        <p>
+            This key indicates order of assignment of internal VLAN ID (ascending or descending).
+        </p>
+
+        <p>
+            Default option is ascending order.
+        </p>
+      </column>
+
     <group title="LACP Configurations">
       <column name="lacp_config" key="lacp-system-id">
         The LACP system ID of this <ref table="Bridge"/>.  The system ID of a
