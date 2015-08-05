@@ -267,6 +267,24 @@
             "min": 0,
             "max": "unlimited"
           }
+        },
+        "bufmon_config": {
+          "category": "configuration",
+          "type": {
+            "key": "string",
+            "value": "string",
+            "min": 0,
+            "max": "unlimited"
+          }
+        },
+        "bufmon_info": {
+          "category": "status",
+          "type": {
+            "key": "string",
+            "value": "string",
+            "min": 0,
+            "max": "unlimited"
+          }
         }
       },
       "isRoot": true,
@@ -2822,6 +2840,79 @@
       "indexes": [
         [
           "alias_name"
+        ]
+      ],
+      "isRoot": true
+    },
+    "bufmon": {
+      "columns": {
+        "name": {
+          "category": "status",
+          "type": "string"
+        },
+        "hw_unit_id": {
+          "category": "status",
+          "type": "integer"
+        },
+        "counter_value": {
+          "category": "statistics",
+          "ephemeral": true,
+            "type": {
+              "key": {
+                "minInteger": 0,
+                "type": "integer"
+              },
+              "min": 0,
+              "max": 1
+            }
+        },
+        "counter_vendor_specific_info": {
+          "category": "status",
+          "type": {
+             "key": "string",
+             "min": 0,
+             "max": "unlimited",
+             "value": "string"
+          }
+        },
+        "enabled": {
+          "category": "configuration",
+          "type": "boolean"
+        },
+        "status": {
+          "category": "status",
+          "type": {
+            "key": {
+              "enum": [
+                "set",
+                [
+                  "ok",
+                  "not-properly-configured",
+                  "triggered"
+                ]
+              ],
+              "type": "string"
+            },
+            "min": 0,
+            "max": 1
+          }
+        },
+        "trigger_threshold": {
+          "category": "configuration",
+            "type": {
+              "key": {
+                "minInteger": 0,
+                "type": "integer"
+              },
+              "min": 0,
+              "max": 1
+            }
+        }
+      },
+      "indexes": [
+        [
+          "hw_unit_id",
+          "name"
         ]
       ],
       "isRoot": true
