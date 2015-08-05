@@ -1649,6 +1649,20 @@
         This key value should be treated as opaque handle by application
         daemons while updating LAG member interfaces in hardware.
       </column>
+      <column name="lacp_status">
+        Key-value pairs that report lacp-specific port status.
+      </column>
+      <column name="lacp_status" key="bond_speed">
+        Speed of interfaces operating in lag.
+      </column>
+      <column name="lacp_status" key="bond_status">
+        Operational status of LAG. The values are "ok" (bond is functional)
+        "down" (bond isn't functional), and "defaulted" (remote LACP not
+        operating, using one interface in non-LACP mode).
+      </column>
+      <column name="lacp_status" key="bond_status_reason">
+        String identifying the reason why the bond_status is "down".
+      </column>
     </group>
 
     <group title="Port Statistics">
