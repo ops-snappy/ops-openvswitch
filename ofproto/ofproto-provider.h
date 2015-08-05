@@ -1703,6 +1703,22 @@ struct ofproto_class {
      * This function should be NULL if an implementation does not support it.
      */
     const char *(*get_datapath_version)(const struct ofproto *);
+
+#ifdef HALON
+    /* Add L3 host entry. */
+    int (*add_l3_host_entry)(const struct ofproto *ofproto, void *aux,
+                             bool is_ipv6_addr, char *ip_addr,
+                             char *next_hop_mac_addr, int *l3_egress_id);
+
+    /* Delete L3 host entry. */
+    int (*delete_l3_host_entry)(const struct ofproto *ofproto, void *aux,
+                                bool is_ipv6_addr, char *ip_addr,
+                                int *l3_egress_id);
+
+    /* Get L3 host hit bit. */
+    int (*get_l3_host_hit)(const struct ofproto *ofproto, void *aux,
+                           bool is_ipv6_addr, char *ip_addr, bool *hit_bit);
+#endif
 };
 
 extern const struct ofproto_class ofproto_dpif_class;

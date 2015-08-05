@@ -5642,4 +5642,9 @@ const struct ofproto_class ofproto_dpif_class = {
     group_modify,               /* group_modify */
     group_get_stats,            /* group_get_stats */
     get_datapath_version,       /* get_datapath_version */
+#ifdef HALON
+    NULL,
+    NULL,
+    NULL,
+#endif
 };

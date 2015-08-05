@@ -383,7 +383,7 @@ enum port_option_args {
     /* Port Bond (LAG) configuration option change */
     PORT_OPT_BOND,
 
-    /* hw_config driven mostly by vland */
+    /* hw_config driven mostly by l3portd */
     PORT_HW_CONFIG,
 
     /* Array size */
@@ -441,6 +441,17 @@ int ofproto_bundle_unregister(struct ofproto *, void *aux);
 int ofproto_bundle_get(struct ofproto *, void *aux, int *bundle_handle);
 /* Configuration of VLANs. */
 int ofproto_set_vlan(struct ofproto *, int vid, bool add);
+
+int ofproto_add_l3_host_entry(struct ofproto *ofproto, void *aux,
+                              bool is_ipv6_addr, char *ip_addr,
+                              char *next_hop_mac_addr, int *l3_egress_id);
+
+int ofproto_delete_l3_host_entry(struct ofproto *ofproto, void *aux,
+                             bool is_ipv6_addr, char *ip_addr,
+                             int *l3_egress_id);
+
+int ofproto_get_l3_host_hit(struct ofproto *ofproto, void *aux,
+                            bool addr_type, char *ip_addr, bool *hit_bit);
 #endif
 
 /* Configuration of mirrors. */

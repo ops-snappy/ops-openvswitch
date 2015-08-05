@@ -7151,3 +7151,59 @@ ofproto_port_set_realdev(struct ofproto *ofproto, ofp_port_t vlandev_ofp_port,
     }
     return error;
 }
+
+#ifdef HALON
+/* Function to add l3 host entry */
+int
+ofproto_add_l3_host_entry(struct ofproto *ofproto, void *aux,
+                          bool is_ipv6_addr, char *ip_addr,
+                          char *next_hop_mac_addr, int *l3_egress_id)
+{
+    int rc;
+
+    rc = (ofproto->ofproto_class->add_l3_host_entry
+            ? ofproto->ofproto_class->add_l3_host_entry(ofproto, aux,
+                  is_ipv6_addr, ip_addr, next_hop_mac_addr, l3_egress_id)
+            : EOPNOTSUPP);
+
+    VLOG_DBG("Add L3 host entry rc=(%d)", rc);
+
+    return rc;
+} /* ofproto_add_host_entry */
+
+/* Function to delete l3 host entry */
+int
+ofproto_delete_l3_host_entry(struct ofproto *ofproto, void *aux,
+                             bool is_ipv6_addr, char *ip_addr,
+                             int *l3_egress_id)
+{
+    int rc;
+
+    rc = (ofproto->ofproto_class->delete_l3_host_entry
+            ? ofproto->ofproto_class->delete_l3_host_entry(ofproto, aux,
+                       is_ipv6_addr, ip_addr, l3_egress_id)
+            : EOPNOTSUPP);
+
+    VLOG_DBG("Delete L3 host entry rc=(%d)", rc);
+
+    return rc;
+} /* ofproto_delete_host_entry */
+
+/* Functionto read and reset host hit bit */
+int
+ofproto_get_l3_host_hit(struct ofproto *ofproto, void *aux,
+                        bool is_ipv6_addr, char *ip_addr,
+                        bool *hit_bit)
+{
+    int rc;
+
+    rc = ofproto->ofproto_class->get_l3_host_hit ?
+           ofproto->ofproto_class->get_l3_host_hit(ofproto, aux,
+           is_ipv6_addr, ip_addr, hit_bit) :
+           EOPNOTSUPP;
+
+    VLOG_DBG("L3 host hit-bit rc=(%d)", rc);
+
+    return rc;
+} /* ofproto_get_l3_host_hit */
+#endif
