@@ -930,8 +930,7 @@
             },
             "min": 0,
             "max": 1
-          },
-          "mutable": false
+          }
         },
         "selected": {
           "category": "status",
