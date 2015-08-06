@@ -890,7 +890,8 @@
           "type": {
             "key": {
               "type": "uuid",
-              "refTable": "VRF"
+              "refTable": "VRF",
+              "refType" : "weak"
             }
           },
           "mutable": false
@@ -1054,7 +1055,8 @@
           "type": {
             "key": {
               "type": "uuid",
-              "refTable": "Port"
+              "refTable": "Port",
+              "refType" : "weak"
             },
             "min": 0,
             "max": "unlimited"
@@ -1544,7 +1546,8 @@
           "type": {
             "key": {
               "type": "uuid",
-              "refTable": "VRF"
+              "refTable": "VRF",
+              "refType" : "weak"
             }
           }
         },
@@ -1587,7 +1590,8 @@
           "type": {
             "key": {
               "type": "uuid",
-              "refTable": "Port"
+              "refTable": "Port",
+              "refType" : "weak"
             },
             "min": 0,
             "max": 1
