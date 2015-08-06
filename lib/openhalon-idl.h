@@ -321,27 +321,27 @@ enum ovsrec_interface_hw_bond_config_enabled_e {
 /* lldp interface statistics */
 
 /* required as per the design doc */
-#define INTERFACE_STATISTICS_LLDP_TX_COUNT               "lldp_tx"
-#define INTERFACE_STATISTICS_LLDP_TX_LEN_ERR             "lldp_tx_len_err"
-#define INTERFACE_STATISTICS_LLDP_RX_COUNT               "lldp_rx"
-#define INTERFACE_STATISTICS_LLDP_RX_ERR                 "lldp_rx_err"
-#define INTERFACE_STATISTICS_LLDP_RX_DISCARDED_COUNT     "lldp_rx_discard"
-#define INTERFACE_STATISTICS_LLDP_RX_TLV_DISCARD         "lldp_rx_tlv_discard"
-#define INTERFACE_STATISTICS_LLDP_RX_TLV_UNKNOWN         "lldp_rx_tlv_unknown"
+#define INTERFACE_STATISTICS_LLDP_TX_COUNT              "lldp_tx"
+#define INTERFACE_STATISTICS_LLDP_TX_LEN_ERR            "lldp_tx_len_err"
+#define INTERFACE_STATISTICS_LLDP_RX_COUNT              "lldp_rx"
+#define INTERFACE_STATISTICS_LLDP_RX_ERR                "lldp_rx_err"
+#define INTERFACE_STATISTICS_LLDP_RX_DISCARDED_COUNT    "lldp_rx_discard"
+#define INTERFACE_STATISTICS_LLDP_RX_TLV_DISCARD        "lldp_rx_tlv_discard"
+#define INTERFACE_STATISTICS_LLDP_RX_TLV_UNKNOWN        "lldp_rx_tlv_unknown"
 
 /* extras available */
-#define INTERFACE_STATISTICS_LLDP_RX_UNRECOGNIZED_COUNT  "lldp_rx_unrecognized"
-#define INTERFACE_STATISTICS_LLDP_AGEOUT_COUNT           "lldp_ageout"
-#define INTERFACE_STATISTICS_LLDP_INSERT_COUNT           "lldp_insert"
-#define INTERFACE_STATISTICS_LLDP_DELETE_COUNT           "lldp_delete"
-#define INTERFACE_STATISTICS_LLDP_DROP_COUNT             "lldp_drop"
+#define INTERFACE_STATISTICS_LLDP_RX_UNRECOGNIZED_COUNT "lldp_rx_unrecognized"
+#define INTERFACE_STATISTICS_LLDP_AGEOUT_COUNT          "lldp_ageout"
+#define INTERFACE_STATISTICS_LLDP_INSERT_COUNT          "lldp_insert"
+#define INTERFACE_STATISTICS_LLDP_DELETE_COUNT          "lldp_delete"
+#define INTERFACE_STATISTICS_LLDP_DROP_COUNT            "lldp_drop"
 
-#define INTERFACE_OTHER_CONFIG_MAP_LLDP_ENABLE_DIR              "lldp_enable_dir"
+#define INTERFACE_OTHER_CONFIG_MAP_LLDP_ENABLE_DIR      "lldp_enable_dir"
 
-#define INTERFACE_OTHER_CONFIG_MAP_LLDP_ENABLE_DIR_OFF          "off"
-#define INTERFACE_OTHER_CONFIG_MAP_LLDP_ENABLE_DIR_RX           "rx"
-#define INTERFACE_OTHER_CONFIG_MAP_LLDP_ENABLE_DIR_TX           "tx"
-#define INTERFACE_OTHER_CONFIG_MAP_LLDP_ENABLE_DIR_RXTX         "rxtx"
+#define INTERFACE_OTHER_CONFIG_MAP_LLDP_ENABLE_DIR_OFF  "off"
+#define INTERFACE_OTHER_CONFIG_MAP_LLDP_ENABLE_DIR_RX   "rx"
+#define INTERFACE_OTHER_CONFIG_MAP_LLDP_ENABLE_DIR_TX   "tx"
+#define INTERFACE_OTHER_CONFIG_MAP_LLDP_ENABLE_DIR_RXTX "rxtx"
 
 #define INTERFACE_LACP_STATUS_MAP_ACTOR_SYSTEM_ID       "actor_system_id"
 #define INTERFACE_LACP_STATUS_MAP_ACTOR_PORT_ID         "actor_port_id"
@@ -352,15 +352,32 @@ enum ovsrec_interface_hw_bond_config_enabled_e {
 #define INTERFACE_LACP_STATUS_MAP_PARTNER_KEY           "partner_key"
 #define INTERFACE_LACP_STATUS_MAP_PARTNER_STATE         "partner_state"
 
+#define INTERFACE_LACP_STATUS_STATE_ACTIVE              "Activ"
+#define INTERFACE_LACP_STATUS_STATE_TIMEOUT             "TmOut"
+#define INTERFACE_LACP_STATUS_STATE_AGGREGATION         "Aggr"
+#define INTERFACE_LACP_STATUS_STATE_SYNCHRONIZATION     "Sync"
+#define INTERFACE_LACP_STATUS_STATE_COLLECTING          "Col"
+#define INTERFACE_LACP_STATUS_STATE_DISTRIBUTING        "Dist"
+#define INTERFACE_LACP_STATUS_STATE_DEFAULTED           "Def"
+#define INTERFACE_LACP_STATUS_STATE_EXPIRED             "Exp"
+
 /****************************** PORT TABLE *******************************/
 
-#define PORT_STATUS_BOND_HW_HANDLE                              "bond_hw_handle"
-#define PORT_HW_CONFIG_MAP_INTERNAL_VLAN_ID                     "internal_vlan_id"
+#define PORT_STATUS_BOND_HW_HANDLE                      "bond_hw_handle"
+#define PORT_HW_CONFIG_MAP_INTERNAL_VLAN_ID             "internal_vlan_id"
 
-#define PORT_OTHER_CONFIG_MAP_LACP_TIME                         "lacp-time"
+#define PORT_OTHER_CONFIG_MAP_LACP_TIME                 "lacp-time"
 
-#define PORT_OTHER_CONFIG_LACP_TIME_SLOW                        "slow"
-#define PORT_OTHER_CONFIG_LACP_TIME_FAST                        "fast"
+#define PORT_OTHER_CONFIG_LACP_TIME_SLOW                "slow"
+#define PORT_OTHER_CONFIG_LACP_TIME_FAST                "fast"
+
+#define PORT_LACP_STATUS_MAP_BOND_SPEED                 "bond_speed"
+#define PORT_LACP_STATUS_MAP_BOND_STATUS                "bond_status"
+#define PORT_LACP_STATUS_MAP_BOND_STATUS_REASON         "bond_status_reason"
+
+#define PORT_LACP_STATUS_BOND_STATUS_OK                 "ok"
+#define PORT_LACP_STATUS_BOND_STATUS_DOWN               "down"
+#define PORT_LACP_STATUS_BOND_STATUS_DEFAULTED          "defaulted"
 
 /****************************** SUBSYSTEM TABLE *******************************/
 
