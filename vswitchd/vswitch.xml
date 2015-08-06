@@ -1194,6 +1194,10 @@
       This is an optional string which can be used for describing this entry.
       </column>
 
+      <column name="shutdown">
+      Specifies whether neighbor is shut down. If not specified, the default is false.
+      </column>
+
       <column name="bgp_peer_group">
       This column is used only if the entry is a BGP neighbor.  It represents
       the peer group this BGP neighbor is a member of.
