@@ -258,6 +258,15 @@
             "min": 0,
             "max": "unlimited"
           }
+        },
+        "logrotate_config": {
+          "category": "configuration",
+          "type": {
+            "key": "string",
+            "value": "string",
+            "min": 0,
+            "max": "unlimited"
+          }
         }
       },
       "isRoot": true,
