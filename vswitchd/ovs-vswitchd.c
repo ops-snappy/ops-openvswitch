@@ -53,6 +53,7 @@
 #include "lib/netdev-dpdk.h"
 #ifdef HALON
 #include "subsystem.h"
+#include "bufmon-provider.h"
 #endif
 
 VLOG_DEFINE_THIS_MODULE(vswitchd);
@@ -108,10 +109,12 @@ main(int argc, char *argv[])
     unixctl_command_register("exit", "", 0, 0, ovs_vswitchd_exit, &exiting);
 
     plugins_init(plugins_path);
-    
+
     bridge_init(remote);
 #ifdef HALON
     subsystem_init();
+
+    bufmon_init();
 
     wait_for_config_complete();
 
@@ -133,6 +136,7 @@ main(int argc, char *argv[])
         bridge_run();
 #ifdef HALON
         subsystem_run();
+        bufmon_run();
 #endif
         unixctl_server_run(unixctl);
         netdev_run();
@@ -142,6 +146,7 @@ main(int argc, char *argv[])
         bridge_wait();
 #ifdef HALON
         subsystem_wait();
+        bufmon_wait();
 #endif
         unixctl_server_wait(unixctl);
         netdev_wait();
@@ -221,7 +226,7 @@ parse_options(int argc, char *argv[], char **unixctl_pathp, char **plugins_pathp
         case OPT_UNIXCTL:
             *unixctl_pathp = optarg;
             break;
-        
+
         case OPT_PLUGINS:
             *plugins_pathp = optarg;
             break;

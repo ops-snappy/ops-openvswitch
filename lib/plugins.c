@@ -36,6 +36,7 @@ struct plugin_class {
     plugin_func destroy;
     plugin_func netdev_register;
     plugin_func ofproto_register;
+    plugin_func bufmon_register;
 };
 
 static lt_dlinterface_id interface_id;
@@ -67,6 +68,8 @@ plugins_open_plugin(const char *filename, void *data)
     // The following APIs are optional, so don't fail if they are missing.
     plcl->netdev_register = lt_dlsym(handle, "netdev_register");
     plcl->ofproto_register = lt_dlsym(handle, "ofproto_register");
+    plcl->bufmon_register = lt_dlsym(handle, "bufmon_register");
+
 
     if (lt_dlcaller_set_data(interface_id, handle, plcl)) {
         VLOG_ERR("plugin %s initialized twice? must be a bug", filename);
@@ -182,4 +185,10 @@ void
 plugins_ofproto_register(void)
 {
     PLUGINS_CALL(ofproto_register);
+}
+
+void
+plugins_bufmon_register(void)
+{
+    PLUGINS_CALL(bufmon_register);
 }

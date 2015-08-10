@@ -30,6 +30,7 @@ void plugins_wait(void);
 void plugins_destroy(void);
 void plugins_netdev_register(void);
 void plugins_ofproto_register(void);
+void plugins_bufmon_register(void);
 #else
 #define plugins_init(path)
 #define plugins_run()
@@ -37,6 +38,7 @@ void plugins_ofproto_register(void);
 #define plugins_destroy()
 #define plugins_netdev_register()
 #define plugins_ofproto_register()
+#define plugins_bufmon_register()
 #endif
 
 #ifdef  __cplusplus
