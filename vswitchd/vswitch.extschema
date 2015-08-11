@@ -1915,7 +1915,6 @@
               "enum": [
                 "set",
                 [
-                  "balance-tcp",
                   "l2-src-dst-hash",
                   "l3-src-dst-hash"
                 ]
