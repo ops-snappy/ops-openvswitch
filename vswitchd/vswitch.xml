@@ -2412,6 +2412,10 @@
           IP address of the radius server configured.
       </column>
 
+      <column name="priority">
+          Specifies the order in which radius servers are configured on the switch.
+      </column>
+
       <column name="udp_port" >
           Specifies the udp port number for authentication. Default udp port
           number for authentication is 1812.

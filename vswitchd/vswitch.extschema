@@ -2782,6 +2782,16 @@
            "type": "string",
            "mutable": false
         },
+        "priority": {
+          "category": "configuration",
+           "type": {
+            "key": {
+              "type": "integer",
+              "minInteger": 0,
+              "maxInteger": 64
+            }
+          }
+        },
         "udp_port": {
           "category": "configuration",
            "type": {
