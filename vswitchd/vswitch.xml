@@ -668,6 +668,36 @@
       </column>
     </group>
 
+    <group title="ECMP configuration">
+      <p>
+        Specifies the various ECMP (Equal Cost Multi-Path) configuration options.
+      </p>
+
+        <column name="ecmp_config" key="enabled" type='{"type": "boolean"}'>
+            Determines whether ECMP is enabled in the system.
+            Default is true.
+        </column>
+        <column name="ecmp_config" key="hash_srcip_enabled" type='{"type": "boolean"}'>
+            Determines whether source IP participates in ECMP hash calculation.
+            Default is true.
+        </column>
+        <column name="ecmp_config" key="hash_dstip_enabled" type='{"type": "boolean"}'>
+            Determines whether destination IP participates in ECMP hash
+            calculation.
+            Default is true.
+        </column>
+        <column name="ecmp_config" key="hash_srcport_enabled" type='{"type": "boolean"}'>
+            Determines whether source TCP/UDP port participates in ECMP hash
+            calculation.
+            Default is true.
+        </column>
+        <column name="ecmp_config" key="hash_dstport_enabled" type='{"type": "boolean"}'>
+            Determines whether destination TCP/UDP port participates in ECMP
+            hash calculation.
+            Default is true.
+        </column>
+    </group>
+
     <group title="Common Columns">
       The overall purpose of these columns is described under <code>Common
       Columns</code> at the beginning of this document.

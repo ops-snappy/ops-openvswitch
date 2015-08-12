@@ -250,6 +250,15 @@
             "max": 64
           }
         },
+        "ecmp_config": {
+          "category": "configuration",
+          "type": {
+            "key": "string",
+            "value": "string",
+            "min": 0,
+            "max": "unlimited"
+          }
+        },
         "aaa": {
           "category": "configuration",
           "type": {
