@@ -33,6 +33,7 @@ ovslibinclude_HEADERS = \
         lib/hmapx.h \
 	lib/json.h \
 	lib/lacp.h \
+        lib/latch.h \
 	lib/list.h \
 	lib/match.h \
 	lib/meta-flow.h \
