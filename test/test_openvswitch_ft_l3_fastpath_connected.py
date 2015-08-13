@@ -15,7 +15,9 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
+"""
 import switch.CLI
+
 topoDict = {"topoExecution": 1000,
             "topoTarget": "dut01 wrkston01 wrkston02",
             "topoDevices": "dut01 wrkston01 wrkston02",
@@ -532,4 +534,4 @@ if retCode:
    common.LogOutput('error', "\nFailed IPv6 ping between switch and host " + h2)
    tcInstance.setVerdictAction (TC_STEPVERDICT_FAIL, TC_STEPFAILACTION_EXIT)
 
-tcInstance.endStep()
+tcInstance.endStep()"""

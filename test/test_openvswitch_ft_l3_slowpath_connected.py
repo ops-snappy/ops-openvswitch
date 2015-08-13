@@ -15,6 +15,7 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
+import pytest
 from halonvsi.docker import *
 from halonvsi.halon import *
 from halonutils.halonutil import *
@@ -48,6 +49,7 @@ class slowRoutingTests( HalonTest ):
     s1.cmdCLI("interface 1")
     #s1.cmdCLI("no shutdown")
     s1.cmdCLI("ip address 192.168.1.1/24")
+    time.sleep(2)
     s1.cmdCLI("ipv6 address 2000::1/120")
     s1.cmdCLI("exit")
 
@@ -55,6 +57,7 @@ class slowRoutingTests( HalonTest ):
     s1.cmdCLI("interface 2")
     #s1.cmdCLI("no shutdown")
     s1.cmdCLI("ip address 192.168.2.1/24")
+    time.sleep(2)
     s1.cmdCLI("ipv6 address 2002::1/120")
     s1.cmdCLI("exit")
 
@@ -99,7 +102,7 @@ class slowRoutingTests( HalonTest ):
     assert status, "Ping Failed"
     info("Ping Success\n")
 
-    #Print from host 1 to host 2
+    # Ping from host 1 to host 2
     info("Ping h2 from h1\n")
     output = h1.cmd("ping 192.168.2.2 -c2")
     status = parsePing(output)
@@ -120,7 +123,7 @@ class slowRoutingTests( HalonTest ):
     assert status, "Ping Failed"
     info("Ping Success\n")
 
-    # Print from host 1 to host 2
+    # Ping from host 1 to host 2
     info("IPv6 Ping h2 from h1\n")
     output = h1.cmd("ping6 2002::2 -c2")
     status = parsePing(output)

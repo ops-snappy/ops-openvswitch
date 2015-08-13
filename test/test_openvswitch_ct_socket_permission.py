@@ -25,7 +25,7 @@ class socketFilePermissionTests( HalonTest ):
     # if you override this function, make sure to
     # either pass getNodeOpts() into hopts/sopts of the topology that
     # you build or into addHost/addSwitch calls
-    self.net = Mininet(topo=SingleSwitchTopo(k=2,
+    self.net = Mininet(topo=SingleSwitchTopo(k=0,
                                              hopts=self.getHostOpts(),
                                              sopts=self.getSwitchOpts()),
                                              switch=HalonSwitch,
@@ -38,8 +38,6 @@ class socketFilePermissionTests( HalonTest ):
     # configuring Halon, in the future it would be through
     # proper Halon commands
     s1 = self.net.switches[ 0 ]
-    h1 = self.net.hosts[ 0 ]
-    h2 = self.net.hosts[ 1 ]
 
     # Check permissions of socket files present in /var/run/openvswitch
     output = s1.cmd("ls -l /var/run/openvswitch")

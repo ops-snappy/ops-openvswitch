@@ -16,7 +16,7 @@
 # under the License.
 
 # test_openvswitch_ct_l3.py: Test to verify basic l3 in switch
-
+"""
 import re
 
 topoDict = {"topoExecution": 1000,
@@ -103,3 +103,4 @@ cmd = "/usr/bin/ovs-vsctl del-vrf-port vrf_default 1"
 switch.DeviceInteract(connection=dut01_conn, command=cmd)
 
 tcInstance.endStep()
+"""
