@@ -1595,37 +1595,14 @@
       allows for load balancing and fail-over.</p>
 
       <p>
-        The following modes require the upstream switch to support 802.3ad with
-        successful LACP negotiation. If LACP negotiation fails and
-        other-config:lacp-fallback-ab is true, then <code>active-backup</code>
-        mode is used:
-      </p>
+        The following modes (bond_mode) require the upstream switch to support
+        802.3ad with successful LACP negotiation.</p>
 
-      <dl>
-        <dt><code>balance-tcp</code></dt>
-        <dd>
-          Balances flows among slaves based on L2, L3, and L4 protocol
-          information such as destination MAC address, IP address, and TCP
-          port.
-        </dd>
-      </dl>
+      <p>These columns apply only to bonded ports.  Their values are otherwise
+          ignored.</p>
 
-      <p>These columns apply only to bonded ports.  Their values are
-      otherwise ignored.</p>
-
-      <column name="bond_mode">
-        <p>The type of bonding used for a bonded port.  Defaults to
-        <code>l3-src-dst-hash</code> if not assigned.
-        </p>
-      </column>
-
-      <column name="other_config" key="bond-hash-basis"
-              type='{"type": "integer"}'>
-        An integer hashed along with flows when choosing output slaves in load
-        balanced bonds.  When changed, all flows will be assigned different
-        hash values possibly causing slave selection decisions to change.  Does
-        not affect bonding modes which do not employ load balancing such as
-        <code>active-backup</code>.
+      <column name="bond_mode"> <p>The type of bonding used for a bonded port.
+              Defaults to <code>l3-src-dst-hash</code> if not assigned.  </p>
       </column>
 
       <group title="LACP Configuration">
@@ -1645,8 +1622,7 @@
           in LACP negotiations initiated by a remote switch, but not allowed to
           initiate such negotiations themselves.  If LACP is enabled on a port
           whose partner switch does not support LACP, the bond will be
-          disabled, unless other-config:lacp-fallback-ab is set to true.
-          Defaults to <code>off</code> if unset.
+          disabled. Defaults to <code>off</code> if unset.
         </column>
 
         <column name="other_config" key="lacp-system-id">
@@ -1673,35 +1649,6 @@
             quickly.  In <code>slow</code> mode, heartbeats are requested at a
             rate of once every 30 seconds.
           </p>
-        </column>
-
-        <column name="other_config" key="lacp-fallback-ab"
-          type='{"type": "boolean"}'>
-          <p>
-            Determines the behavior of Open Halon bond in LACP mode. If
-            the partner switch does not support LACP, setting this option
-            to <code>true</code> allows Open Halon to fallback to
-            active-backup. If the option is set to <code>false</code>, the
-            bond will be disabled. In both cases, once the partner switch
-            is configured to LACP mode, the bond will use LACP.
-          </p>
-        </column>
-      </group>
-
-      <group title="Rebalancing Configuration">
-        <p>
-          These settings control behavior when a bond is in
-          <code>balance-tcp</code> mode.
-        </p>
-
-        <column name="other_config" key="bond-rebalance-interval"
-                type='{"type": "integer", "minInteger": 0, "maxInteger": 10000}'>
-          For a load balanced bonded port, the number of milliseconds between
-          successive attempts to rebalance the bond, that is, to move flows
-          from one interface on the bond to another in an attempt to keep usage
-          of each interface roughly equal.  If zero, load balancing is disabled
-          on the bond (link failure still cause flows to move).  If
-          less than 1000ms, the rebalance interval will be 1000ms.
         </column>
       </group>
     </group>
