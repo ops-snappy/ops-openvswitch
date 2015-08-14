@@ -577,6 +577,13 @@
         Specifies radius servers configuration. See the <ref table="Radius_Server"/>
         table for more information.
       </column>
+      <column name="auto_provisioning_status" key="performed" type='{"type": "boolean"}'>
+        Specifies whether auto-provisioning was performed. False if not specified.
+      </column>
+      <column name="auto_provisioning_status" key="url">
+        Specifies the URL that was used to fetch auto-provisioning script. Would not be
+        present if auto-provisioning was not performed.
+      </column>
     </group>
 
     <group title="Logrotate configuration">
