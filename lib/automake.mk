@@ -153,7 +153,6 @@ lib_libovscommon_la_SOURCES = \
         lib/json.c \
         lib/json.h \
         lib/jhash.h \
-        lib/latch.h \
         lib/list.h \
         lib/lockfile.c \
         lib/lockfile.h \
