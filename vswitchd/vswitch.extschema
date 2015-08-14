@@ -1056,9 +1056,9 @@
       },
       "indexes": [
         [
-          "prefix",
           "vrf",
-          "from"
+          "from",
+          "prefix"
         ]
       ],
       "isRoot": true
@@ -1786,9 +1786,6 @@
       "indexes": [
         [
           "name"
-        ],
-        [
-          "id"
         ]
       ]
     },
