@@ -1384,7 +1384,9 @@
               "type": "integer",
               "minInteger": 1,
               "maxInteger": 4294967295
-            }
+            },
+            "min": 0,
+            "max": 1
           }
         },
         "local_as": {
