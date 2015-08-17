@@ -481,4 +481,13 @@ enum ovsrec_interface_hw_bond_config_enabled_e {
 #define OPEN_VSWITCH_MGMT_INTF_MAP_DNS_SERVER_1         "dns-server-1"
 #define OPEN_VSWITCH_MGMT_INTF_MAP_DNS_SERVER_2         "dns-server-2"
 
+/* buffer monitoring statistics config table (bufmon)*/
+#define BUFMON_CONFIG_MAP_ENABLED                               "enabled"
+#define BUFMON_CONFIG_MAP_COUNTERS_MODE                         "counters_mode"
+#define BUFMON_CONFIG_MAP_PERIODIC_COLLECTION_ENABLED           "periodic_collection_enabled"
+#define BUFMON_CONFIG_MAP_COLLECTION_PERIOD                     "collection_period"
+#define BUFMON_CONFIG_MAP_THRESHOLD_TRIGGER_COLLECTION_ENABLED  "threshold_trigger_collection_enabled"
+#define BUFMON_CONFIG_MAP_TRIGGER_RATE_LIMIT                    "threshold_trigger_rate_limit"
+#define BUFMON_CONFIG_MAP_SNAPSHOT_ON_THRESHOLD_TRIGGER         "snapshot_on_threshold_trigger"
+#define BUFMON_INFO_MAP_LAST_COLLECTION_TIMESTAMP               "last_collection_timestamp"
 #endif /* OPENHALON_IDL_HEADER */

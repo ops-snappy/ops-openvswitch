@@ -13,6 +13,11 @@ vswitchd_ovs_vswitchd_SOURCES = \
 	vswitchd/xenserver.c \
 	vswitchd/xenserver.h
 
+if OPEN_HALON
+vswitchd_ovs_vswitchd_SOURCES += \
+    vswitchd/bufmon.c
+endif
+
 vswitchd_ovs_vswitchd_LDADD = \
 	lib/libovscommon.la \
 	ovsdb/libovsdb.la \

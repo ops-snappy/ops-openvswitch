@@ -82,7 +82,8 @@ ovslibinclude_HEADERS = \
 	lib/uuid.h \
 	lib/plugins.h \
 	lib/vlan-bitmap.h \
-	libltdl/ltdl.h
+	libltdl/ltdl.h \
+	vswitchd/bufmon-provider.h
 endif
 
 lib_LTLIBRARIES += lib/libovscommon.la
@@ -432,6 +433,11 @@ lib_libopenvswitch_la_SOURCES = \
 	lib/vlandev.h \
 	lib/vtep-idl.c \
 	lib/vtep-idl.h
+
+if OPEN_HALON
+lib_libopenvswitch_la_SOURCES += \
+	vswitchd/bufmon-provider.c
+endif
 
 if WIN32
 lib_libovscommon_la_SOURCES += \
