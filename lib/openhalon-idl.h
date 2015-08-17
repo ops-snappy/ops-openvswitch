@@ -459,6 +459,7 @@ enum ovsrec_interface_hw_bond_config_enabled_e {
 #define OVSDB_ROUTE_PROTOCOL_SPECIFIC_BGP_PEER_ID        "BGP_peer_ID"
 #define OVSDB_ROUTE_PROTOCOL_SPECIFIC_BGP_INTERNAL       "BGP_internal"
 #define OVSDB_ROUTE_PROTOCOL_SPECIFIC_BGP_IBGP           "BGP_iBGP"
+#define OVSDB_ROUTE_PROTOCOL_SPECIFIC_BGP_UPTIME         "BGP_uptime"
 
 
 /****************************** VRF TABLE ******************************/
