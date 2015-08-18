@@ -450,6 +450,9 @@ enum ovsrec_interface_hw_bond_config_enabled_e {
 #define OVSDB_STATISTICS_LLDP_TABLE_DROPS           "lldp_table_drops"
 #define OVSDB_STATISTICS_LLDP_TABLE_AGEOUTS         "lldp_table_ageouts"
 
+/* BGP timers */
+#define OVSDB_BGP_TIMER_KEEPALIVE       "keepalive"
+#define OVSDB_BGP_TIMER_HOLDTIME        "holdtime"
 
 /* ROUTE table global protocol specific column definitions */
 #define OVSDB_ROUTE_PROTOCOL_SPECIFIC_BGP_FLAGS          "BGP_flags"
