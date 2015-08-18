@@ -1389,6 +1389,18 @@
       Statistics per neighbor.
       </column>
 
+      <column name="route_maps">
+      Name and direction of the route maps.
+      </column>
+
+      <column name="route_maps" key="in">
+      Map associated with incoming routes.
+      </column>
+
+      <column name="route_maps" key="out">
+      Map associated with outbound routes.
+      </column>
+
     </group>
 
    <group title="Status">

@@ -1554,6 +1554,27 @@
           },
           "ephemeral": true
         },
+        "route_maps": {
+          "category": "reference",
+          "type": {
+            "key": {
+              "type": "string",
+              "enum": [
+                "set",
+                [
+                  "in",
+                  "out"
+                ]
+              ]
+            },
+            "value": {
+              "type": "uuid",
+              "refTable": "Route_Map"
+            },
+            "min": 0,
+            "max": 2
+          }
+        },
         "other_config": {
           "category": "configuration",
           "type": {
