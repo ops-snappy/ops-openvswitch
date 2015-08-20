@@ -1099,7 +1099,7 @@
           Route table can have entries which may not be selected for
           forwarding. This flag indicates if this entry is selected
           as an active route for forwarding.
-          Default is <code>true</code>.
+          Default is <code>false</code>.
       </column>
       <column name="address_family">
         Represents the address family for this entry.
