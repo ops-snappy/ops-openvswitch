@@ -1400,6 +1400,18 @@
             "max": 1
           }
         },
+        "allow_as_in": {
+          "category": "configuration",
+          "type": {
+            "key": {
+              "type": "integer",
+              "minInteger": 1,
+              "maxInteger": 10
+            },
+            "min": 0,
+            "max": 1
+          }
+        },
         "local_as": {
           "category": "configuration",
           "type": {

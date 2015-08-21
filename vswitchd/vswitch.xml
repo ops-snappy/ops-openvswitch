@@ -1337,6 +1337,11 @@
       Remote AS number. Range: 1-4294967295.
       </column>
 
+      <column name="allow_as_in">
+       Allow-as-in is the number of times BGP can allow an instance of AS
+      to be in the AS_PATH.
+      </column>
+
       <column name="local_as">
       To specify a different asn from BGP router asn to be used as local AS
       number in update messages to peers.
