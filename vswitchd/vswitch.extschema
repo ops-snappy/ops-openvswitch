@@ -1367,6 +1367,16 @@
             "max": 1
           }
         },
+         "remove_private_as": {
+          "category": "configuration",
+          "type": {
+            "key": {
+              "type": "boolean"
+            },
+            "min": 0,
+            "max": 1
+          }
+        },
         "bgp_peer_group": {
           "category": "reference",
           "type": {
