@@ -478,13 +478,17 @@ enum ovsrec_interface_hw_bond_config_enabled_e {
 
 /* Management Interface Column */
 #define OPEN_VSWITCH_MGMT_INTF_MAP_MODE                 "mode"
+
 #define OPEN_VSWITCH_MGMT_INTF_MAP_MODE_DHCP            "dhcp"
 #define OPEN_VSWITCH_MGMT_INTF_MAP_MODE_STATIC          "static"
 
 #define OPEN_VSWITCH_MGMT_INTF_MAP_NAME                 "name"
 #define OPEN_VSWITCH_MGMT_INTF_MAP_IP                   "ip"
+#define OPEN_VSWITCH_MGMT_INTF_MAP_IPV6                 "ipv6"
+#define OPEN_VSWITCH_MGMT_INTF_MAP_IPV6_LINKLOCAL       "ipv6-linklocal"
 #define OPEN_VSWITCH_MGMT_INTF_MAP_SUBNET_MASK          "subnet-mask"
 #define OPEN_VSWITCH_MGMT_INTF_MAP_DEFAULT_GATEWAY      "default-gateway"
+#define OPEN_VSWITCH_MGMT_INTF_MAP_DEFAULT_GATEWAY_V6   "default-gateway-v6"
 #define OPEN_VSWITCH_MGMT_INTF_MAP_DNS_SERVER_1         "dns-server-1"
 #define OPEN_VSWITCH_MGMT_INTF_MAP_DNS_SERVER_2         "dns-server-2"
 

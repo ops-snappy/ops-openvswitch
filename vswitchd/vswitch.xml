@@ -593,10 +593,6 @@
       <column name="mgmt_intf" key="dns-server-2" >
         The value for this key is Secondary nameserver IPv4 address
       </column>
-      <column name="mgmt_intf" key="modev6" >
-        The management interfaces's IPv6 address configuration mode.
-        The possible values are static and DHCP. Default value is DHCP
-      </column>
       <column name="mgmt_intf" key="ipv6" >
         The value for this key is IPv6 address of the management interface.
         Possible value X:X::X:X/MMM.
