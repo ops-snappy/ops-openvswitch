@@ -467,6 +467,27 @@ enum ovsrec_interface_hw_bond_config_enabled_e {
 #define OVSDB_ROUTE_PROTOCOL_SPECIFIC_BGP_IBGP           "BGP_iBGP"
 #define OVSDB_ROUTE_PROTOCOL_SPECIFIC_BGP_UPTIME         "BGP_uptime"
 
+/* BGP Neighbor state, goes into "status" column */
+#define BGP_PEER_STATE                          "bgp-peer-state"
+
+/* BGP Neighbor statistics */
+#define BGP_PEER_ESTABLISHED_COUNT              "bgp-peer-established-count"
+#define BGP_PEER_DROPPED_COUNT                  "bgp-peer-dropped-count"
+#define BGP_PEER_OPEN_IN_COUNT                  "bgp-peer-open_in-count"
+#define BGP_PEER_OPEN_OUT_COUNT                 "bgp-peer-open_out-count"
+#define BGP_PEER_UPDATE_IN_COUNT                "bgp-peer-update_in-count"
+#define BGP_PEER_UPDATE_OUT_COUNT               "bgp-peer-update_out-count"
+#define BGP_PEER_KEEPALIVE_IN_COUNT             "bgp-peer-keepalive_in-count"
+#define BGP_PEER_KEEPALIVE_OUT_COUNT            "bgp-peer-keepalive_out-count"
+#define BGP_PEER_NOTIFY_IN_COUNT                "bgp-peer-notify_in-count"
+#define BGP_PEER_NOTIFY_OUT_COUNT               "bgp-peer-notify_out-count"
+#define BGP_PEER_REFRESH_IN_COUNT               "bgp-peer-refresh_in-count"
+#define BGP_PEER_REFRESH_OUT_COUNT              "bgp-peer-refresh_out-count"
+#define BGP_PEER_DYNAMIC_CAP_IN_COUNT           "bgp-peer-dynamic_cap_in-count"
+#define BGP_PEER_DYNAMIC_CAP_OUT_COUNT          "bgp-peer-dynamic_cap_out-count"
+#define BGP_PEER_UPTIME                         "bgp-peer-uptime"
+#define BGP_PEER_READTIME                       "bgp-peer-readtime"
+#define BGP_PEER_RESETTIME                      "bgp-peer-resettime"
 
 /****************************** VRF TABLE ******************************/
 
