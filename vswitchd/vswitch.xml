@@ -1248,6 +1248,89 @@
    </group>
   </table>
 
+  <table name="BGP_Route" title="BGP Routes Information Base">
+    <p>
+      BGP local RIB.
+    </p>
+    <group title="BGP Routes">
+      <column name="vrf">
+        Reference to the VRF to which this route belongs.
+      </column>
+      <column name="prefix">
+          IPv4 or IPv6 destination prefix and mask in the address/mask
+          format. Example 192.168.0.0/16
+      </column>
+      <column name="address_family">
+        Represents the address family for this entry.
+        Default value is <code>ipv4</code>.
+      </column>
+      <column name="sub_address_family">
+        Represents subsequent address family identifier such as unicast, multicast
+        or MPLS VPN.
+        Default is <code>unicast</code>.
+      </column>
+      <column name="distance">
+          Administrative distance for the route entry.
+          Default value is 0.
+      </column>
+      <column name="metric">
+          This is the BGP Multi Exit Discriminator (MED) attribute used in best
+          path selection.
+          Default value is 0
+      </column>
+      <column name="bgp_nexthops">
+          Represents nexthops for this entry. Each entry in the <ref table="BGP_Route"/>
+          can have a reference to one or many(for ECMP) nexthop entries.
+      </column>
+   </group>
+   <group title="Path attributes">
+      <p>
+          The <code>path_attributes</code> column contains key-value pairs that
+          represent route attributes.
+      </p>
+      <column name="path_attributes" key="bgp_flags"
+          type='{"type": "string"}'>
+          Route status flags. Allowed values are <code>history</code>,
+          <code>damped</code>,<code>multipath</code>,<code>valid</code>,
+          <code>selected</code>
+           Default value is 0.
+      </column>
+      <column name="path_attributes" key="bgp_as_path"
+          type='{"type": "string"}'>
+          List of AS path number for a route. Default is 0. Example: 200,300,400
+      </column>
+      <column name="path_attributes" key="bgp_origin"
+          type='{"type": "string"}'>
+          Indicates whether a route is <code>IGP</code>, <code>EGP</code>
+          or <code>incomplete</code>.
+          Default is incomplete.
+      </column>
+      <column name="path_attributes" key="bgp_loc_pref"
+          type='{"type": "string"}'>
+          Local preference path attribute. Used by BGP to influence in the
+          best path selection.
+          Default value is 0.
+      </column>
+   </group>
+  </table>
+
+  <table name="BGP_Nexthop" title="BGP Nexthops">
+    <p>
+      List of all nexthops used by BGP.
+      Each entry in the BGP RIB can have a reference to one or
+      many (for ECMP) nexthop entries.
+    </p>
+    <group title="Status">
+      <column name="ip_address">
+          IP address of the nexthop device.
+      </column>
+      <column name="type">
+          Type of the nexthop.
+          Default is <code>unicast</code>.
+      </column>
+    </group>
+  </table>
+
   <table name="BGP_Router" title="BGP high level configuration">
     <group title="Configuration">
       BGP_router includes all bgp config related information. The entries are
