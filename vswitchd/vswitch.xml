@@ -1327,10 +1327,10 @@
       </column>
 
       <column name="is_peer_group">
-      This entry identifies whether this specific table entry is
+      This is a flag which identifies whether this specific entry is
       an individual BGP neighbor or is a BGP peer group.  A value
-      of True implies a peer group.  Otherwise, the entry represents
-      a BGP neighbor.
+      of true implies a peer group.  Otherwise, the entry represents
+      a BGP neighbor.  If the value is not set, it implies false.
       </column>
 
       <column name="name">
@@ -1341,19 +1341,22 @@
 
       <column name="description">
       This is an optional string which can be used for describing this entry.
+      Default is empty.
       </column>
 
       <column name="shutdown">
-      Specifies whether neighbor is shut down. If not specified, the default is false.
+      Specifies whether the neighbor has been administratively shut down.
+      If not specified, the default is false.
       </column>
 
       <column name="bgp_peer_group">
       This column is used only if the entry is a BGP neighbor.  It represents
-      the peer group this BGP neighbor is a member of.
+      the peer group this BGP neighbor is a member of.  Default is none.
       </column>
 
       <column name="local_interface">
       Reference to the corresponding interface.  This is used only for ipv6.
+      Default is none.
       </column>
 
       <column name="remote_as">
@@ -1377,10 +1380,6 @@
 
       <column name="weight">
       This is the weight for routes from this neighbor.
-      </column>
-
-      <column name="active">
-      This shows if this entry is active or not.
       </column>
 
       <column name="tcp_port_number">
@@ -1408,8 +1407,14 @@
       Allow inbound soft reconfiguration for this neighbor.
       </column>
 
+      <column name="remove_private_as">
+      Specifies whether private AS should be removed.
+      If not specified, the default value is false.
+      </column>
+
       <column name="passive">
-      Don't send open messages to this neighbor.
+      Indicates that open messages should NOT be sent to this neighbor.
+      Default is false.
       </column>
 
       <column name="password">
@@ -1422,10 +1427,6 @@
 
       <column name="timers">
       BGP per neighbor timers - Connect timer/Keep-alive Interval.
-      </column>
-
-      <column name="statistics">
-      Statistics per neighbor.
       </column>
 
       <column name="route_maps">
@@ -1443,7 +1444,23 @@
     </group>
 
    <group title="Status">
-      <column name="status" >
+      <column name="status">
+      These values describe various status information about this
+      BGP neighbor or BGP Peer group entry.
+      </column>
+   </group>
+
+   <group title="BGP Neighbor or Peer group Status Info">
+      <p>
+        The <code>status</code> column contains one or more
+        informational entries indicating various status
+        values for this BGP neighbor.
+      </p>
+      <column name="status" key="bgp_peer_state">
+          This represents the BGP neighbor state at this specific
+          instance in time.  The value can be one of Idle, Connect,
+          Active, OpenSent, OpenConfirm, Established, Clearing or
+          Deleted and can change any time.  Default is Idle.
       </column>
    </group>
 
@@ -1456,7 +1473,67 @@
 
       <column name="external_ids">
       </column>
+   </group>
 
+   <group title="BGP Neighbor Statistics">
+     <p>
+       The <code>statistics</code> column contains various counters
+       about this BGP neighbor.
+     </p>
+      <column name="statistics" key="bgp-peer-established-count">
+      This indicates the number of times peers have been established.
+      </column>
+      <column name="statistics" key="bgp-peer-dropped-count">
+      This indicates the number of times peers have been dropped
+      from the established state.
+      </column>
+      <column name="statistics" key="bgp-peer-open_in-count">
+      This indicates how many times an open message has been received.
+      </column>
+      <column name="statistics" key="bgp-peer-open_out-count">
+      This indicates how many times an open message has been sent.
+      </column>
+      <column name="statistics" key="bgp-peer-update_in-count">
+      This indicates how many times an update message has been received.
+      </column>
+      <column name="statistics" key="bgp-peer-update_out-count">
+      This indicates how many times an update message has been sent.
+      </column>
+      <column name="statistics" key="bgp-peer-keepalive_in-count">
+      This indicates how many times a keepalive message has been received.
+      </column>
+      <column name="statistics" key="bgp-peer-keepalive_out-count">
+      This indicates how many times a keepalive message has been sent.
+      </column>
+      <column name="statistics" key="bgp-peer-notify_in-count">
+      This indicates how many times a notify message has been received.
+      </column>
+      <column name="statistics" key="bgp-peer-notify_out-count">
+      This indicates how many times a notify message has been sent.
+      </column>
+      <column name="statistics" key="bgp-peer-refresh_in-count">
+      This indicates how many times a frefresh message has been received.
+      </column>
+      <column name="statistics" key="bgp-peer-refresh_out-count">
+      This indicates how many times a refresh message has been sent.
+      </column>
+      <column name="statistics" key="bgp-peer-dynamic_cap_in-count">
+      This indicates how many times a dynamic cap message has been received.
+      </column>
+      <column name="statistics" key="bgp-peer-dynamic_cap_out-count">
+      This indicates how many times a dynamic cap message has been sent.
+      </column>
+      <column name="statistics" key="bgp-peer-uptime">
+      This indicates how long since peer has been in the established state,
+      or since the last route update was received.
+      </column>
+      <column name="statistics" key="bgp-peer-readtime">
+      This indicates the last time an update or keepalive message has been
+      received.
+      </column>
+      <column name="statistics" key="bgp-peer-resettime">
+      Indicates the last time peer was reset.
+      </column>
    </group>
 
   </table>
