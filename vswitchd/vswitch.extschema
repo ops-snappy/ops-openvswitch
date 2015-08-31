@@ -1330,13 +1330,6 @@
             }
           }
         },
-        "is_peer_group": {
-          "type": {
-            "key": {
-              "type": "boolean"
-            }
-          }
-        },
         "name": {
           "category": "configuration",
           "type": {
@@ -1344,6 +1337,16 @@
               "type": "string",
               "maxLength":80
             }
+          }
+        },
+        "is_peer_group": {
+          "category": "configuration",
+          "type": {
+            "key": {
+              "type": "boolean"
+            },
+            "min": 0,
+            "max": 1
           }
         },
         "description": {
@@ -1367,7 +1370,17 @@
             "max": 1
           }
         },
-         "remove_private_as": {
+        "remove_private_as": {
+          "category": "configuration",
+          "type": {
+            "key": {
+              "type": "boolean"
+            },
+            "min": 0,
+            "max": 1
+          }
+        },
+        "passive": {
           "category": "configuration",
           "type": {
             "key": {
@@ -1446,15 +1459,6 @@
              "max": 1
           }
         },
-        "active": {
-          "type": {
-            "key": {
-              "type": "boolean"
-            },
-            "min": 0,
-            "max": 1
-          }
-        },
         "tcp_port_number": {
           "type": {
             "key": {
@@ -1518,16 +1522,6 @@
           }
         },
         "inbound_soft_reconfiguration": {
-          "category": "configuration",
-          "type": {
-            "key": {
-              "type": "boolean"
-            },
-            "min": 0,
-            "max": 1
-          }
-        },
-        "passive": {
           "category": "configuration",
           "type": {
             "key": {

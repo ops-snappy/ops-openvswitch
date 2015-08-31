@@ -147,10 +147,10 @@ run_stats_update(void)
                 iface_refresh_stats(iface);
             }
         }
-    }
 
-    stats_timer = time_msec() + stats_timer_interval;
-    poll_timer_wait_until(stats_timer);
+        stats_timer = time_msec() + stats_timer_interval;
+        poll_timer_wait_until(stats_timer);
+    }
 }
 
 /* Public functions. */
