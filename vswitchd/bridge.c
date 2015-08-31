@@ -966,6 +966,7 @@ bridge_reconfigure(const struct ovsrec_open_vswitch *ovs_cfg)
 #endif
                     /* Clear eventual previous errors */
                     ovsrec_interface_set_error(iface->cfg, NULL);
+
 #ifndef HALON_TEMP
                     iface_configure_cfm(iface);
                     iface_configure_qos(iface, port->cfg->qos);
@@ -2395,12 +2396,22 @@ iface_do_create(const struct bridge *br,
     }
 
 #ifdef HALON
+    /* Initialize mac to default system mac.
+     * For internal interface system mac will be used.
+     * For hw interfaces this will be changed to mac from hw_intf_info
+     */
+    error = netdev_set_etheraddr(netdev, br->default_ea);
+
+    if (error) {
+        goto error;
+    }
+
     error = netdev_set_hw_intf_info(netdev, &(iface_cfg->hw_intf_info));
+
     if (error) {
         goto error;
     }
 #endif
-
     error = iface_set_netdev_config(iface_cfg, netdev, errp);
     if (error) {
         goto error;
@@ -3887,7 +3898,9 @@ static void
 bridge_create(const struct ovsrec_bridge *br_cfg)
 {
     struct bridge *br;
-
+#ifdef HALON
+    const struct ovsrec_open_vswitch* ovs = ovsrec_open_vswitch_first(idl);
+#endif
     ovs_assert(!bridge_lookup(br_cfg->name));
     br = xzalloc(sizeof *br);
 
@@ -3895,10 +3908,15 @@ bridge_create(const struct ovsrec_bridge *br_cfg)
     br->type = xstrdup(ofproto_normalize_type(br_cfg->datapath_type));
     br->cfg = br_cfg;
 
+#ifdef HALON
+    /* Use system mac as default mac */
+    memcpy(br->default_ea, ether_aton(ovs->system_mac), ETH_ADDR_LEN);
+#else
     /* Derive the default Ethernet address from the bridge's UUID.  This should
      * be unique and it will be stable between ovs-vswitchd runs.  */
     memcpy(br->default_ea, &br_cfg->header_.uuid, ETH_ADDR_LEN);
     eth_addr_mark_random(br->default_ea);
+#endif
 
     hmap_init(&br->ports);
     hmap_init(&br->ifaces);
@@ -3917,6 +3935,7 @@ static void
 vrf_create(const struct ovsrec_vrf *vrf_cfg)
 {
     struct vrf *vrf;
+    const struct ovsrec_open_vswitch *ovs = ovsrec_open_vswitch_first(idl);
 
     ovs_assert(!vrf_lookup(vrf_cfg->name));
     vrf = xzalloc(sizeof *vrf);
@@ -3925,10 +3944,8 @@ vrf_create(const struct ovsrec_vrf *vrf_cfg)
     vrf->up.type = xstrdup("vrf");
     vrf->cfg = vrf_cfg;
 
-    /* Derive the default Ethernet address from the bridge's UUID.  This should
-     * be unique and it will be stable between ovs-vswitchd runs.  */
-    memcpy(vrf->up.default_ea, &vrf_cfg->header_.uuid, ETH_ADDR_LEN);
-    eth_addr_mark_random(vrf->up.default_ea);
+    /* Use system mac as default mac */
+    memcpy(&vrf->up.default_ea, ether_aton(ovs->system_mac), ETH_ADDR_LEN);
 
     hmap_init(&vrf->up.ports);
     hmap_init(&vrf->up.ifaces);
@@ -5235,6 +5252,7 @@ iface_set_mac(const struct bridge *br, const struct port *port, struct iface *if
         }
     }
 }
+
 /* Sets the ofport column of 'if_cfg' to 'ofport'. */
 static void
 iface_set_ofport(const struct ovsrec_interface *if_cfg, ofp_port_t ofport)
@@ -6186,7 +6204,7 @@ vrf_add_neighbors(struct vrf *vrf)
     OVSREC_NEIGHBOR_FOR_EACH(idl_neighbor, idl) {
        if (strcmp(vrf->cfg->name, idl_neighbor->vrf->name) == 0 ) {
            neighbor = neighbor_hash_lookup(vrf, idl_neighbor->ip_address);
-           if (!neighbor) {
+           if (!neighbor && idl_neighbor->port) {
                neighbor_create(vrf, idl_neighbor);
            }
        }
@@ -6258,7 +6276,7 @@ vrf_reconfigure_neighbors(struct vrf *vrf)
     VLOG_DBG("Adding newly added idl neighbors");
     OVSREC_NEIGHBOR_FOR_EACH(idl_neighbor, idl) {
         neighbor = neighbor_hash_lookup(vrf, idl_neighbor->ip_address);
-        if (!neighbor) {
+        if (!neighbor && idl_neighbor->port) {
             neighbor_create(vrf, idl_neighbor);
         }
     }
@@ -6276,7 +6294,10 @@ vrf_reconfigure_neighbors(struct vrf *vrf)
 
                 neighbor = neighbor_hash_lookup(vrf, idl_neighbor->ip_address);
                 if (neighbor) {
-                    neighbor_modify(neighbor, idl_neighbor);
+                    if(idl_neighbor->port)
+                        neighbor_modify(neighbor, idl_neighbor);
+                    else
+                        neighbor_delete(vrf, neighbor);
                 }
             }
         }
