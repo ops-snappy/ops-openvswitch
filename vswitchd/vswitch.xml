@@ -947,6 +947,10 @@
       <column name="ports">
         Ports included in the VRF.
       </column>
+
+      <column name="bgp_routers">
+        BGP routers keyed by ASN value.
+      </column>
     </group>
    <group title="Common Columns">
       The overall purpose of these columns is described under <code>Common
@@ -988,6 +992,9 @@
       <column name="name">
         Reference to the VRF table, to which this route belongs.
       </column>
+      <column name="route_map_entries">
+        Route map entries keyed by preference value.
+      </column>
     </group>
    <group title="Status">
       <column name="status" >
@@ -1003,15 +1010,9 @@
       </column>
    </group>
   </table>
-  <table name="Route_Map_Entries" title="Route Map Entries">
+  <table name="Route_Map_Entry" title="Route Map Entry">
     <group title="Global Route Map Entries Configuration">
-      <column name="route_map">
-        These are references to the route map in the route map table.
-      </column>
       <column name="description">
-      </column>
-      <column name="preference">
-        This is the order that route map is processed.
       </column>
       <column name="action">
         There are three types, permit, deny, and any.
@@ -1052,6 +1053,9 @@
       <column name="name">
         Name of the prefix list.
       </column>
+      <column name="prefix_list_entries">
+        Prefix list entries keyed by preference value.
+      </column>
       <column name="description">
       </column>
    </group>
@@ -1066,13 +1070,8 @@
    </group>
   </table>
 
-  <table name="Prefix_List_Entries" title="Prefix List Entries">
+  <table name="Prefix_List_Entry" title="Prefix List Entry">
     <group title="Global Prefix List Entries Configuration">
-      <column name="prefix_list">
-        These are references to the route map in the route map table.
-      </column>
-      <column name="sequence">
-      </column>
       <column name="le">
       </column>
       <column name="ge">
@@ -1252,11 +1251,6 @@
     <group title="Configuration">
       BGP_router includes all bgp config related information. The entries are
       created on per asn basis.
-      <column name="asn">
-      Specifies the autonomous system number for given bgp router. Single BGP instance
-      can have configuration for single asn.
-      ASN Range: 1-4294967295.
-      </column>
       <column name="router_id">
       Specifies the router-id for given ASN.
       </column>
@@ -1296,8 +1290,9 @@
       Range: 1-3600 seconds.
       Default value is 360 seconds.
       </column>
-      <column name="vrf">
-      Provides VRF reference to given bgp router.
+      <column name="bgp_neighbors">
+        BGP neighbors or neighbor groups, keyed by IP for the former or any
+	string name for the latter.
       </column>
     </group>
    <group title="Status">
@@ -1321,22 +1316,11 @@
 
     <group title="Neighbor Configuration">
 
-      <column name="bgp_router">
-      This identifies the BGP router instance this entry belongs to.
-      All entries belong to a BGP router instance.
-      </column>
-
       <column name="is_peer_group">
       This is a flag which identifies whether this specific entry is
       an individual BGP neighbor or is a BGP peer group.  A value
       of true implies a peer group.  Otherwise, the entry represents
       a BGP neighbor.  If the value is not set, it implies false.
-      </column>
-
-      <column name="name">
-      For a row which is a BGP neighbor, this is the peer IP address.
-      If however, the row represents a peer group, then it is the name
-      of that peer group.
       </column>
 
       <column name="description">

@@ -549,6 +549,22 @@
             "max": "unlimited"
           }
         },
+         "bgp_routers": {
+          "category": "child",
+          "type": {
+            "key": {
+              "type": "integer",
+              "minInteger": 1,
+              "maxInteger": 4294967295
+            },
+            "value": {
+              "type": "uuid",
+              "refTable": "BGP_Router"
+            },
+            "min": 0,
+            "max": "unlimited"
+          }
+        },
         "other_config": {
           "category": "configuration",
           "type": {
@@ -605,6 +621,22 @@
             }
           }
         },
+         "route_map_entries": {
+          "category": "child",
+          "type": {
+            "key": {
+              "type": "integer",
+              "minInteger": 0,
+              "maxInteger": 4294967295
+            },
+            "value": {
+              "type": "uuid",
+              "refTable": "Route_Map_Entry"
+            },
+            "min": 0,
+            "max": "unlimited"
+          }
+        },
         "status": {
           "category": "status",
           "type": {
@@ -641,18 +673,9 @@
       ],
       "isRoot": true
     },
-    "Route_Map_Entries": {
+    "Route_Map_Entry": {
       "columns": {
-        "route_map": {
-          "category": "parent",
-          "type": {
-            "key": {
-              "type": "uuid",
-              "refTable": "Route_Map"
-            }
-          }
-        },
-        "description": {
+       "description": {
           "category": "configuration",
           "type": {
             "key": {
@@ -662,10 +685,6 @@
             "min": 0,
             "max": 1
           }
-        },
-        "preference": {
-          "category": "configuration",
-          "type": "integer"
         },
         "action": {
           "category": "configuration",
@@ -704,7 +723,7 @@
           "type": {
             "key": {
               "type": "uuid",
-              "refTable": "Route_Map_Entries"
+              "refTable": "Route_Map_Entry"
             },
             "min": 0,
             "max": 1
@@ -715,7 +734,7 @@
           "type": {
             "key": {
               "type": "uuid",
-              "refTable": "Route_Map_Entries"
+              "refTable": "Route_Map_Entry"
             },
             "min": 0,
             "max": 1
@@ -767,14 +786,7 @@
             "max": "unlimited"
           }
         }
-      },
-      "indexes": [
-        [
-          "route_map",
-          "preference"
-        ]
-      ],
-      "isRoot": true
+      }
     },
     "Prefix_List": {
       "columns": {
@@ -796,6 +808,22 @@
             },
             "min": 0,
             "max": 1
+          }
+        },
+         "prefix_list_entries": {
+          "category": "child",
+          "type": {
+            "key": {
+              "type": "integer",
+              "minInteger": 0,
+              "maxInteger": 4294967295
+            },
+            "value": {
+              "type": "uuid",
+              "refTable": "Prefix_List_Entry"
+            },
+            "min": 0,
+            "max": "unlimited"
           }
         },
         "other_config": {
@@ -824,27 +852,8 @@
       ],
       "isRoot": true
     },
-    "Prefix_List_Entries": {
+    "Prefix_List_Entry": {
       "columns": {
-        "prefix_list": {
-          "category": "parent",
-          "type": {
-            "key": {
-              "type": "uuid",
-              "refTable": "Prefix_List"
-            }
-          }
-        },
-        "sequence": {
-          "category": "configuration",
-          "type": {
-            "key": {
-              "type": "integer",
-              "minInteger": 1,
-              "maxInteger": 4294967295
-            }
-          }
-        },
         "le": {
           "category": "configuration",
           "type": {
@@ -911,14 +920,7 @@
             "max": "unlimited"
           }
         }
-      },
-      "indexes": [
-        [
-          "prefix_list",
-          "sequence"
-        ]
-      ],
-      "isRoot": true
+      }
     },
 
     "Route": {
@@ -1171,16 +1173,6 @@
     },
     "BGP_Router": {
       "columns": {
-        "asn": {
-          "category": "configuration",
-          "type": {
-             "key": {
-              "type": "integer",
-              "minInteger": 1,
-              "maxInteger": 4294967295
-             }
-          }
-        },
         "router_id": {
           "category": "configuration",
           "type": {
@@ -1273,16 +1265,23 @@
              "max": 1
           }
         },
-        "vrf": {
-         "category": "parent",
-         "type": {
+         "bgp_neighbors": {
+          "category": "child",
+          "type": {
             "key": {
+              "type": "string",
+              "maxLength":80
+            },
+            "value": {
               "type": "uuid",
-              "refTable": "VRF"
-            }
+              "refTable": "BGP_Neighbor"
+            },
+            "min": 0,
+            "max": "unlimited"
           }
         },
-        "status": {
+
+       "status": {
           "category": "status",
           "type": {
             "key": "string",
@@ -1310,35 +1309,10 @@
             "max": "unlimited"
           }
         }
-      },
-      "indexes": [
-        [
-          "vrf",
-          "asn"
-        ]
-      ],
-      "isRoot": true
+      }
     },
     "BGP_Neighbor": {
       "columns": {
-        "bgp_router": {
-          "category": "parent",
-          "type": {
-            "key": {
-              "type": "uuid",
-              "refTable": "BGP_Router"
-            }
-          }
-        },
-        "name": {
-          "category": "configuration",
-          "type": {
-            "key": {
-              "type": "string",
-              "maxLength":80
-            }
-          }
-        },
         "is_peer_group": {
           "category": "configuration",
           "type": {
@@ -1620,11 +1594,7 @@
             "max": "unlimited"
           }
         }
-      },
-      "indexes": [
-        [ "bgp_router", "name" ]
-      ],
-      "isRoot": true
+      }
     },
     "Neighbor": {
       "columns": {
