@@ -15,7 +15,9 @@ vswitchd_ovs_vswitchd_SOURCES = \
 
 if OPEN_HALON
 vswitchd_ovs_vswitchd_SOURCES += \
-    vswitchd/bufmon.c
+    vswitchd/bufmon.c \
+	vswitchd/vrf.c \
+	vswitchd/vrf.h
 endif
 
 vswitchd_ovs_vswitchd_LDADD = \
