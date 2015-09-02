@@ -2465,7 +2465,12 @@
             "max": "unlimited"
           }
         }
-      }
+      },
+      "indexes": [
+        [
+          "name"
+        ]
+      ]
     },
     "LED": {
       "columns": {
@@ -2533,7 +2538,12 @@
             "max": "unlimited"
           }
         }
-      }
+      },
+      "indexes": [
+        [
+          "id"
+        ]
+      ]
     },
     "Temp_sensor": {
       "columns": {
