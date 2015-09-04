@@ -14,7 +14,7 @@
 # WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 # License for the specific language governing permissions and limitations
 # under the License.
-
+"""
 import lib
 import pytest
 import re
@@ -402,3 +402,4 @@ class Test_vlan_ping:
         wrkston03Obj = self.topoObj.deviceObjGet(device="wrkston03")
         wrkston04Obj = self.topoObj.deviceObjGet(device="wrkston04")
         ping_vlan(switch=dut01Obj, host1=wrkston01Obj, host2=wrkston02Obj, host3=wrkston03Obj, host4=wrkston04Obj)
+"""
