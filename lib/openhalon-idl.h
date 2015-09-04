@@ -130,6 +130,7 @@ enum ovsrec_interface_pm_info_power_mode_e {
     INTERFACE_PM_INFO_POWER_MODE_LOW
 };
 
+#define INTERFACE_TYPE_INTERNAL                                 "internal"
 #define INTERFACE_OTHER_CONFIG_MAP_LACP_PORT_ID                 "lacp-port-id"
 #define INTERFACE_OTHER_CONFIG_MAP_LACP_PORT_PRIORITY           "lacp-port-priority"
 #define INTERFACE_OTHER_CONFIG_MAP_LACP_AGGREGATION_KEY         "lacp-aggregation-key"
@@ -306,6 +307,9 @@ enum ovsrec_interface_hw_intf_info_pluggable_e {
     INTERFACE_HW_INTF_INFO_PLUGGABLE_FALSE,
     INTERFACE_HW_INTF_INFO_PLUGGABLE_TRUE
 };
+
+#define INTERFACE_HW_INTF_INFO_MAP_TYPE                         "type"
+#define INTERFACE_HW_INTF_INFO_MAP_TYPE_BRIDGE                  "bridge"
 
 #define INTERFACE_HW_BOND_CONFIG_MAP_RX_ENABLED                 "rx_enabled"
 #define INTERFACE_HW_BOND_CONFIG_MAP_TX_ENABLED                 "tx_enabled"
