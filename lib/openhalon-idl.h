@@ -497,6 +497,9 @@ enum ovsrec_interface_hw_bond_config_enabled_e {
 #define OVSDB_NEIGHBOR_STATUS_DP_HIT                "dp_hit"
 #define OVSDB_NEIGHBOR_STATUS_MAP_DP_HIT_DEFAULT    true
 
+/****************************** NEXTHOP TABLE ***************************/
+#define OVSDB_NEXTHOP_STATUS_ERROR                     "error"
+
 /* Management Interface Column */
 #define OPEN_VSWITCH_MGMT_INTF_MAP_MODE                 "mode"
 
