@@ -7,3 +7,4 @@
 
 s["idlPrefix"] = "ovsrec_"
 s["idlHeader"] = "\"lib/vswitch-idl.h\""
+s["idlTableAliases"] = [{"target":"system", "name":"open_vswitch"}]
