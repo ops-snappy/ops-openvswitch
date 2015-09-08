@@ -2466,6 +2466,13 @@
       single port or can be split into four 10G split ports using a QSFP+
       splitter cable.
     </column>
+    <column name="hw_intf_info" key="bridge"
+      type='{"type": "boolean"}'>
+      Boolean value indicating interface is a `bridge' interface which is
+      created for every bridge instance. The `bridge' interface receives all
+      VLAN traffic and distributes to the vlan interfaces based on the VLAN
+      tags. The default value is `false'
+    </column>
     <column name="split_parent">
       For a split child interface, this is the reference to the parent <ref table="Interface"/>.
     </column>

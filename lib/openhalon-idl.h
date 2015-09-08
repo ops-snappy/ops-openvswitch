@@ -310,6 +310,12 @@ enum ovsrec_interface_hw_intf_info_pluggable_e {
 
 #define INTERFACE_HW_INTF_INFO_MAP_TYPE                         "type"
 #define INTERFACE_HW_INTF_INFO_MAP_TYPE_BRIDGE                  "bridge"
+/* OPS_TODO: Remove above INTERFACE_HW_INTF_INFO_MAP_TYPE
+   and INTERFACE_HW_INTF_INFO_MAP_TYPE_BRIDGE
+   after fixing daemons */
+#define INTERFACE_HW_INTF_INFO_MAP_BRIDGE                       "bridge"
+#define INTERFACE_HW_INTF_INFO_MAP_BRIDGE_FALSE                 "false"
+#define INTERFACE_HW_INTF_INFO_MAP_BRIDGE_TRUE                  "true"
 
 #define INTERFACE_HW_BOND_CONFIG_MAP_RX_ENABLED                 "rx_enabled"
 #define INTERFACE_HW_BOND_CONFIG_MAP_TX_ENABLED                 "tx_enabled"
