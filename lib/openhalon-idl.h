@@ -471,6 +471,15 @@ enum ovsrec_interface_hw_bond_config_enabled_e {
 #define OVSDB_ROUTE_PROTOCOL_SPECIFIC_BGP_IBGP           "BGP_iBGP"
 #define OVSDB_ROUTE_PROTOCOL_SPECIFIC_BGP_UPTIME         "BGP_uptime"
 
+/* BGP_ROUTE table path_attributes column definitions */
+#define OVSDB_BGP_ROUTE_PATH_ATTRIBUTES_FLAGS          "BGP_flags"
+#define OVSDB_BGP_ROUTE_PATH_ATTRIBUTES_AS_PATH        "BGP_AS_path"
+#define OVSDB_BGP_ROUTE_PATH_ATTRIBUTES_ORIGIN         "BGP_origin"
+#define OVSDB_BGP_ROUTE_PATH_ATTRIBUTES_LOC_PREF       "BGP_loc_pref"
+#define OVSDB_BGP_ROUTE_PATH_ATTRIBUTES_INTERNAL       "BGP_internal"
+#define OVSDB_BGP_ROUTE_PATH_ATTRIBUTES_IBGP           "BGP_iBGP"
+#define OVSDB_BGP_ROUTE_PATH_ATTRIBUTES_UPTIME         "BGP_uptime"
+
 /* BGP Neighbor state, goes into "status" column */
 #define BGP_PEER_STATE                          "bgp-peer-state"
 
