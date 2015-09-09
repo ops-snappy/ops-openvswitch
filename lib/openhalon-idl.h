@@ -529,4 +529,13 @@ enum ovsrec_interface_hw_bond_config_enabled_e {
 #define BUFMON_CONFIG_MAP_TRIGGER_RATE_LIMIT                    "threshold_trigger_rate_limit"
 #define BUFMON_CONFIG_MAP_SNAPSHOT_ON_THRESHOLD_TRIGGER         "snapshot_on_threshold_trigger"
 #define BUFMON_INFO_MAP_LAST_COLLECTION_TIMESTAMP               "last_collection_timestamp"
+
+/* ECMP configuration (ecmp_config)*/
+#define OPEN_VSWITCH_ECMP_CONFIG_STATUS                         "enabled"
+#define OPEN_VSWITCH_ECMP_CONFIG_HASH_SRC_IP                    "hash_srcip_enabled"
+#define OPEN_VSWITCH_ECMP_CONFIG_HASH_SRC_PORT                  "hash_srcport_enabled"
+#define OPEN_VSWITCH_ECMP_CONFIG_HASH_DST_IP                    "hash_dstip_enabled"
+#define OPEN_VSWITCH_ECMP_CONFIG_HASH_DST_PORT                  "hash_dstport_enabled"
+#define OPEN_VSWITCH_ECMP_CONFIG_ENABLE_DEFAULT                 "true"
+
 #endif /* OPENHALON_IDL_HEADER */
