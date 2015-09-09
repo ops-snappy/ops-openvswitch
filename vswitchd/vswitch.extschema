@@ -1596,6 +1596,166 @@
         }
       }
     },
+    "BGP_Route": {
+      "columns": {
+        "vrf": {
+          "category": "parent",
+          "type": {
+            "key": {
+              "type": "uuid",
+              "refTable": "VRF",
+              "refType" : "weak"
+            }
+          },
+          "mutable": false
+        },
+        "prefix": {
+          "category": "status",
+          "type": {
+            "key": {
+              "type": "string",
+              "maxLength": 49
+            }
+          },
+          "mutable": false
+        },
+        "peer": {
+          "category": "status",
+          "type": {
+            "key": {
+              "type": "string",
+              "maxLength": 45
+            }
+          }
+        },
+        "address_family": {
+          "category": "status",
+          "type": {
+            "key": {
+              "type": "string",
+              "enum": [
+                "set",
+                [
+                  "ipv4",
+                  "ipv6"
+                ]
+              ]
+            },
+            "min": 0,
+            "max": 1
+          },
+          "mutable": false
+        },
+        "sub_address_family": {
+          "category": "status",
+          "type": {
+            "key": {
+              "type": "string",
+              "enum": [
+                "set",
+                [
+                  "unicast",
+                  "multicast",
+                  "vpn"
+                ]
+              ]
+            },
+            "min": 0,
+            "max": 1
+          },
+          "mutable": false
+        },
+        "distance": {
+          "category": "status",
+          "type": {
+            "key": {
+              "type": "integer",
+              "minInteger": 0,
+              "maxInteger": 255
+            },
+            "min": 0,
+            "max": 1
+          },
+          "mutable": false
+        },
+        "metric": {
+          "category": "status",
+          "type": {
+            "key": {
+              "type": "integer",
+              "minInteger": 0,
+              "maxInteger": 4294967295
+            },
+            "min": 0,
+            "max": 1
+          },
+          "mutable": false
+        },
+        "bgp_nexthops": {
+          "category": "child",
+          "type": {
+            "key": {
+              "type": "uuid",
+              "refTable": "BGP_Nexthop"
+            },
+            "min": 0,
+            "max": "unlimited"
+          }
+        },
+        "path_attributes": {
+          "category": "status",
+          "type": {
+            "key": "string",
+            "value": "string",
+            "min": 0,
+            "max": "unlimited"
+          }
+        }
+
+      },
+      "indexes": [
+        [
+          "vrf",
+          "prefix",
+          "peer"
+        ]
+      ],
+      "isRoot": true
+    },
+
+    "BGP_Nexthop": {
+      "columns": {
+        "ip_address": {
+          "category": "status",
+          "type": {
+            "key": {
+              "type": "string",
+              "maxLength": 45
+            },
+            "min": 0,
+            "max": 1
+          },
+          "mutable": false
+        },
+        "type": {
+          "category": "status",
+          "type": {
+            "key": {
+              "type": "string",
+              "enum": [
+                "set",
+                [
+                  "unicast"
+                ]
+              ]
+            },
+            "min": 0,
+            "max": 1
+          }
+        }
+      }
+    },
+
     "Neighbor": {
       "columns": {
         "vrf": {
@@ -2435,7 +2595,12 @@
             "max": "unlimited"
           }
         }
-      }
+      },
+      "indexes": [
+        [
+          "name"
+        ]
+      ]
     },
     "LED": {
       "columns": {
@@ -2503,7 +2668,12 @@
             "max": "unlimited"
           }
         }
-      }
+      },
+      "indexes": [
+        [
+          "id"
+        ]
+      ]
     },
     "Temp_sensor": {
       "columns": {
