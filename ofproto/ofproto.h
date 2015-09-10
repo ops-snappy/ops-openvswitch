@@ -208,6 +208,50 @@ struct ofproto_controller {
     uint8_t dscp;               /* DSCP value for controller connection. */
 };
 
+#ifdef HALON
+
+#define OFPROTO_MAX_NH_PER_ROUTE    32 /* maximum number of nexthops per route.
+                                          only consider non-weighted ECMP now */
+enum ofproto_route_family {
+    OFPROTO_ROUTE_IPV4,
+    OFPROTO_ROUTE_IPV6
+};
+
+enum ofproto_route_action {
+    OFPROTO_ROUTE_ADD,
+    OFPROTO_ROUTE_DELETE,
+    OFPROTO_ROUTE_DELETE_NH
+};
+
+enum ofproto_nexthop_state {
+    OFPROTO_NH_UNRESOLVED,
+    OFPROTO_NH_RESOLVED
+};
+
+enum ofproto_nexthop_type {
+    OFPROTO_NH_IPADDR,
+    OFPROTO_NH_PORT
+};
+
+struct ofproto_route_nexthop {
+    char *id;                         /* IP address or Port name */
+    enum ofproto_nexthop_type type;
+    enum ofproto_nexthop_state state; /* is arp resolved for this next hop */
+    int  rc;                          /* rc = 0 means success */
+    const char *err_str;              /* set if rc != 0 */
+    int  l3_egress_id;
+};
+
+struct ofproto_route {
+    enum ofproto_route_family family;
+    char *prefix;
+
+    uint8_t  n_nexthops;              /* number of nexthops */
+    struct ofproto_route_nexthop nexthops[OFPROTO_MAX_NH_PER_ROUTE]; /* nexthops */
+};
+
+#endif
+
 void ofproto_enumerate_types(struct sset *types);
 const char *ofproto_normalize_type(const char *);
 
@@ -452,6 +496,9 @@ int ofproto_delete_l3_host_entry(struct ofproto *ofproto, void *aux,
 
 int ofproto_get_l3_host_hit(struct ofproto *ofproto, void *aux,
                             bool addr_type, char *ip_addr, bool *hit_bit);
+int ofproto_l3_route_action(struct ofproto *ofproto,
+                            enum ofproto_route_action action,
+                            struct ofproto_route *route);
 #endif
 
 /* Configuration of mirrors. */

@@ -1789,7 +1789,9 @@
                   "ipv6"
                 ]
               ]
-            }
+            },
+            "min": 0,
+            "max": 1
           }
         },
         "mac": {
@@ -1915,7 +1917,9 @@
                   "down"
                 ]
               ]
-            }
+            },
+            "min": 0,
+            "max": 1
           }
         },
         "oper_state_reason": {
@@ -1932,7 +1936,9 @@
                   "no_member_port"
                 ]
               ]
-            }
+            },
+            "min": 0,
+            "max": 1
           }
         },
         "internal_usage": {
@@ -2565,7 +2571,9 @@
                   "fault"
                 ]
               ]
-            }
+            },
+            "min": 0,
+            "max": 1
           },
           "ephemeral": true
         },
@@ -2622,7 +2630,9 @@
                   "flashing"
                 ]
               ]
-            }
+            },
+            "min": 0,
+            "max": 1
           }
         },
         "status": {
@@ -2638,7 +2648,9 @@
                   "fault"
                 ]
               ]
-            }
+            },
+            "min": 0,
+            "max": 1
           },
           "ephemeral": true
         },
@@ -2716,7 +2728,9 @@
                   "emergency"
                 ]
               ]
-            }
+            },
+            "min": 0,
+            "max": 1
           },
           "ephemeral": true
         },
@@ -2793,7 +2807,9 @@
                   "unknown"
                 ]
               ]
-            }
+            },
+            "min": 0,
+            "max": 1
           },
           "ephemeral": true
         },

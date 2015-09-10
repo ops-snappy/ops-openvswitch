@@ -67,6 +67,7 @@ def cMembers(prefix, columnName, column, const):
 def printCIDLHeader(schemaFile):
     schema = parseSchema(schemaFile)
     prefix = schema.idlPrefix
+    aliases = schema.idlTableAliases
     print '''\
 /* Generated automatically -- do not modify!    -*- buffer-read-only: t -*- */
 
@@ -96,6 +97,13 @@ def printCIDLHeader(schemaFile):
                                (ovsrec_col_struct.modify_seqno > my_seqno)'''\
                                % {'prefix': prefix.upper()}
 
+
+    if aliases:
+        print
+        for alias in aliases:
+            print "#define %s%s %s%s" % (prefix, alias["name"],
+                                         prefix, alias["target"])
+        print
 
     for tableName, table in sorted(schema.tables.iteritems()):
         structName = "%s%s" % (prefix, tableName.lower())

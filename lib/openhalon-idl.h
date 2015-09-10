@@ -130,6 +130,7 @@ enum ovsrec_interface_pm_info_power_mode_e {
     INTERFACE_PM_INFO_POWER_MODE_LOW
 };
 
+#define INTERFACE_TYPE_INTERNAL                                 "internal"
 #define INTERFACE_OTHER_CONFIG_MAP_LACP_PORT_ID                 "lacp-port-id"
 #define INTERFACE_OTHER_CONFIG_MAP_LACP_PORT_PRIORITY           "lacp-port-priority"
 #define INTERFACE_OTHER_CONFIG_MAP_LACP_AGGREGATION_KEY         "lacp-aggregation-key"
@@ -307,6 +308,9 @@ enum ovsrec_interface_hw_intf_info_pluggable_e {
     INTERFACE_HW_INTF_INFO_PLUGGABLE_TRUE
 };
 
+#define INTERFACE_HW_INTF_INFO_MAP_TYPE                         "type"
+#define INTERFACE_HW_INTF_INFO_MAP_TYPE_BRIDGE                  "bridge"
+
 #define INTERFACE_HW_BOND_CONFIG_MAP_RX_ENABLED                 "rx_enabled"
 #define INTERFACE_HW_BOND_CONFIG_MAP_TX_ENABLED                 "tx_enabled"
 
@@ -467,6 +471,15 @@ enum ovsrec_interface_hw_bond_config_enabled_e {
 #define OVSDB_ROUTE_PROTOCOL_SPECIFIC_BGP_IBGP           "BGP_iBGP"
 #define OVSDB_ROUTE_PROTOCOL_SPECIFIC_BGP_UPTIME         "BGP_uptime"
 
+/* BGP_ROUTE table path_attributes column definitions */
+#define OVSDB_BGP_ROUTE_PATH_ATTRIBUTES_FLAGS          "BGP_flags"
+#define OVSDB_BGP_ROUTE_PATH_ATTRIBUTES_AS_PATH        "BGP_AS_path"
+#define OVSDB_BGP_ROUTE_PATH_ATTRIBUTES_ORIGIN         "BGP_origin"
+#define OVSDB_BGP_ROUTE_PATH_ATTRIBUTES_LOC_PREF       "BGP_loc_pref"
+#define OVSDB_BGP_ROUTE_PATH_ATTRIBUTES_INTERNAL       "BGP_internal"
+#define OVSDB_BGP_ROUTE_PATH_ATTRIBUTES_IBGP           "BGP_iBGP"
+#define OVSDB_BGP_ROUTE_PATH_ATTRIBUTES_UPTIME         "BGP_uptime"
+
 /* BGP Neighbor state, goes into "status" column */
 #define BGP_PEER_STATE                          "bgp-peer-state"
 
@@ -497,6 +510,9 @@ enum ovsrec_interface_hw_bond_config_enabled_e {
 #define OVSDB_NEIGHBOR_STATUS_DP_HIT                "dp_hit"
 #define OVSDB_NEIGHBOR_STATUS_MAP_DP_HIT_DEFAULT    true
 
+/****************************** NEXTHOP TABLE ***************************/
+#define OVSDB_NEXTHOP_STATUS_ERROR                     "error"
+
 /* Management Interface Column */
 #define OPEN_VSWITCH_MGMT_INTF_MAP_MODE                 "mode"
 
@@ -522,4 +538,13 @@ enum ovsrec_interface_hw_bond_config_enabled_e {
 #define BUFMON_CONFIG_MAP_TRIGGER_RATE_LIMIT                    "threshold_trigger_rate_limit"
 #define BUFMON_CONFIG_MAP_SNAPSHOT_ON_THRESHOLD_TRIGGER         "snapshot_on_threshold_trigger"
 #define BUFMON_INFO_MAP_LAST_COLLECTION_TIMESTAMP               "last_collection_timestamp"
+
+/* ECMP configuration (ecmp_config)*/
+#define OPEN_VSWITCH_ECMP_CONFIG_STATUS                         "enabled"
+#define OPEN_VSWITCH_ECMP_CONFIG_HASH_SRC_IP                    "hash_srcip_enabled"
+#define OPEN_VSWITCH_ECMP_CONFIG_HASH_SRC_PORT                  "hash_srcport_enabled"
+#define OPEN_VSWITCH_ECMP_CONFIG_HASH_DST_IP                    "hash_dstip_enabled"
+#define OPEN_VSWITCH_ECMP_CONFIG_HASH_DST_PORT                  "hash_dstport_enabled"
+#define OPEN_VSWITCH_ECMP_CONFIG_ENABLE_DEFAULT                 "true"
+
 #endif /* OPENHALON_IDL_HEADER */

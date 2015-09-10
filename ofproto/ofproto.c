@@ -7206,4 +7206,22 @@ ofproto_get_l3_host_hit(struct ofproto *ofproto, void *aux,
 
     return rc;
 } /* ofproto_get_l3_host_hit */
+
+/* Route updates */
+int
+ofproto_l3_route_action(struct ofproto *ofproto,
+                        enum ofproto_route_action action,
+                        struct ofproto_route *route)
+{
+    int rc;
+
+    rc = ofproto->ofproto_class->l3_route_action ?
+         ofproto->ofproto_class->l3_route_action(ofproto, action, route) :
+         EOPNOTSUPP;
+
+    VLOG_DBG("l3_route_action rc=(%d), action %d", rc, action);
+
+    return rc;
+}
+
 #endif

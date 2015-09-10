@@ -1718,6 +1718,11 @@ struct ofproto_class {
     /* Get L3 host hit bit. */
     int (*get_l3_host_hit)(const struct ofproto *ofproto, void *aux,
                            bool is_ipv6_addr, char *ip_addr, bool *hit_bit);
+
+    /* Add/Delete/Modify routes */
+    int (*l3_route_action)(const struct ofproto *ofproto,
+                           enum ofproto_route_action action,
+                           struct ofproto_route *route);
 #endif
 };
 

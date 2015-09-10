@@ -71,6 +71,7 @@
 #ifdef HALON
 #include <string.h>
 #include <netinet/ether.h>
+#include "vrf.h"
 #include "openhalon-idl.h"
 #endif
 
@@ -188,26 +189,6 @@ static struct hmap all_bridges = HMAP_INITIALIZER(&all_bridges);
  * "inherits" struct bridge. While configuration of VRF has to read
  * from a different table, port_configure, mirror_configure and may
  * other functions would be shared with the bridge. */
-struct vrf {
-    struct bridge up;
-    struct hmap_node node;      /* In 'all_vrfs'. */
-    const struct ovsrec_vrf *cfg;
-    struct hmap all_neighbors;
-};
-
-/* Local Neighbor struct to store in hash-map and handle add/modify/deletes */
-struct neighbor {
-    struct hmap_node node;               /* 'all_neighbors'. */
-    char *ip_address;                    /* IP */
-    char *mac;                           /* MAC */
-    const struct ovsrec_neighbor *cfg;   /* IDL */
-    bool is_ipv6_addr;                   /* Quick flag for type */
-    bool hit_bit;                        /* Remember hit-bit */
-    struct vrf *vrf;                     /* Things needed for delete case */
-    char *port_name;
-    int l3_egress_id;
-};
-
 /* All vrfs, indexed by name. */
 static struct hmap all_vrfs = HMAP_INITIALIZER(&all_vrfs);
 
@@ -249,7 +230,11 @@ static bool initial_config_done;
 static struct ovsdb_idl_txn *daemonize_txn;
 
 /* Most recently processed IDL sequence number. */
+#ifdef HALON
+unsigned int idl_seqno;
+#else
 static unsigned int idl_seqno;
+#endif
 
 /* Track changes to port connectivity. */
 static uint64_t connectivity_seqno = LLONG_MIN;
@@ -652,6 +637,9 @@ bridge_init(const char *remote)
     ovsdb_idl_omit(idl, &ovsrec_vlan_col_description);
     ovsdb_idl_omit(idl, &ovsrec_vlan_col_oper_state);
     ovsdb_idl_omit(idl, &ovsrec_vlan_col_oper_state_reason);
+
+    /* Nexthop table */
+    ovsdb_idl_omit_alert(idl, &ovsrec_nexthop_col_status);
 #endif
 
 #ifdef HALON
@@ -832,12 +820,12 @@ bridge_reconfigure(const struct ovsrec_open_vswitch *ovs_cfg)
 
 #ifdef HALON
     HMAP_FOR_EACH (vrf, node, &all_vrfs) {
-        vrf_collect_wanted_ports(vrf, &vrf->up.wanted_ports);
+        vrf_collect_wanted_ports(vrf, &vrf->up->wanted_ports);
 
         /* Inside vrf_del_ports, delete neighbors refering the
         ** deleted ports */
 
-        vrf_del_ports(vrf, &vrf->up.wanted_ports);
+        vrf_del_ports(vrf, &vrf->up->wanted_ports);
     }
 #endif
     /* Start pushing configuration changes down to the ofproto layer:
@@ -861,7 +849,7 @@ bridge_reconfigure(const struct ovsrec_open_vswitch *ovs_cfg)
 
 #ifdef HALON
     HMAP_FOR_EACH (vrf, node, &all_vrfs) {
-        if (vrf->up.ofproto) {
+        if (vrf->up->ofproto) {
 
             /* Note: Already deleted the neighbors in vrf_del_ports */
             vrf_delete_or_reconfigure_ports(vrf);
@@ -894,14 +882,14 @@ bridge_reconfigure(const struct ovsrec_open_vswitch *ovs_cfg)
 
 #ifdef HALON
     HMAP_FOR_EACH_SAFE (vrf, vrf_next, node, &all_vrfs) {
-        if (!vrf->up.ofproto) {
+        if (!vrf->up->ofproto) {
             int error;
 
-            error = ofproto_create(vrf->up.name, "vrf", &vrf->up.ofproto);
+            error = ofproto_create(vrf->up->name, "vrf", &vrf->up->ofproto);
             if (error) {
-                VLOG_ERR("failed to create vrf %s: %s", vrf->up.name,
+                VLOG_ERR("failed to create vrf %s: %s", vrf->up->name,
                          ovs_strerror(error));
-                shash_destroy(&vrf->up.wanted_ports);
+                shash_destroy(&vrf->up->wanted_ports);
                 vrf_destroy(vrf);
             } else {
                 /* Trigger storing datapath version. */
@@ -919,8 +907,8 @@ bridge_reconfigure(const struct ovsrec_open_vswitch *ovs_cfg)
 
 #ifdef HALON
     HMAP_FOR_EACH (vrf, node, &all_vrfs) {
-        bridge_add_ports(&vrf->up, &vrf->up.wanted_ports);
-        shash_destroy(&vrf->up.wanted_ports);
+        bridge_add_ports(vrf->up, &vrf->up->wanted_ports);
+        shash_destroy(&vrf->up->wanted_ports);
     }
 #endif
 
@@ -966,6 +954,7 @@ bridge_reconfigure(const struct ovsrec_open_vswitch *ovs_cfg)
 #endif
                     /* Clear eventual previous errors */
                     ovsrec_interface_set_error(iface->cfg, NULL);
+
 #ifndef HALON_TEMP
                     iface_configure_cfm(iface);
                     iface_configure_qos(iface, port->cfg->qos);
@@ -1004,8 +993,8 @@ bridge_reconfigure(const struct ovsrec_open_vswitch *ovs_cfg)
         struct port *port;
         bool   is_port_configured = false;
 
-        VLOG_DBG("config vrf - %s", vrf->up.name);
-        HMAP_FOR_EACH (port, hmap_node, &vrf->up.ports) {
+        VLOG_DBG("config vrf - %s", vrf->up->name);
+        HMAP_FOR_EACH (port, hmap_node, &vrf->up->ports) {
             struct iface *iface;
 
             /* For a bond port, reconfigure the port if any of the
@@ -1039,6 +1028,7 @@ bridge_reconfigure(const struct ovsrec_open_vswitch *ovs_cfg)
         /* Check for any other new addition/deletion/modifications to neighbor
         ** table. */
         vrf_reconfigure_neighbors(vrf);
+        vrf_reconfigure_routes(vrf);
     }
 #endif
 
@@ -1271,7 +1261,7 @@ vrf_delete_or_reconfigure_ports(struct vrf *vrf)
      * Side tasks: Reconfigure the ports that are still in 'br'.  Delete ports
      * that have the wrong OpenFlow port number (and arrange to add them back
      * with the correct OpenFlow port number). */
-    OFPROTO_PORT_FOR_EACH (&ofproto_port, &dump, vrf->up.ofproto) {
+    OFPROTO_PORT_FOR_EACH (&ofproto_port, &dump, vrf->up->ofproto) {
 #ifndef HALON_TEMP
         ofp_port_t requested_ofp_port;
 #endif
@@ -1279,7 +1269,7 @@ vrf_delete_or_reconfigure_ports(struct vrf *vrf)
 
         sset_add(&ofproto_ports, ofproto_port.name);
 
-        iface = iface_lookup(&vrf->up, ofproto_port.name);
+        iface = iface_lookup(vrf->up, ofproto_port.name);
         if (!iface) {
             /* No such iface is configured, so we should delete this
              * ofproto_port. */
@@ -1302,7 +1292,7 @@ vrf_delete_or_reconfigure_ports(struct vrf *vrf)
         del = add_ofp_port(ofproto_port.ofp_port, del, &n, &allocated);
     }
     for (i = 0; i < n; i++) {
-        ofproto_port_del(vrf->up.ofproto, del[i]);
+        ofproto_port_del(vrf->up->ofproto, del[i]);
     }
     free(del);
 
@@ -1318,7 +1308,7 @@ vrf_delete_or_reconfigure_ports(struct vrf *vrf)
      *       device destroyed via "tunctl -d", a physical Ethernet device
      *       whose module was just unloaded via "rmmod", or a virtual NIC for a
      *       VM whose VM was just terminated. */
-    HMAP_FOR_EACH_SAFE (port, port_next, hmap_node, &vrf->up.ports) {
+    HMAP_FOR_EACH_SAFE (port, port_next, hmap_node, &vrf->up->ports) {
         struct iface *iface, *iface_next;
 
         VLOG_DBG("Iterating over port: %s", port->name);
@@ -2333,7 +2323,7 @@ add_del_vrfs(const struct ovsrec_open_vswitch *cfg)
     /* Get rid of deleted vrfs
      * Update 'cfg' of vrfs that still exist. */
     HMAP_FOR_EACH_SAFE (vrf, next, node, &all_vrfs) {
-        vrf->cfg = shash_find_data(&new_vrf, vrf->up.name);
+        vrf->cfg = shash_find_data(&new_vrf, vrf->up->name);
         if (!vrf->cfg) {
             vrf_destroy(vrf);
         }
@@ -2395,12 +2385,22 @@ iface_do_create(const struct bridge *br,
     }
 
 #ifdef HALON
+    /* Initialize mac to default system mac.
+     * For internal interface system mac will be used.
+     * For hw interfaces this will be changed to mac from hw_intf_info
+     */
+    error = netdev_set_etheraddr(netdev, br->default_ea);
+
+    if (error) {
+        goto error;
+    }
+
     error = netdev_set_hw_intf_info(netdev, &(iface_cfg->hw_intf_info));
+
     if (error) {
         goto error;
     }
 #endif
-
     error = iface_set_netdev_config(iface_cfg, netdev, errp);
     if (error) {
         goto error;
@@ -3432,7 +3432,7 @@ run_stats_update(void)
 #ifdef HALON
             HMAP_FOR_EACH (vrf, node, &all_vrfs) {
                 struct port *port;
-                HMAP_FOR_EACH (port, hmap_node, &vrf->up.ports) {
+                HMAP_FOR_EACH (port, hmap_node, &vrf->up->ports) {
                     struct iface *iface;
 
                     LIST_FOR_EACH (iface, port_elem, &port->ifaces) {
@@ -3500,7 +3500,7 @@ run_status_update(void)
             HMAP_FOR_EACH (vrf, node, &all_vrfs) {
                 struct port *port;
 
-                HMAP_FOR_EACH (port, hmap_node, &vrf->up.ports) {
+                HMAP_FOR_EACH (port, hmap_node, &vrf->up->ports) {
                     struct iface *iface;
 
                     LIST_FOR_EACH (iface, port_elem, &port->ifaces) {
@@ -3582,7 +3582,7 @@ bridge_run__(void)
 
 #ifdef HALON
     HMAP_FOR_EACH (vrf, node, &all_vrfs) {
-        ofproto_run(vrf->up.ofproto);
+        ofproto_run(vrf->up->ofproto);
     }
 #endif
 }
@@ -3887,7 +3887,9 @@ static void
 bridge_create(const struct ovsrec_bridge *br_cfg)
 {
     struct bridge *br;
-
+#ifdef HALON
+    const struct ovsrec_open_vswitch* ovs = ovsrec_open_vswitch_first(idl);
+#endif
     ovs_assert(!bridge_lookup(br_cfg->name));
     br = xzalloc(sizeof *br);
 
@@ -3895,10 +3897,15 @@ bridge_create(const struct ovsrec_bridge *br_cfg)
     br->type = xstrdup(ofproto_normalize_type(br_cfg->datapath_type));
     br->cfg = br_cfg;
 
+#ifdef HALON
+    /* Use system mac as default mac */
+    memcpy(br->default_ea, ether_aton(ovs->system_mac), ETH_ADDR_LEN);
+#else
     /* Derive the default Ethernet address from the bridge's UUID.  This should
      * be unique and it will be stable between ovs-vswitchd runs.  */
     memcpy(br->default_ea, &br_cfg->header_.uuid, ETH_ADDR_LEN);
     eth_addr_mark_random(br->default_ea);
+#endif
 
     hmap_init(&br->ports);
     hmap_init(&br->ifaces);
@@ -3917,24 +3924,26 @@ static void
 vrf_create(const struct ovsrec_vrf *vrf_cfg)
 {
     struct vrf *vrf;
+    const struct ovsrec_open_vswitch *ovs = ovsrec_open_vswitch_first(idl);
 
     ovs_assert(!vrf_lookup(vrf_cfg->name));
     vrf = xzalloc(sizeof *vrf);
 
-    vrf->up.name = xstrdup(vrf_cfg->name);
-    vrf->up.type = xstrdup("vrf");
+    vrf->up = xzalloc(sizeof(*vrf->up));
+    vrf->up->name = xstrdup(vrf_cfg->name);
+    vrf->up->type = xstrdup("vrf");
     vrf->cfg = vrf_cfg;
 
-    /* Derive the default Ethernet address from the bridge's UUID.  This should
-     * be unique and it will be stable between ovs-vswitchd runs.  */
-    memcpy(vrf->up.default_ea, &vrf_cfg->header_.uuid, ETH_ADDR_LEN);
-    eth_addr_mark_random(vrf->up.default_ea);
+    /* Use system mac as default mac */
+    memcpy(&vrf->up->default_ea, ether_aton(ovs->system_mac), ETH_ADDR_LEN);
 
-    hmap_init(&vrf->up.ports);
-    hmap_init(&vrf->up.ifaces);
-    hmap_init(&vrf->up.iface_by_name);
+    hmap_init(&vrf->up->ports);
+    hmap_init(&vrf->up->ifaces);
+    hmap_init(&vrf->up->iface_by_name);
     hmap_init(&vrf->all_neighbors);
-    hmap_insert(&all_vrfs, &vrf->node, hash_string(vrf->up.name, 0));
+    hmap_init(&vrf->all_routes);
+    hmap_init(&vrf->all_nexthops);
+    hmap_insert(&all_vrfs, &vrf->node, hash_string(vrf->up->name, 0));
 }
 #endif
 
@@ -3984,17 +3993,20 @@ vrf_destroy(struct vrf *vrf)
         /* Delete any neighbors, etc of this vrf */
         vrf_delete_all_neighbors(vrf);
 
-        HMAP_FOR_EACH_SAFE (port, next_port, hmap_node, &vrf->up.ports) {
+        HMAP_FOR_EACH_SAFE (port, next_port, hmap_node, &vrf->up->ports) {
             port_destroy(port);
         }
 
         hmap_remove(&all_vrfs, &vrf->node);
-        ofproto_destroy(vrf->up.ofproto);
-        hmap_destroy(&vrf->up.ifaces);
-        hmap_destroy(&vrf->up.ports);
-        hmap_destroy(&vrf->up.iface_by_name);
+        ofproto_destroy(vrf->up->ofproto);
+        hmap_destroy(&vrf->up->ifaces);
+        hmap_destroy(&vrf->up->ports);
+        hmap_destroy(&vrf->up->iface_by_name);
         hmap_destroy(&vrf->all_neighbors);
-        free(vrf->up.name);
+        hmap_destroy(&vrf->all_routes);
+        hmap_destroy(&vrf->all_nexthops);
+        free(vrf->up->name);
+        free(vrf->up);
         free(vrf);
     }
 }
@@ -4021,7 +4033,7 @@ vrf_lookup(const char *name)
     struct vrf *vrf;
 
     HMAP_FOR_EACH_WITH_HASH (vrf, node, hash_string(name, 0), &all_vrfs) {
-        if (!strcmp(vrf->up.name, name)) {
+        if (!strcmp(vrf->up->name, name)) {
             return vrf;
         }
     }
@@ -4163,7 +4175,7 @@ vrf_collect_wanted_ports(struct vrf *vrf,
         const char *name = vrf->cfg->ports[i]->name;
         if (!shash_add_once(wanted_ports, name, vrf->cfg->ports[i])) {
             VLOG_WARN("bridge %s: %s specified twice as bridge port",
-                      vrf->up.name, name);
+                      vrf->up->name, name);
         }
     }
 }
@@ -4223,7 +4235,7 @@ vrf_del_ports(struct vrf *vrf, const struct shash *wanted_ports)
 
     /* Get rid of deleted ports.
      * Get rid of deleted interfaces on ports that still exist. */
-    HMAP_FOR_EACH_SAFE (port, next, hmap_node, &vrf->up.ports) {
+    HMAP_FOR_EACH_SAFE (port, next, hmap_node, &vrf->up->ports) {
         port->cfg = shash_find_data(wanted_ports, port->name);
         if (!port->cfg) {
             /* Delete the neighbors referring the deleted vrf ports */
@@ -4241,7 +4253,7 @@ vrf_del_ports(struct vrf *vrf, const struct shash *wanted_ports)
 
         for (i = 0; i < port->n_interfaces; i++) {
             const struct ovsrec_interface *cfg = port->interfaces[i];
-            struct iface *iface = iface_lookup(&vrf->up, cfg->name);
+            struct iface *iface = iface_lookup(vrf->up, cfg->name);
             const char *type = iface_get_type(cfg, NULL);
 
             if (iface) {
@@ -5235,6 +5247,7 @@ iface_set_mac(const struct bridge *br, const struct port *port, struct iface *if
         }
     }
 }
+
 /* Sets the ofport column of 'if_cfg' to 'ofport'. */
 static void
 iface_set_ofport(const struct ovsrec_interface *if_cfg, ofp_port_t ofport)
@@ -5981,20 +5994,20 @@ neighbor_set_l3_host_entry(struct vrf *vrf, struct neighbor *neighbor)
               idl_neighbor->ip_address, idl_neighbor->mac);
 
     /* Get port info */
-    port = port_lookup(&vrf->up, neighbor->port_name);
+    port = port_lookup(vrf->up, neighbor->port_name);
     if (port == NULL) {
         VLOG_ERR("Failed to get port cfg for %s", neighbor->port_name);
         return 1;
     }
 
     /* Call Provider */
-    if (!ofproto_add_l3_host_entry(vrf->up.ofproto, port,
+    if (!ofproto_add_l3_host_entry(vrf->up->ofproto, port,
                                    neighbor->is_ipv6_addr,
                                    idl_neighbor->ip_address,
                                    idl_neighbor->mac,
                                    &neighbor->l3_egress_id)) {
         VLOG_DBG("VRF %s: Added host entry for %s",
-                  vrf->up.name, neighbor->ip_address);
+                  vrf->up->name, neighbor->ip_address);
 
         return 0;
     }
@@ -6019,7 +6032,7 @@ neighbor_delete_l3_host_entry(struct vrf *vrf, struct neighbor *neighbor)
               neighbor->ip_address);
 
     /* Get port info */
-    port = port_lookup(&vrf->up, neighbor->port_name);
+    port = port_lookup(vrf->up, neighbor->port_name);
     if (port == NULL) {
         VLOG_ERR("Failed to get port cfg for %s", neighbor->port_name);
         return 1;
@@ -6027,12 +6040,12 @@ neighbor_delete_l3_host_entry(struct vrf *vrf, struct neighbor *neighbor)
 
     /* Call Provider */
     /* Note: Cannot access idl neighbor_cfg as it is already deleted */
-    if (!ofproto_delete_l3_host_entry(vrf->up.ofproto, port,
+    if (!ofproto_delete_l3_host_entry(vrf->up->ofproto, port,
                                       neighbor->is_ipv6_addr,
                                       neighbor->ip_address,
                                       &neighbor->l3_egress_id)) {
         VLOG_DBG("VRF %s: Deleted host entry for ip %s",
-                  vrf->up.name, neighbor->ip_address);
+                  vrf->up->name, neighbor->ip_address);
 
         return 0;
     }
@@ -6043,7 +6056,7 @@ neighbor_delete_l3_host_entry(struct vrf *vrf, struct neighbor *neighbor)
 } /* neighbor_delete_l3_host_entry */
 
 /* Function to find neighbor in vrf local hash */
-static struct neighbor*
+struct neighbor*
 neighbor_hash_lookup(const struct vrf *vrf, const char *ip_address)
 {
     struct neighbor *neighbor;
@@ -6086,6 +6099,7 @@ neighbor_create(struct vrf *vrf,
 
     /* Add ofproto/asic neighbors */
     neighbor_set_l3_host_entry(vrf, neighbor);
+    vrf_ofproto_update_route_with_neighbor(vrf, neighbor, true);
 }
 
 /* Function to delete neighbor in hash and also from ofproto/asic */
@@ -6095,6 +6109,8 @@ neighbor_delete(struct vrf *vrf, struct neighbor *neighbor)
     VLOG_DBG("In neighbor_delete for neighbor %s", neighbor->ip_address);
     if (neighbor) {
 
+        /* Update routes before deleting the l3 host entry */
+        vrf_ofproto_update_route_with_neighbor(vrf, neighbor, false);
         /* Delete from ofproto/asic */
         neighbor_delete_l3_host_entry(vrf, neighbor);
 
@@ -6112,6 +6128,7 @@ neighbor_modify(struct neighbor *neighbor,
               idl_neighbor->ip_address);
 
     /* TODO: Get status, if failed or incomplete delete the entry */
+    /* OPENSWITCH_TODO : instead of delete/add, reprogram the entry in ofproto */
 
     if ( (strcmp(neighbor->port_name, idl_neighbor->port->name) != 0) ||
         (strcmp(neighbor->mac, idl_neighbor->mac) != 0 ) ) {
@@ -6186,7 +6203,7 @@ vrf_add_neighbors(struct vrf *vrf)
     OVSREC_NEIGHBOR_FOR_EACH(idl_neighbor, idl) {
        if (strcmp(vrf->cfg->name, idl_neighbor->vrf->name) == 0 ) {
            neighbor = neighbor_hash_lookup(vrf, idl_neighbor->ip_address);
-           if (!neighbor) {
+           if (!neighbor && idl_neighbor->port) {
                neighbor_create(vrf, idl_neighbor);
            }
        }
@@ -6258,7 +6275,7 @@ vrf_reconfigure_neighbors(struct vrf *vrf)
     VLOG_DBG("Adding newly added idl neighbors");
     OVSREC_NEIGHBOR_FOR_EACH(idl_neighbor, idl) {
         neighbor = neighbor_hash_lookup(vrf, idl_neighbor->ip_address);
-        if (!neighbor) {
+        if (!neighbor && idl_neighbor->port) {
             neighbor_create(vrf, idl_neighbor);
         }
     }
@@ -6276,7 +6293,10 @@ vrf_reconfigure_neighbors(struct vrf *vrf)
 
                 neighbor = neighbor_hash_lookup(vrf, idl_neighbor->ip_address);
                 if (neighbor) {
-                    neighbor_modify(neighbor, idl_neighbor);
+                    if(idl_neighbor->port)
+                        neighbor_modify(neighbor, idl_neighbor);
+                    else
+                        neighbor_delete(vrf, neighbor);
                 }
             }
         }
@@ -6335,14 +6355,14 @@ run_neighbor_update(void)
             }
 
             /* Get port/ofproto info */
-            port = port_lookup(&neighbor->vrf->up, neighbor->port_name);
+            port = port_lookup(neighbor->vrf->up, neighbor->port_name);
             if (port == NULL) {
                 VLOG_ERR("Failed to get port cfg for %s", neighbor->port_name);
                 continue;
             }
 
             /* Call Provider */
-            if (!ofproto_get_l3_host_hit(neighbor->vrf->up.ofproto, port,
+            if (!ofproto_get_l3_host_hit(neighbor->vrf->up->ofproto, port,
                                         neighbor->is_ipv6_addr,
                                         idl_neighbor->ip_address,
                                         &neighbor->hit_bit)) {
@@ -6375,4 +6395,17 @@ run_neighbor_update(void)
     }
 } /* run_neighbor_update */
 
+/* OPENSWITCH_TODO - remove after integration ... */
+int
+vrf_l3_route_action(struct vrf *vrf, enum ofproto_route_action action,
+                    struct ofproto_route *route)
+{
+    return ofproto_l3_route_action(vrf->up->ofproto, action, route);
+}
+
+bool
+vrf_has_l3_route_action(struct vrf *vrf)
+{
+    return vrf->up->ofproto->ofproto_class->l3_route_action ? true : false;
+}
 #endif
