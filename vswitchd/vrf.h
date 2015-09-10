@@ -71,13 +71,23 @@ struct nexthop {
     struct ovsrec_nexthop *idl_row;
 };
 
+struct ecmp {
+    bool enabled;
+    bool src_port_enabled;
+    bool dst_port_enabled;
+    bool src_ip_enabled;
+    bool dst_ip_enabled;
+};
+
 void vrf_reconfigure_routes(struct vrf *vrf);
 void vrf_ofproto_update_route_with_neighbor(struct vrf *vrf,
                                             struct neighbor *neighbor,
                                             bool resolved);
 int vrf_l3_route_action(struct vrf *vrf, enum ofproto_route_action action,
-                    struct ofproto_route *route);
+                        struct ofproto_route *route);
 bool vrf_has_l3_route_action(struct vrf *vrf);
 struct neighbor *neighbor_hash_lookup(const struct vrf *vrf,
                                       const char *ip_address);
+int vrf_l3_ecmp_set(struct vrf *vrf, bool enable);
+int vrf_l3_ecmp_hash_set(struct vrf *vrf, unsigned int hash, bool enable);
 #endif /* vrf.h */
