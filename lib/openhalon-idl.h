@@ -25,7 +25,6 @@
  *          For non-map columns, IDL should already automatically generate
  *          the necessary
  *          #defines in vswitch-idl.h file.
- *
  */
 
 #ifndef OPENHALON_IDL_HEADER
@@ -130,10 +129,8 @@ enum ovsrec_interface_pm_info_power_mode_e {
     INTERFACE_PM_INFO_POWER_MODE_LOW
 };
 
-#define INTERFACE_TYPE_INTERNAL                                 "internal"
 #define INTERFACE_OTHER_CONFIG_MAP_LACP_PORT_ID                 "lacp-port-id"
 #define INTERFACE_OTHER_CONFIG_MAP_LACP_PORT_PRIORITY           "lacp-port-priority"
-#define INTERFACE_OTHER_CONFIG_MAP_LACP_AGGREGATION_KEY         "lacp-aggregation-key"
 
 #define INTERFACE_USER_CONFIG_MAP_ADMIN                         "admin"
 
