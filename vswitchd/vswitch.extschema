@@ -549,6 +549,17 @@
             "max": "unlimited"
           }
         },
+        "dhcp_server":{
+          "category": "child",
+          "type": {
+            "key": {
+              "type": "uuid",
+              "refTable": "DHCP_Server"
+            },
+            "min": 0,
+            "max": 1
+          }
+        },
         "other_config": {
           "category": "configuration",
           "type": {
@@ -3178,6 +3189,357 @@
         ]
       ],
       "isRoot": true
+    },
+    "DHCP_Server":{
+      "columns":{
+        "ranges":{
+          "category":"child",
+          "type":{
+              "key": {
+              "type": "uuid",
+              "refTable": "DHCPSrv_Range"
+            },
+            "min": 0,
+            "max": "unlimited"
+          }
+        },
+        "static_hosts":{
+          "category":"child",
+          "type": {
+            "key": {
+              "type": "uuid",
+              "refTable": "DHCPSrv_Static_Host"
+            },
+            "min": 0,
+            "max": "unlimited"
+          }
+        },
+        "dhcp_options":{
+          "category":"child",
+          "type": {
+            "key": {
+              "type": "uuid",
+              "refTable": "DHCPSrv_Option"
+            },
+            "min": 0,
+            "max": "unlimited"
+          }
+        },
+        "matches":{
+          "category":"child",
+          "type":{
+            "key":{
+              "type":"uuid",
+              "refTable":"DHCPSrv_Match"
+            },
+            "min":0,
+            "max":"unlimited"
+          }
+        },
+        "bootp":{
+          "category": "configuration",
+          "type": {
+            "key": "string",
+            "value": "string",
+            "min": 0,
+            "max": "unlimited"
+          }
+        },
+        "other_config": {
+          "category": "configuration",
+          "type": {
+            "key": "string",
+            "value": "string",
+            "min": 0,
+            "max": "unlimited"
+          }
+        }
+     }
+    },
+    "DHCPSrv_Range" : {
+     "columns":{
+       "name": {
+          "category": "configuration",
+          "type": "string",
+          "mutable": false
+        },
+       "start_ip_address":{
+         "category":"configuration",
+         "type":{
+           "key":{
+             "type":"string",
+             "maxLength":45
+           }
+         }
+       },
+       "end_ip_address":{
+         "category":"configuration",
+         "type":{
+           "key":{
+             "type":"string",
+             "maxLength":45
+           },
+           "min":0,
+           "max":1
+         }
+       },
+       "set_tag":{
+         "category":"configuration",
+         "type":{
+           "key":{
+             "type":"string"
+           },
+           "min":0,
+           "max":1
+         }
+       },
+       "match_tags":{
+         "category":"configuration",
+         "type":{
+           "key":{
+             "type":"string"
+           },
+           "min":0,
+           "max":"unlimited"
+         }
+       },
+      "is_static":{
+         "category":"configuration",
+         "type":{
+           "key":{
+             "type":"boolean"
+           },
+           "min":0,
+           "max":1
+         }
+       },
+       "lease_duration":{
+         "category":"configuration",
+         "type":{
+           "key":{
+             "type":"integer"
+           },
+           "min":0,
+           "max":1
+         }
+       },
+       "netmask":{
+         "category":"configuration",
+         "type":{
+           "key":{
+             "type":"string",
+             "maxLength":15
+           },
+           "min":0,
+           "max":1
+         }
+        },
+       "broadcast":{
+         "category":"configuration",
+         "type":{
+           "key":{
+             "type":"string",
+             "maxLength":45
+           },
+           "min":0,
+           "max":1
+         }
+        },
+        "constructor":{
+         "category":"reference",
+         "type":{
+           "key":{
+              "type": "uuid",
+              "refTable": "Port",
+              "refType" : "weak"
+           },
+           "min":0,
+           "max":1
+         }
+        },
+        "prefix_len":{
+         "category":"configuration",
+         "type":{
+           "key":{
+             "type":"integer",
+             "minInteger": 64
+           },
+           "min":0,
+           "max":1
+          }
+        }
+      },
+     "indexes": [
+       [
+         "name"
+       ]
+     ]
+   },
+   "DHCPSrv_Static_Host":{
+     "columns":{
+        "ip_address":{
+           "category":"configuration",
+           "type":{
+             "key":{
+              "type":"string",
+              "maxLength":45
+           }
+         }
+       },
+        "mac_addresses":{
+           "category":"configuration",
+           "type":{
+             "key":{
+               "type":"string",
+               "minLength": 17,
+               "maxLength": 17
+           },
+           "min":0,
+           "max":"unlimited"
+         }
+       },
+        "set_tags":{
+         "category":"configuration",
+         "type":{
+           "key":{
+             "type":"string"
+           },
+           "min":0,
+           "max":"unlimited"
+         }
+       },
+        "client_hostname": {
+         "category": "configuration",
+         "type":  {
+             "key": {
+               "type": "string"
+             },
+           "min":0,
+           "max":1
+          }
+       },
+       "client_id": {
+         "category": "configuration",
+         "type":  {
+             "key": {
+               "type": "string"
+             },
+          "min":0,
+          "max":1
+         }
+       },
+       "lease_duration":{
+         "category":"configuration",
+         "type":{
+           "key":{
+             "type":"integer"
+           },
+           "min":0,
+           "max":1
+         }
+       }
+      },
+     "indexes": [
+       [
+         "ip_address"
+       ]
+     ]
+     },
+     "DHCPSrv_Option":{
+      "columns":{
+       "match_tags":{
+         "category":"configuration",
+         "type":{
+           "key":{
+             "type":"string"
+           },
+           "min":0,
+           "max":"unlimited"
+         }
+       },
+       "option_number":{
+         "category":"configuration",
+         "type":{
+           "key":{
+             "type":"integer"
+           },
+           "min":0,
+           "max":1
+         }
+       },
+       "option_name":{
+         "category":"configuration",
+         "type":{
+           "key":{
+             "type":"string"
+           },
+           "min":0,
+           "max":1
+         }
+       },
+       "option_value":{
+         "category":"configuration",
+         "type":{
+           "key":{
+             "type":"string"
+           },
+           "min":0,
+           "max":1
+         }
+       },
+       "ipv6":{
+         "category":"configuration",
+         "type":{
+           "key":{
+             "type":"boolean"
+           },
+           "min":0,
+           "max":1
+           }
+        }
+     }
+   },
+   "DHCPSrv_Match":{
+      "columns":{
+       "set_tag":{
+         "category":"configuration",
+         "type":{
+           "key":{
+             "type":"string"
+           }
+         }
+       },
+       "option_number":{
+         "category":"configuration",
+         "type":{
+           "key":{
+             "type":"integer"
+           },
+           "min":0,
+           "max":1
+         }
+       },
+       "option_name":{
+         "category":"configuration",
+         "type":{
+           "key":{
+             "type":"string"
+           },
+           "min":0,
+           "max":1
+         }
+       },
+       "option_value":{
+         "category":"configuration",
+         "type":{
+           "key":{
+             "type":"string"
+           },
+           "min":0,
+           "max":1
+         }
+       }
+     }
     }
   }
 }
