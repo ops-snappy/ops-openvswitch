@@ -250,6 +250,12 @@ struct ofproto_route {
     struct ofproto_route_nexthop nexthops[OFPROTO_MAX_NH_PER_ROUTE]; /* nexthops */
 };
 
+/* ECMP hash bit-fields */
+#define OFPROTO_ECMP_HASH_SRCPORT        0x1     /* destination L4 port */
+#define OFPROTO_ECMP_HASH_DSTPORT        0x2     /* source L4 port */
+#define OFPROTO_ECMP_HASH_SRCIP          0x4     /* source IP v4/v6 */
+#define OFPROTO_ECMP_HASH_DSTIP          0x8     /* source IP v4/v6 */
+
 #endif
 
 void ofproto_enumerate_types(struct sset *types);
@@ -499,6 +505,10 @@ int ofproto_get_l3_host_hit(struct ofproto *ofproto, void *aux,
 int ofproto_l3_route_action(struct ofproto *ofproto,
                             enum ofproto_route_action action,
                             struct ofproto_route *route);
+
+int ofproto_l3_ecmp_set(struct ofproto *ofproto, bool enable);
+int ofproto_l3_ecmp_hash_set(struct ofproto *ofproto, unsigned int hash,
+                             bool enable);
 #endif
 
 /* Configuration of mirrors. */

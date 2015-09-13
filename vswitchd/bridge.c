@@ -6408,4 +6408,16 @@ vrf_has_l3_route_action(struct vrf *vrf)
 {
     return vrf->up->ofproto->ofproto_class->l3_route_action ? true : false;
 }
+
+int
+vrf_l3_ecmp_set(struct vrf *vrf, bool enable)
+{
+    return ofproto_l3_ecmp_set(vrf->up->ofproto, enable);
+}
+
+int
+vrf_l3_ecmp_hash_set(struct vrf *vrf, unsigned int hash, bool enable)
+{
+    return ofproto_l3_ecmp_hash_set(vrf->up->ofproto, hash, enable);
+}
 #endif
