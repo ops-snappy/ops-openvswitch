@@ -146,6 +146,23 @@
         </p>
       </column>
 
+      <group title="TFTP Server Configurations">
+        <column name="other_config" key="tftp_server_enable"
+                type='{"type": "boolean"}'>
+          Set this value to <code>true</code> to enable TFTP server
+          and set to <code>false</code> to disable it. If not set, TFTP server
+          would be enabled.
+        </column>
+
+        <column name="other_config" key="tftp_server_secure"
+                type='{"type": "boolean"}'>
+          Set this value to <code>true</code> to enable TFTP secure mode
+          and set to <code>false</code> to disable it. If not set, TFTP secure mode
+          would be enabled. This config is valid only if TFTP server is enabled.
+        </column>
+      </group>
+
+
     <group title="LACP Configurations">
       <column name="lacp_config" key="lacp-system-id">
         The LACP system ID of this <ref table="Bridge"/>.  The system ID of a
@@ -947,9 +964,11 @@
       <column name="ports">
         Ports included in the VRF.
       </column>
-
       <column name="bgp_routers">
         BGP routers keyed by ASN value.
+      </column>
+      <column name="dhcp_server">
+        DHCP Server in the VRF.
       </column>
     </group>
    <group title="Common Columns">
@@ -2443,6 +2462,13 @@
       single port or can be split into four 10G split ports using a QSFP+
       splitter cable.
     </column>
+    <column name="hw_intf_info" key="bridge"
+      type='{"type": "boolean"}'>
+      Boolean value indicating interface is a `bridge' interface which is
+      created for every bridge instance. The `bridge' interface receives all
+      VLAN traffic and distributes to the vlan interfaces based on the VLAN
+      tags. The default value is `false'
+    </column>
     <column name="split_parent">
       For a split child interface, this is the reference to the parent <ref table="Interface"/>.
     </column>
@@ -3005,6 +3031,229 @@
         Specifies the status of the counter.
       </column>
     </group>
+  </table>
+
+  <table name="DHCP_Server">
+
+    <p>
+      DHCP Server configuration.
+    </p>
+
+    <group title="Configuration">
+      <column name="ranges">
+        Dynamic IP address ranges.
+      </column>
+
+      <column name="static_hosts">
+        Static leases.
+      </column>
+
+      <column name="dhcp_options">
+        DHCP options settings.
+      </column>
+
+      <column name="matches">
+        Matching incoming DHCP options.
+      </column>
+
+      <column name="bootp">
+        BOOTP options for the network boot of DHCP clients.
+      </column>
+    </group>
+
+  </table>
+
+  <table name="DHCPSrv_Range">
+
+    <p>
+      Dynamic IP address ranges configuration of the DHCP server.
+    </p>
+
+    <column name="name">
+      Identifier for DHCP Server IP address range configuration. This has
+      to be unique across all DHCP ranges and across all VRFs.
+    </column>
+
+    <column name="start_ip_address">
+      Specifies the start IPv4/IPv6 address of the dynamic IP address range.
+    </column>
+
+    <column name="end_ip_address">
+      Specifies the end IPv4/IPv6 address of the dynamic IP address range.
+      If not specifed, then for IPv4 address family - end ip address would
+      be calculated based on the configured netmask for this range or
+      based on the netmask of the interface that received the DHCP request
+      and for IPv6 family - end ip address would be calculated based on the
+      constructor template configuration.
+    </column>
+
+    <column name="set_tag">
+      Sets an alphanumeric label that marks the network so that dhcp options
+      would be specified on a per-network basis.
+    </column>
+
+    <column name="match_tags">
+      Specifies the list of the tags that would be matched for the
+      incoming DHCP request on the interfaces whose IP addresses are
+      in the configured range.
+    </column>
+
+    <column name="is_static">
+      Set this value to <code>true</code> to assign static IP addresses
+      to DHCP clients that have static host configuration. If the value
+      is set to <code>false</code>, then the IP addresses in this range
+      would be use for dynamic allocation. If not specifed, the IP address
+      range would be used for dynamic allocation.
+    </column>
+
+    <column name="lease_duration">
+      Specifies the lease expiry time in minutes. If not specified,
+      default value of one hour (60) would be used.
+    </column>
+
+    <column name="netmask">
+      This is used only in IPv4 address ranges configuration.
+      Specifies the netmask that would be used for the assigned IP addresses
+      in this range and this would be sent to DHCP clients. If end ip address
+      is not configured for this range, then end ip address would be chosen
+      based on the netmask. If netmask is not specified, then netmask of
+      the switch interface that received the DHCP request would be used.
+    </column>
+
+    <column name="broadcast">
+      This is used only in IPv4 address ranges configuration.
+      Specifies the broadcast address that would be used for the assigned
+      IP addresses in this range and this would be sent to DHCP clients.
+      If not specified, broadcast address of the switch interface that
+      received the DHCP request would be used.
+    </column>
+
+    <column name="constructor">
+      This is used only in IPv6 address ranges configuration.
+      Specifies the interface whose IP address would be used
+      to calculate the end IP address for this range.
+      This is used when end ip address is not specified.
+    </column>
+
+    <column name="prefix_len">
+      This is used only in IPv6 address ranges configuration.
+      Specifies the prefix length that would be used for the
+      assigned IPv6 addresses. If not specifed, default value
+      of 64 would be used.
+    </column>
+
+  </table>
+
+  <table name="DHCPSrv_Static_Host">
+
+    <p>
+      Static leases configured by the user.
+    </p>
+
+    <column name="ip_address">
+      Specifies the static IP address that should be assigned to
+      the specific host.This ip address may contain an IPv4
+      address or an IPv6 address, or both.
+    </column>
+
+    <column name="mac_addresses">
+      Specifies the list of MAC addresses of the DHCP hosts to which the
+      static IP address would be assigned. If more than one MAC addresses
+      are specified, it would work reliably only if one MAC address
+      is active at a time.
+    </column>
+
+    <column name="set_tags">
+      Specifies the list of tags associated with the DHCP request.
+      When a DHCP request from the specific DHCP client is received,
+      the list of configured tags would be set
+      and used to selectively send DHCP options for the client.
+    </column>
+
+    <column name="client_hostname">
+      Specifies the client hostname of the DHCP client to which the configured
+      static IP address would be assigned.
+    </column>
+
+    <column name="client_id">
+      Specifies the client id of the DHCP client to which the configured
+      static IP address would be assigned,
+    </column>
+
+    <column name="lease_duration">
+      Specifies the lease expiry time in minutes. If not specified,
+      default value of one hour (60) would be used.
+    </column>
+
+  </table>
+
+  <table name="DHCPSrv_Option">
+
+    <p>
+      Configuration to specify extra options (other than standard options) that
+      would be sent to the DHCP clients.
+    </p>
+
+    <column name="match_tags">
+      The option and option value specified in the configuration would be
+      sent only if the DHCP request from the client matches all the tags
+      specified in this list.
+    </column>
+
+    <column name="option_name">
+      Specifies the name of the extra option that should be sent to the
+      DHCP clients.
+    </column>
+
+    <column name="option_number">
+      Specifies the number of the extra option that should be sent to the
+      DHCP clients. The option number would be ignored if option name
+      is specified.
+    </column>
+
+    <column name="option_value">
+      Specifies the value of the extra option that should be sent to the
+      DHCP clients.
+    </column>
+
+    <column name="ipv6">
+      Set this value to <code>true</code> if the configured option is for IPv6
+      and set to <code>false</code> for IPv4 option. If not specifed,
+      the configured option would be used for IPv4.
+    </column>
+
+  </table>
+
+  <table name="DHCPSrv_Match">
+
+    <p>
+      Configuration to set tags for the incoming DHCP requests based on
+      the options and its value sent by the clients.
+    </p>
+
+    <column name="set_tag">
+      Specifies the name of the tag that would be set if the incoming
+      DHCP request has the configured option and the value.
+    </column>
+
+    <column name="option_name">
+      Specifies the name of the option that should be sent by the client
+      to set the configured tag for DHCP requests.
+    </column>
+
+    <column name="option_number">
+      Specifies the number of the extra option that should be sent by the
+      client to set the configured tag for DHCP requests. The option number
+      would be ignored if option name is specified.
+    </column>
+
+    <column name="option_value">
+      Specifies the value of the option that should be sent
+      by the client to set the configured tag for DHCP requests.
+      If the value is not specified, then the tag
+      would be set for any value of the option.
+    </column>
+
   </table>
 
 </database>

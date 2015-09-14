@@ -27,6 +27,9 @@ VLOG_DEFINE_THIS_MODULE(vrf);
 extern struct ovsdb_idl *idl;
 extern unsigned int idl_seqno;
 
+/* global ecmp config (not per VRF) - default values set here */
+struct ecmp ecmp_config = {true, true, true, true, true};
+
 /* == Managing routes == */
 /* VRF maintains a per-vrf route hash of Routes->hash(Nexthop1, Nexthop2, ...) per-vrf.
  * VRF maintains a per-vrf nexthop hash with backpointer to the route entry.
@@ -154,6 +157,9 @@ vrf_ofproto_route_add(struct vrf *vrf, struct ofproto_route *ofp_route,
     }
 
     if (rc != 0) { /* return on error */
+        for (i = 0; i < ofp_route->n_nexthops; i++) {
+            free(ofp_route->nexthops[i].id);
+        }
         return;
     }
 
@@ -530,6 +536,60 @@ vrf_route_modify(struct vrf *vrf, struct route *route,
     shash_destroy(&current_idl_nhs);
 }
 
+static void
+vrf_reconfigure_ecmp(struct vrf *vrf)
+{
+    bool val = false;
+    const struct ovsrec_open_vswitch *ovs_row = ovsrec_open_vswitch_first(idl);
+
+    if (!ovs_row) {
+        VLOG_ERR("Unable to access open_vswitch table in db");
+        return;
+    }
+
+    if (!OVSREC_IDL_IS_COLUMN_MODIFIED(ovsrec_open_vswitch_col_ecmp_config,
+                                       idl_seqno)) {
+        VLOG_DBG("ECMP column not modified in db");
+        return;
+    }
+
+    val = smap_get_bool(&ovs_row->ecmp_config, OPEN_VSWITCH_ECMP_CONFIG_STATUS,
+                        OPEN_VSWITCH_ECMP_CONFIG_ENABLE_DEFAULT);
+    if (val != ecmp_config.enabled) {
+        vrf_l3_ecmp_set(vrf, val);
+        ecmp_config.enabled = val;
+    }
+
+    val = smap_get_bool(&ovs_row->ecmp_config,
+                        OPEN_VSWITCH_ECMP_CONFIG_HASH_SRC_IP,
+                        OPEN_VSWITCH_ECMP_CONFIG_ENABLE_DEFAULT);
+    if (val != ecmp_config.src_ip_enabled) {
+        vrf_l3_ecmp_hash_set(vrf, OFPROTO_ECMP_HASH_SRCIP, val);
+        ecmp_config.src_ip_enabled = val;
+    }
+    val = smap_get_bool(&ovs_row->ecmp_config,
+                        OPEN_VSWITCH_ECMP_CONFIG_HASH_DST_IP,
+                        OPEN_VSWITCH_ECMP_CONFIG_ENABLE_DEFAULT);
+    if (val != ecmp_config.dst_ip_enabled) {
+        vrf_l3_ecmp_hash_set(vrf, OFPROTO_ECMP_HASH_DSTIP, val);
+        ecmp_config.dst_ip_enabled = val;
+    }
+    val = smap_get_bool(&ovs_row->ecmp_config,
+                        OPEN_VSWITCH_ECMP_CONFIG_HASH_SRC_PORT,
+                        OPEN_VSWITCH_ECMP_CONFIG_ENABLE_DEFAULT);
+    if (val != ecmp_config.src_port_enabled) {
+        vrf_l3_ecmp_hash_set(vrf, OFPROTO_ECMP_HASH_SRCPORT, val);
+        ecmp_config.src_port_enabled = val;
+    }
+    val = smap_get_bool(&ovs_row->ecmp_config,
+                        OPEN_VSWITCH_ECMP_CONFIG_HASH_DST_PORT,
+                        OPEN_VSWITCH_ECMP_CONFIG_ENABLE_DEFAULT);
+    if (val != ecmp_config.dst_port_enabled) {
+        vrf_l3_ecmp_hash_set(vrf, OFPROTO_ECMP_HASH_DSTPORT, val);
+        ecmp_config.dst_port_enabled = val;
+    }
+}
+
 void
 vrf_reconfigure_routes(struct vrf *vrf)
 {
@@ -538,6 +598,8 @@ vrf_reconfigure_routes(struct vrf *vrf)
     struct shash_node *shash_route_row;
     char route_hash_str[VRF_ROUTE_HASH_MAXSIZE];
     const struct ovsrec_route *route_row = NULL, *route_row_local = NULL;
+
+    vrf_reconfigure_ecmp(vrf);
 
     if (!vrf_has_l3_route_action(vrf)) {
         VLOG_DBG("No ofproto support for route management.");

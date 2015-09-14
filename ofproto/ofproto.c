@@ -7224,4 +7224,32 @@ ofproto_l3_route_action(struct ofproto *ofproto,
     return rc;
 }
 
+/* ECMP */
+int
+ofproto_l3_ecmp_set(struct ofproto *ofproto, bool enable)
+{
+    int rc;
+
+    rc = ofproto->ofproto_class->l3_ecmp_set ?
+         ofproto->ofproto_class->l3_ecmp_set(ofproto, enable) :
+         EOPNOTSUPP;
+
+    VLOG_DBG("%s rc (%d), enable (%d)", __func__, rc, enable);
+
+    return rc;
+}
+
+int
+ofproto_l3_ecmp_hash_set(struct ofproto *ofproto, unsigned int hash, bool enable)
+{
+    int rc;
+
+    rc = ofproto->ofproto_class->l3_ecmp_hash_set ?
+         ofproto->ofproto_class->l3_ecmp_hash_set(ofproto, hash, enable) :
+         EOPNOTSUPP;
+
+    VLOG_DBG("%s rc (%d), hash (%x) enable (%d)", __func__, rc, hash, enable);
+
+    return rc;
+}
 #endif

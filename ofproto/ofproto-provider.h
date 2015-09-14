@@ -1723,6 +1723,13 @@ struct ofproto_class {
     int (*l3_route_action)(const struct ofproto *ofproto,
                            enum ofproto_route_action action,
                            struct ofproto_route *route);
+
+    /* Enable/Disable ECMP */
+    int (*l3_ecmp_set)(const struct ofproto *ofproto, bool enable);
+
+    /* Enable/Disable ECMP hash config */
+    int (*l3_ecmp_hash_set)(const struct ofproto *ofproto, unsigned int hash,
+                            bool enable);
 #endif
 };
 
