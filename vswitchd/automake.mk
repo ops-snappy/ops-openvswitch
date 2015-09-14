@@ -34,7 +34,7 @@ MAN_ROOTS += vswitchd/ovs-vswitchd.8.in
 
 # vswitch schema and IDL
 EXTRA_DIST += vswitchd/vswitch.ovsschema
-pkgdata_DATA += vswitchd/vswitch.ovsschema vswitchd/configdb.ovsschema
+pkgdata_DATA += vswitchd/vswitch.ovsschema vswitchd/configdb.ovsschema vswitchd/dhcp_leases.ovsschema
 
 # vswitch E-R diagram
 #
