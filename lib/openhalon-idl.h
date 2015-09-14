@@ -519,12 +519,12 @@ enum ovsrec_interface_hw_bond_config_enabled_e {
 #define OPEN_VSWITCH_MGMT_INTF_MAP_NAME                 "name"
 #define OPEN_VSWITCH_MGMT_INTF_MAP_IP                   "ip"
 #define OPEN_VSWITCH_MGMT_INTF_MAP_IPV6                 "ipv6"
-#define OPEN_VSWITCH_MGMT_INTF_MAP_IPV6_LINKLOCAL       "ipv6-linklocal"
-#define OPEN_VSWITCH_MGMT_INTF_MAP_SUBNET_MASK          "subnet-mask"
-#define OPEN_VSWITCH_MGMT_INTF_MAP_DEFAULT_GATEWAY      "default-gateway"
-#define OPEN_VSWITCH_MGMT_INTF_MAP_DEFAULT_GATEWAY_V6   "default-gateway-v6"
-#define OPEN_VSWITCH_MGMT_INTF_MAP_DNS_SERVER_1         "dns-server-1"
-#define OPEN_VSWITCH_MGMT_INTF_MAP_DNS_SERVER_2         "dns-server-2"
+#define OPEN_VSWITCH_MGMT_INTF_MAP_IPV6_LINKLOCAL       "ipv6_linklocal"
+#define OPEN_VSWITCH_MGMT_INTF_MAP_SUBNET_MASK          "subnet_mask"
+#define OPEN_VSWITCH_MGMT_INTF_MAP_DEFAULT_GATEWAY      "default_gateway"
+#define OPEN_VSWITCH_MGMT_INTF_MAP_DEFAULT_GATEWAY_V6   "default_gateway_v6"
+#define OPEN_VSWITCH_MGMT_INTF_MAP_DNS_SERVER_1         "dns_server_1"
+#define OPEN_VSWITCH_MGMT_INTF_MAP_DNS_SERVER_2         "dns_server_2"
 
 /* buffer monitoring statistics config table (bufmon)*/
 #define BUFMON_CONFIG_MAP_ENABLED                               "enabled"
