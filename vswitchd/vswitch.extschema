@@ -2266,6 +2266,7 @@
         },
         "type": {
           "category": "configuration",
+          "mutable": false,
           "type": {
             "key": {
               "type": "string",
