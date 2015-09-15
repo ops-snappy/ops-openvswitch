@@ -1,4 +1,7 @@
+
 /* Copyright (c) 2009, 2010, 2011, 2012, 2014 Nicira, Inc.
+ *
+ * (c) Copyright 2015 Hewlett Packard Enterprise Development LP.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -1652,7 +1655,7 @@ ovsdb_datum_find_key(const struct ovsdb_datum *datum,
  * non 0 value (error).
  */
 int
-ovsdb_datum_get_int64_value_given_string_key (struct ovsdb_datum *datum,
+ovsdb_datum_get_int64_value_given_string_key (const struct ovsdb_datum *datum,
     char *key, int64_t *value_extracted)
 {
     unsigned int idx;
