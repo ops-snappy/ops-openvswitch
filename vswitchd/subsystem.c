@@ -133,8 +133,8 @@ run_stats_update(void)
      * 5000 ms. */
     stats_interval = MAX(smap_get_int(&cfg->other_config,
                                       "stats-update-interval",
-                                      DFLT_OPEN_VSWITCH_OTHER_CONFIG_STATS_UPDATE_INTERVAL),
-                                      DFLT_OPEN_VSWITCH_OTHER_CONFIG_STATS_UPDATE_INTERVAL);
+                                      DFLT_SYSTEM_OTHER_CONFIG_STATS_UPDATE_INTERVAL),
+                                      DFLT_SYSTEM_OTHER_CONFIG_STATS_UPDATE_INTERVAL);
     if (stats_timer_interval != stats_interval) {
         stats_timer_interval = stats_interval;
         stats_timer = LLONG_MIN;

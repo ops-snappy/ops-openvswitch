@@ -540,50 +540,50 @@ static void
 vrf_reconfigure_ecmp(struct vrf *vrf)
 {
     bool val = false;
-    const struct ovsrec_open_vswitch *ovs_row = ovsrec_open_vswitch_first(idl);
+    const struct ovsrec_system *ovs_row = ovsrec_system_first(idl);
 
     if (!ovs_row) {
-        VLOG_ERR("Unable to access open_vswitch table in db");
+        VLOG_ERR("Unable to access system table in db");
         return;
     }
 
-    if (!OVSREC_IDL_IS_COLUMN_MODIFIED(ovsrec_open_vswitch_col_ecmp_config,
+    if (!OVSREC_IDL_IS_COLUMN_MODIFIED(ovsrec_system_col_ecmp_config,
                                        idl_seqno)) {
         VLOG_DBG("ECMP column not modified in db");
         return;
     }
 
-    val = smap_get_bool(&ovs_row->ecmp_config, OPEN_VSWITCH_ECMP_CONFIG_STATUS,
-                        OPEN_VSWITCH_ECMP_CONFIG_ENABLE_DEFAULT);
+    val = smap_get_bool(&ovs_row->ecmp_config, SYSTEM_ECMP_CONFIG_STATUS,
+                        SYSTEM_ECMP_CONFIG_ENABLE_DEFAULT);
     if (val != ecmp_config.enabled) {
         vrf_l3_ecmp_set(vrf, val);
         ecmp_config.enabled = val;
     }
 
     val = smap_get_bool(&ovs_row->ecmp_config,
-                        OPEN_VSWITCH_ECMP_CONFIG_HASH_SRC_IP,
-                        OPEN_VSWITCH_ECMP_CONFIG_ENABLE_DEFAULT);
+                        SYSTEM_ECMP_CONFIG_HASH_SRC_IP,
+                        SYSTEM_ECMP_CONFIG_ENABLE_DEFAULT);
     if (val != ecmp_config.src_ip_enabled) {
         vrf_l3_ecmp_hash_set(vrf, OFPROTO_ECMP_HASH_SRCIP, val);
         ecmp_config.src_ip_enabled = val;
     }
     val = smap_get_bool(&ovs_row->ecmp_config,
-                        OPEN_VSWITCH_ECMP_CONFIG_HASH_DST_IP,
-                        OPEN_VSWITCH_ECMP_CONFIG_ENABLE_DEFAULT);
+                        SYSTEM_ECMP_CONFIG_HASH_DST_IP,
+                        SYSTEM_ECMP_CONFIG_ENABLE_DEFAULT);
     if (val != ecmp_config.dst_ip_enabled) {
         vrf_l3_ecmp_hash_set(vrf, OFPROTO_ECMP_HASH_DSTIP, val);
         ecmp_config.dst_ip_enabled = val;
     }
     val = smap_get_bool(&ovs_row->ecmp_config,
-                        OPEN_VSWITCH_ECMP_CONFIG_HASH_SRC_PORT,
-                        OPEN_VSWITCH_ECMP_CONFIG_ENABLE_DEFAULT);
+                        SYSTEM_ECMP_CONFIG_HASH_SRC_PORT,
+                        SYSTEM_ECMP_CONFIG_ENABLE_DEFAULT);
     if (val != ecmp_config.src_port_enabled) {
         vrf_l3_ecmp_hash_set(vrf, OFPROTO_ECMP_HASH_SRCPORT, val);
         ecmp_config.src_port_enabled = val;
     }
     val = smap_get_bool(&ovs_row->ecmp_config,
-                        OPEN_VSWITCH_ECMP_CONFIG_HASH_DST_PORT,
-                        OPEN_VSWITCH_ECMP_CONFIG_ENABLE_DEFAULT);
+                        SYSTEM_ECMP_CONFIG_HASH_DST_PORT,
+                        SYSTEM_ECMP_CONFIG_ENABLE_DEFAULT);
     if (val != ecmp_config.dst_port_enabled) {
         vrf_l3_ecmp_hash_set(vrf, OFPROTO_ECMP_HASH_DSTPORT, val);
         ecmp_config.dst_port_enabled = val;

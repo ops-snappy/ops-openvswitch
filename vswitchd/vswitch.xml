@@ -15,9 +15,9 @@
   </p>
   <p>
     The top-level configuration is the
-    <ref table="Open_vSwitch"/> table, which must have exactly one
+    <ref table="System"/> table, which must have exactly one
     record. Records that are not reachable from
-    the <ref table="Open_vSwitch"/> table are automatically deleted
+    the <ref table="System"/> table are automatically deleted
     from the database, except for records in a few distinguished
     ``root set'' tables.
   </p>
@@ -63,9 +63,9 @@
     </dd>
   </dl>
 
-  <table name="Open_vSwitch" title="Open Halon top level configuration.">
+  <table name="System" title="Open Halon top level configuration.">
     Configuration for an Open Halon system. There must be exactly
-    one record in the <ref table="Open_vSwitch"/> table.
+    one record in the <ref table="System"/> table.
 
     <group title="Configuration">
       <column name="subsystems">
@@ -857,7 +857,7 @@
 
   <table name="Bridge">
     <p>
-      Configuration for a bridge within an <ref table="Open_vSwitch"/>.
+      Configuration for a bridge within an <ref table="System"/>.
     </p>
     <p>
       A <ref table="Bridge"/> record represents an Ethernet switch with one or
@@ -998,7 +998,7 @@
     <group title="Status">
       <column name="cur_hw">
         Sequence number that a daemon sets to the current value of
-        <ref column="next_hw"/> in the <ref table="Open_vSwitch"/> table after
+        <ref column="next_hw"/> in the <ref table="System"/> table after
         it has successfully responded to a hardware change.
       </column>
     </group>
@@ -1116,7 +1116,7 @@
 
   <table name="Route" title="Routes Information Base">
     <p>
-      Global routes information base within an <ref table="Open_vSwitch"/>.
+      Global routes information base within an <ref table="System"/>.
     </p>
     <p>
         A <ref table="Route"/> record represents a route. This is a unique
@@ -1982,7 +1982,7 @@
       <p>
         Key-value pairs that report port statistics.  The update period
         is controlled by <ref column="other_config"
-        key="stats-update-interval"/> in the <ref table="Open_vSwitch"/> table.
+        key="stats-update-interval"/> in the <ref table="System"/> table.
       </p>
     </group>
 
@@ -2025,7 +2025,7 @@
           <dt><code>internal</code></dt>
           <dd>A simulated network device that sends and receives traffic.  An
           internal interface whose <ref column="name"/> is the same as its
-          bridge's <ref table="Open_vSwitch" column="name"/> is called the
+          bridge's <ref table="System" column="name"/> is called the
           ``local interface.''  It does not make sense to bond an internal
           interface, so the terms ``port'' and ``interface'' are often used
           imprecisely for internal interfaces.</dd>
@@ -2257,7 +2257,7 @@
         Key-value pairs that report interface statistics.  The current
         implementation updates these counters periodically.  The update period
         is controlled by <ref column="other_config"
-        key="stats-update-interval"/> in the <ref table="Open_vSwitch"/> table.
+        key="stats-update-interval"/> in the <ref table="System"/> table.
      </p>
       <p>
         If an interface does not support a
@@ -2688,8 +2688,8 @@
             <p>
               The specified SSL <var>port</var> on the host at the given
               <var>ip</var>, which must be expressed as an IP address
-              (not a DNS name).  The <ref table="Open_vSwitch"
-              column="ssl"/> column in the <ref table="Open_vSwitch"/>
+              (not a DNS name).  The <ref table="System"
+              column="ssl"/> column in the <ref table="System"/>
               table must point to a valid SSL configuration when this
               form is used.
             </p>
@@ -2731,8 +2731,8 @@
               address, wrap in square brackets,
               e.g. <code>pssl:6632:[::1]</code>.  If <var>ip</var> is not
               specified then it listens only on IPv4 (but not IPv6) addresses.
-              The <ref table="Open_vSwitch" column="ssl"/> column in the <ref
-              table="Open_vSwitch"/> table must point to a valid SSL
+              The <ref table="System" column="ssl"/> column in the <ref
+              table="System"/> table must point to a valid SSL
               configuration when this form is used.
             </p>
             <p>
