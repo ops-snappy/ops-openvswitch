@@ -404,55 +404,55 @@ enum ovsrec_interface_hw_bond_config_enabled_e {
 /************************* OPEN vSWITCH TABLE  ***************************/
 
 /* LLDP related */
-#define OPEN_VSWITCH_OTHER_CONFIG_MAP_LLDP_ENABLE               "lldp_enable"
-#define OPEN_VSWITCH_OTHER_CONFIG_MAP_LLDP_ENABLE_DEFAULT       false
+#define SYSTEM_OTHER_CONFIG_MAP_LLDP_ENABLE               "lldp_enable"
+#define SYSTEM_OTHER_CONFIG_MAP_LLDP_ENABLE_DEFAULT       false
 
-#define OPEN_VSWITCH_OTHER_CONFIG_MAP_LLDP_TX_INTERVAL          "lldp_tx_interval"
-#define OPEN_VSWITCH_OTHER_CONFIG_MAP_LLDP_TX_INTERVAL_DEFAULT  30
-#define OPEN_VSWITCH_OTHER_CONFIG_MAP_LLDP_TX_INTERVAL_MIN      5
-#define OPEN_VSWITCH_OTHER_CONFIG_MAP_LLDP_TX_INTERVAL_MAX      32768
+#define SYSTEM_OTHER_CONFIG_MAP_LLDP_TX_INTERVAL          "lldp_tx_interval"
+#define SYSTEM_OTHER_CONFIG_MAP_LLDP_TX_INTERVAL_DEFAULT  30
+#define SYSTEM_OTHER_CONFIG_MAP_LLDP_TX_INTERVAL_MIN      5
+#define SYSTEM_OTHER_CONFIG_MAP_LLDP_TX_INTERVAL_MAX      32768
 
-#define OPEN_VSWITCH_OTHER_CONFIG_MAP_LLDP_HOLD                 "lldp_hold"
-#define OPEN_VSWITCH_OTHER_CONFIG_MAP_LLDP_HOLD_DEFAULT         4
-#define OPEN_VSWITCH_OTHER_CONFIG_MAP_LLDP_HOLD_MIN             2
-#define OPEN_VSWITCH_OTHER_CONFIG_MAP_LLDP_HOLD_MAX             10
+#define SYSTEM_OTHER_CONFIG_MAP_LLDP_HOLD                 "lldp_hold"
+#define SYSTEM_OTHER_CONFIG_MAP_LLDP_HOLD_DEFAULT         4
+#define SYSTEM_OTHER_CONFIG_MAP_LLDP_HOLD_MIN             2
+#define SYSTEM_OTHER_CONFIG_MAP_LLDP_HOLD_MAX             10
 
-#define OPEN_VSWITCH_OTHER_CONFIG_MAP_LLDP_MGMT_ADDR            "lldp_mgmt_addr"
+#define SYSTEM_OTHER_CONFIG_MAP_LLDP_MGMT_ADDR            "lldp_mgmt_addr"
 
-#define OPEN_VSWITCH_OTHER_CONFIG_MAP_LLDP_TLV_SYS_NAME_ENABLE                 \
+#define SYSTEM_OTHER_CONFIG_MAP_LLDP_TLV_SYS_NAME_ENABLE                 \
                                                    "lldp_tlv_sys_name_enable"
-#define OPEN_VSWITCH_OTHER_CONFIG_MAP_LLDP_TLV_SYS_DESC_ENABLE                 \
+#define SYSTEM_OTHER_CONFIG_MAP_LLDP_TLV_SYS_DESC_ENABLE                 \
                                                    "lldp_tlv_sys_desc_enable"
-#define OPEN_VSWITCH_OTHER_CONFIG_MAP_LLDP_TLV_SYS_CAP_ENABLE                  \
+#define SYSTEM_OTHER_CONFIG_MAP_LLDP_TLV_SYS_CAP_ENABLE                  \
                                                    "lldp_tlv_sys_cap_enable"
-#define OPEN_VSWITCH_OTHER_CONFIG_MAP_LLDP_TLV_MGMT_ADDR_ENABLE                \
+#define SYSTEM_OTHER_CONFIG_MAP_LLDP_TLV_MGMT_ADDR_ENABLE                \
                                                    "lldp_tlv_mgmt_addr_enable"
-#define OPEN_VSWITCH_OTHER_CONFIG_MAP_LLDP_TLV_PORT_DESC_ENABLE                \
+#define SYSTEM_OTHER_CONFIG_MAP_LLDP_TLV_PORT_DESC_ENABLE                \
                                                    "lldp_tlv_port_desc_enable"
-#define OPEN_VSWITCH_OTHER_CONFIG_MAP_LLDP_TLV_PORT_VLAN_ID_ENABLE             \
+#define SYSTEM_OTHER_CONFIG_MAP_LLDP_TLV_PORT_VLAN_ID_ENABLE             \
                                             "lldp_tlv_port_vlan_id_enable"
-#define OPEN_VSWITCH_OTHER_CONFIG_MAP_LLDP_TLV_PORT_PROTO_VLAN_ID_ENABLE       \
+#define SYSTEM_OTHER_CONFIG_MAP_LLDP_TLV_PORT_PROTO_VLAN_ID_ENABLE       \
                                             "lldp_tlv_port_proto_vlan_id_enable"
-#define OPEN_VSWITCH_OTHER_CONFIG_MAP_LLDP_TLV_PORT_VLAN_NAME_ENABLE           \
+#define SYSTEM_OTHER_CONFIG_MAP_LLDP_TLV_PORT_VLAN_NAME_ENABLE           \
                                             "lldp_tlv_port_vlan_name_enable"
-#define OPEN_VSWITCH_OTHER_CONFIG_MAP_LLDP_TLV_PORT_PROTO_ID_ENABLE       \
+#define SYSTEM_OTHER_CONFIG_MAP_LLDP_TLV_PORT_PROTO_ID_ENABLE       \
                                             "lldp_tlv_port_proto_id_enable"
 
-#define OPEN_VSWITCH_OTHER_CONFIG_MAP_LLDP_TLV_DEFAULT        true
+#define SYSTEM_OTHER_CONFIG_MAP_LLDP_TLV_DEFAULT        true
 
 /* VLAN internal range */
-#define OPEN_VSWITCH_OTHER_CONFIG_MAP_MIN_INTERNAL_VLAN     "min_internal_vlan"
-#define OPEN_VSWITCH_OTHER_CONFIG_MAP_MAX_INTERNAL_VLAN     "max_internal_vlan"
-#define OPEN_VSWITCH_OTHER_CONFIG_MAP_INTERNAL_VLAN_POLICY  "internal_vlan_policy"
+#define SYSTEM_OTHER_CONFIG_MAP_MIN_INTERNAL_VLAN     "min_internal_vlan"
+#define SYSTEM_OTHER_CONFIG_MAP_MAX_INTERNAL_VLAN     "max_internal_vlan"
+#define SYSTEM_OTHER_CONFIG_MAP_INTERNAL_VLAN_POLICY  "internal_vlan_policy"
 
-#define OPEN_VSWITCH_OTHER_CONFIG_MAP_INTERNAL_VLAN_POLICY_ASCENDING_DEFAULT \
+#define SYSTEM_OTHER_CONFIG_MAP_INTERNAL_VLAN_POLICY_ASCENDING_DEFAULT \
                                                             "ascending"
-#define OPEN_VSWITCH_OTHER_CONFIG_MAP_INTERNAL_VLAN_POLICY_DESCENDING        \
+#define SYSTEM_OTHER_CONFIG_MAP_INTERNAL_VLAN_POLICY_DESCENDING        \
                                                             "descending"
 
 /* lacp global configuration parameters */
-#define OPEN_VSWITCH_LACP_CONFIG_MAP_LACP_SYSTEM_ID        "lacp-system-id"
-#define OPEN_VSWITCH_LACP_CONFIG_MAP_LACP_SYSTEM_PRIORITY  "lacp-system-priority"
+#define SYSTEM_LACP_CONFIG_MAP_LACP_SYSTEM_ID        "lacp-system-id"
+#define SYSTEM_LACP_CONFIG_MAP_LACP_SYSTEM_PRIORITY  "lacp-system-priority"
 
 /* lldp global statistics */
 #define OVSDB_STATISTICS_LLDP_TABLE_INSERTS         "lldp_table_inserts"
@@ -517,20 +517,20 @@ enum ovsrec_interface_hw_bond_config_enabled_e {
 #define OVSDB_NEXTHOP_STATUS_ERROR                     "error"
 
 /* Management Interface Column */
-#define OPEN_VSWITCH_MGMT_INTF_MAP_MODE                 "mode"
+#define SYSTEM_MGMT_INTF_MAP_MODE                 "mode"
 
-#define OPEN_VSWITCH_MGMT_INTF_MAP_MODE_DHCP            "dhcp"
-#define OPEN_VSWITCH_MGMT_INTF_MAP_MODE_STATIC          "static"
+#define SYSTEM_MGMT_INTF_MAP_MODE_DHCP            "dhcp"
+#define SYSTEM_MGMT_INTF_MAP_MODE_STATIC          "static"
 
-#define OPEN_VSWITCH_MGMT_INTF_MAP_NAME                 "name"
-#define OPEN_VSWITCH_MGMT_INTF_MAP_IP                   "ip"
-#define OPEN_VSWITCH_MGMT_INTF_MAP_IPV6                 "ipv6"
-#define OPEN_VSWITCH_MGMT_INTF_MAP_IPV6_LINKLOCAL       "ipv6_linklocal"
-#define OPEN_VSWITCH_MGMT_INTF_MAP_SUBNET_MASK          "subnet_mask"
-#define OPEN_VSWITCH_MGMT_INTF_MAP_DEFAULT_GATEWAY      "default_gateway"
-#define OPEN_VSWITCH_MGMT_INTF_MAP_DEFAULT_GATEWAY_V6   "default_gateway_v6"
-#define OPEN_VSWITCH_MGMT_INTF_MAP_DNS_SERVER_1         "dns_server_1"
-#define OPEN_VSWITCH_MGMT_INTF_MAP_DNS_SERVER_2         "dns_server_2"
+#define SYSTEM_MGMT_INTF_MAP_NAME                 "name"
+#define SYSTEM_MGMT_INTF_MAP_IP                   "ip"
+#define SYSTEM_MGMT_INTF_MAP_IPV6                 "ipv6"
+#define SYSTEM_MGMT_INTF_MAP_IPV6_LINKLOCAL       "ipv6_linklocal"
+#define SYSTEM_MGMT_INTF_MAP_SUBNET_MASK          "subnet_mask"
+#define SYSTEM_MGMT_INTF_MAP_DEFAULT_GATEWAY      "default_gateway"
+#define SYSTEM_MGMT_INTF_MAP_DEFAULT_GATEWAY_V6   "default_gateway_v6"
+#define SYSTEM_MGMT_INTF_MAP_DNS_SERVER_1         "dns_server_1"
+#define SYSTEM_MGMT_INTF_MAP_DNS_SERVER_2         "dns_server_2"
 
 /* buffer monitoring statistics config table (bufmon)*/
 #define BUFMON_CONFIG_MAP_ENABLED                               "enabled"
@@ -543,11 +543,11 @@ enum ovsrec_interface_hw_bond_config_enabled_e {
 #define BUFMON_INFO_MAP_LAST_COLLECTION_TIMESTAMP               "last_collection_timestamp"
 
 /* ECMP configuration (ecmp_config)*/
-#define OPEN_VSWITCH_ECMP_CONFIG_STATUS                         "enabled"
-#define OPEN_VSWITCH_ECMP_CONFIG_HASH_SRC_IP                    "hash_srcip_enabled"
-#define OPEN_VSWITCH_ECMP_CONFIG_HASH_SRC_PORT                  "hash_srcport_enabled"
-#define OPEN_VSWITCH_ECMP_CONFIG_HASH_DST_IP                    "hash_dstip_enabled"
-#define OPEN_VSWITCH_ECMP_CONFIG_HASH_DST_PORT                  "hash_dstport_enabled"
-#define OPEN_VSWITCH_ECMP_CONFIG_ENABLE_DEFAULT                 "true"
+#define SYSTEM_ECMP_CONFIG_STATUS                         "enabled"
+#define SYSTEM_ECMP_CONFIG_HASH_SRC_IP                    "hash_srcip_enabled"
+#define SYSTEM_ECMP_CONFIG_HASH_SRC_PORT                  "hash_srcport_enabled"
+#define SYSTEM_ECMP_CONFIG_HASH_DST_IP                    "hash_dstip_enabled"
+#define SYSTEM_ECMP_CONFIG_HASH_DST_PORT                  "hash_dstport_enabled"
+#define SYSTEM_ECMP_CONFIG_ENABLE_DEFAULT                 "true"
 
 #endif /* OPENHALON_IDL_HEADER */

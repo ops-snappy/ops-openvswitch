@@ -98,15 +98,14 @@ def printCIDLHeader(schemaFile):
                                % {'prefix': prefix.upper()}
 
 
-    if aliases:
-        print
-        for alias in aliases:
-            print "#define %s%s %s%s" % (prefix, alias["name"],
-                                         prefix, alias["target"])
-        print
-
     for tableName, table in sorted(schema.tables.iteritems()):
         structName = "%s%s" % (prefix, tableName.lower())
+
+        structNameAlias = None
+        for alias in aliases or []:
+            if tableName.lower() == alias["target"].lower():
+                structNameAlias = "%s%s" % (prefix, alias["name"].lower())
+                break
 
         print ""
         print "/* %s table. */" % tableName
@@ -117,6 +116,10 @@ def printCIDLHeader(schemaFile):
             for member in cMembers(prefix, columnName, column, False):
                 print "\t%(type)s%(name)s;%(comment)s" % member
         print "};"
+
+        if structNameAlias:
+            print
+            print "#define %s %s" % (structNameAlias, structName)
 
         # Enum constants
         for columnName, column in sorted(table.columns.iteritems()):
@@ -136,6 +139,13 @@ def printCIDLHeader(schemaFile):
                    for columnName in sorted(table.columns)]
                   + ["%s_N_COLUMNS" % structName.upper()])
 
+        if structNameAlias:
+            print
+            for columnName in sorted(table.columns):
+                print "#define %s_COL_%s %s_COL_%s" % (structNameAlias.upper(),
+                                                       columnName.upper(),
+                                                       structName.upper(),
+                                                       columnName.upper())
         print
         for columnName in table.columns:
             print "#define %(s)s_col_%(c)s (%(s)s_columns[%(S)s_COL_%(C)s])" % {
@@ -143,6 +153,14 @@ def printCIDLHeader(schemaFile):
                 'S': structName.upper(),
                 'c': columnName,
                 'C': columnName.upper()}
+
+        if structNameAlias:
+            print
+            for columnName in sorted(table.columns):
+                print "#define %s_col_%s %s_col_%s" % (structNameAlias.lower(),
+                                                       columnName.lower(),
+                                                       structName.lower(),
+                                                       columnName.lower())
 
         print "\nextern struct ovsdb_idl_column %s_columns[%s_N_COLUMNS];" % (structName, structName.upper())
 
@@ -164,8 +182,24 @@ void %(s)s_delete(const struct %(s)s *);
 struct %(s)s *%(s)s_insert(struct ovsdb_idl_txn *);
 ''' % {'s': structName, 'S': structName.upper()}
 
+        if structNameAlias:
+            for func in ["columns", "get_for_uuid", "first", "next",
+                         "init", "delete", "insert"]:
+                print "#define %s_%s %s_%s" % (structNameAlias.lower(), func,
+                                               structName.lower(), func)
+            for func in ["FOR_EACH", "FOR_EACH_SAFE"]:
+                print "#define %s_%s %s_%s" % (structNameAlias.upper(), func,
+                                               structName.upper(), func)
+            print
+
         for columnName, column in sorted(table.columns.iteritems()):
             print 'void %(s)s_verify_%(c)s(const struct %(s)s *);' % {'s': structName, 'c': columnName}
+
+        if structNameAlias:
+            print
+            for columnName, column in sorted(table.columns.iteritems()):
+                print "#define %s_verify_%s %s_verify_%s" % (structNameAlias.lower(), columnName,
+                                                             structName.lower(), columnName)
 
         print """
 /* Functions for fetching columns as \"struct ovsdb_datum\"s.  (This is
@@ -179,6 +213,12 @@ struct %(s)s *%(s)s_insert(struct ovsdb_idl_txn *);
             print 'const struct ovsdb_datum *%(s)s_get_%(c)s(const struct %(s)s *, enum ovsdb_atomic_type key_type%(v)s);' % {
                 's': structName, 'c': columnName, 'v': valueParam}
 
+        if structNameAlias:
+            print
+            for columnName, column in sorted(table.columns.iteritems()):
+                print "#define %s_get_%s %s_get_%s" % (structNameAlias.lower(), columnName,
+                                                             structName.lower(), columnName)
+
         print
         for columnName, column in sorted(table.columns.iteritems()):
             print 'void %(s)s_set_%(c)s(const struct %(s)s *,' % {'s': structName, 'c': columnName},
@@ -188,6 +228,12 @@ struct %(s)s *%(s)s_insert(struct ovsdb_idl_txn *);
                 args = ['%(type)s%(name)s' % member for member
                         in cMembers(prefix, columnName, column, True)]
             print '%s);' % ', '.join(args)
+
+        if structNameAlias:
+            print
+            for columnName, column in sorted(table.columns.iteritems()):
+                print "#define %s_set_%s %s_set_%s" % (structNameAlias.lower(), columnName,
+                                                             structName.lower(), columnName)
 
         print
 
@@ -200,6 +246,13 @@ struct %(s)s *%(s)s_insert(struct ovsdb_idl_txn *);
             'P': prefix.upper(),
             't': tableName.lower(),
             'T': tableName.upper()}
+
+        for alias in aliases or []:
+            if tableName.lower() == alias["target"].lower():
+                print "#define %stable_%s %stable_%s" % (prefix, alias["name"], prefix, alias["target"])
+                break
+
+
     print "\nextern struct ovsdb_idl_table_class %stable_classes[%sN_TABLES];" % (prefix, prefix.upper())
 
     print "\nextern struct ovsdb_idl_class %sidl_class;" % prefix
