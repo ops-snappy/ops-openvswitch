@@ -51,4 +51,7 @@
 
 #define MAX_NEXTHOPS_PER_ROUTE                                      32
 
+/* Default for port hw_config */
+#define PORT_HW_CONFIG_MAP_ENABLE_DEFAULT                       "true"
+
 #endif /* OPENHALON_DFLT_HEADER */

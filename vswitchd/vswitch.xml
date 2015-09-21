@@ -1763,6 +1763,34 @@
       bonded Port. A maximum of 8 interfaces can be assigned to a port.
     </column>
 
+    <column name="admin">
+      The administrative state of the Port configured by user. The port admin
+      state determines the hardware configuration based on the business logic.
+      When port "admin" is configured down the interface(s) associated
+      with the port should force their hardware configuration to down. By
+      default the port is up.
+    </column>
+
+    <group title="Hardware Port Configuration">
+      <p>
+        The following fields are not meant to be configured by the user,
+        but rather by <code>portd</code> daemon that is responsible to consider
+        user configuration and business logic in order to determine
+        hardware configuration.
+      </p>
+
+      <column name="hw_config">
+        Key-value pairs that represent the configuration passed down to hardware.
+      </column>
+      <column name="hw_config" key="enable"
+              type='{"type": "boolean"}'>
+        The possible values are "true" and "false".
+      </column>
+      <column name="hw_config" key="internal-vlan">
+        The VLAN associated with l3 interfaces.
+      </column>
+    </group>
+
     <group title="VLAN Configuration">
       <p>Bridge ports support the following types of VLAN configuration:</p>
       <dl>
@@ -2393,8 +2421,10 @@
     <p>
       The following fields are not meant to be configured by the user,
       but rather by <code>intfd</code> daemon that is responsible to consider
-      user configuration and business logic in order to determine
-      hardware configuration.
+      user configuration or the port admin_state configuration and business
+      logic in order to determine hardware configuration. When port associated
+      with the interface is configured to down the hardware configuration is
+      forced to down.
     </p>
 
     <column name="hw_intf_config">

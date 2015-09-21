@@ -372,6 +372,9 @@ enum ovsrec_interface_hw_bond_config_enabled_e {
 
 #define PORT_STATUS_BOND_HW_HANDLE                      "bond_hw_handle"
 #define PORT_HW_CONFIG_MAP_INTERNAL_VLAN_ID             "internal_vlan_id"
+#define PORT_HW_CONFIG_MAP_ENABLE                       "enable"
+#define PORT_HW_CONFIG_MAP_ENABLE_FALSE                 "false"
+#define PORT_HW_CONFIG_MAP_ENABLE_TRUE                  "true"
 
 #define PORT_OTHER_CONFIG_MAP_LACP_TIME                 "lacp-time"
 
