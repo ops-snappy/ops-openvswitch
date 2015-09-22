@@ -15,23 +15,22 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
-from halonvsi.docker import *
-from halonvsi.halon import *
-from halonutils.halonutil import *
+from opsvsi.docker import *
+from opsvsi.opsvsitest import *
+from opsvsiutils.systemutil import *
 
-class socketFilePermissionTests( HalonTest ):
+class socketFilePermissionTests( OpsVsiTest ):
 
   def setupNet(self):
     # if you override this function, make sure to
     # either pass getNodeOpts() into hopts/sopts of the topology that
     # you build or into addHost/addSwitch calls
-    self.net = Mininet(topo=SingleSwitchTopo(k=0,
-                                             hopts=self.getHostOpts(),
-                                             sopts=self.getSwitchOpts()),
-                                             switch=HalonSwitch,
-                                             host=HalonHost,
-                                             link=HalonLink, controller=None,
-                                             build=True)
+    host_opts = self.getHostOpts()
+    switch_opts = self.getSwitchOpts()
+    openswitch_topo = SingleSwitchTopo(k=0, hopts=host_opts, sopts=switch_opts)
+    self.net = Mininet(openswitch_topo, switch=VsiOpenSwitch,
+                       host=Host, link=OpsVsiLink,
+                       controller=None, build=True)
 
   def socket_file_permission_verify(self):
     info("########## Verify DB socket file permissions ##########\n")
