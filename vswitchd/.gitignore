@@ -7,3 +7,4 @@
 /vswitch.gv
 /vswitch.pic
 /vswitch.ovsschema
+/dhcp_leases.ovsschema
