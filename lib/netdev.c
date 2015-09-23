@@ -1206,9 +1206,21 @@ do_update_flags(struct netdev *netdev, enum netdev_flags off,
     error = netdev->netdev_class->update_flags(netdev, off & ~on, on,
                                                &old_flags);
     if (error) {
+#ifdef HALON
+        if (error == EOPNOTSUPP) {
+            VLOG_DBG_RL(&rl, "%s flags for network device %s: %s not supported",
+                         off || on ? "set" : "get", netdev_get_name(netdev),
+                         ovs_strerror(error));
+        } else {
+            VLOG_WARN_RL(&rl, "failed to %s flags for network device %s: %s",
+                         off || on ? "set" : "get", netdev_get_name(netdev),
+                         ovs_strerror(error));
+        }
+#else
         VLOG_WARN_RL(&rl, "failed to %s flags for network device %s: %s",
                      off || on ? "set" : "get", netdev_get_name(netdev),
                      ovs_strerror(error));
+#endif
         old_flags = 0;
     } else if ((off || on) && sfp) {
         enum netdev_flags new_flags = (old_flags & ~off) | on;
