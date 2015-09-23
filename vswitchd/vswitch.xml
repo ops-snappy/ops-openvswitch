@@ -1571,58 +1571,58 @@
        The <code>statistics</code> column contains various counters
        about this BGP neighbor.
      </p>
-      <column name="statistics" key="bgp-peer-established-count">
+      <column name="statistics" key="bgp_peer_established_count">
       This indicates the number of times peers have been established.
       </column>
-      <column name="statistics" key="bgp-peer-dropped-count">
+      <column name="statistics" key="bgp_peer_dropped_count">
       This indicates the number of times peers have been dropped
       from the established state.
       </column>
-      <column name="statistics" key="bgp-peer-open_in-count">
+      <column name="statistics" key="bgp_peer_open_in_count">
       This indicates how many times an open message has been received.
       </column>
-      <column name="statistics" key="bgp-peer-open_out-count">
+      <column name="statistics" key="bgp_peer_open_out_count">
       This indicates how many times an open message has been sent.
       </column>
-      <column name="statistics" key="bgp-peer-update_in-count">
+      <column name="statistics" key="bgp_peer_update_in_count">
       This indicates how many times an update message has been received.
       </column>
-      <column name="statistics" key="bgp-peer-update_out-count">
+      <column name="statistics" key="bgp_peer_update_out_count">
       This indicates how many times an update message has been sent.
       </column>
-      <column name="statistics" key="bgp-peer-keepalive_in-count">
+      <column name="statistics" key="bgp_peer_keepalive_in_count">
       This indicates how many times a keepalive message has been received.
       </column>
-      <column name="statistics" key="bgp-peer-keepalive_out-count">
+      <column name="statistics" key="bgp_peer_keepalive_out_count">
       This indicates how many times a keepalive message has been sent.
       </column>
-      <column name="statistics" key="bgp-peer-notify_in-count">
+      <column name="statistics" key="bgp_peer_notify_in_count">
       This indicates how many times a notify message has been received.
       </column>
-      <column name="statistics" key="bgp-peer-notify_out-count">
+      <column name="statistics" key="bgp_peer_notify_out_count">
       This indicates how many times a notify message has been sent.
       </column>
-      <column name="statistics" key="bgp-peer-refresh_in-count">
+      <column name="statistics" key="bgp_peer_refresh_in_count">
       This indicates how many times a frefresh message has been received.
       </column>
-      <column name="statistics" key="bgp-peer-refresh_out-count">
+      <column name="statistics" key="bgp_peer_refresh_out_count">
       This indicates how many times a refresh message has been sent.
       </column>
-      <column name="statistics" key="bgp-peer-dynamic_cap_in-count">
+      <column name="statistics" key="bgp_peer_dynamic_cap_in_count">
       This indicates how many times a dynamic cap message has been received.
       </column>
-      <column name="statistics" key="bgp-peer-dynamic_cap_out-count">
+      <column name="statistics" key="bgp_peer_dynamic_cap_out_count">
       This indicates how many times a dynamic cap message has been sent.
       </column>
-      <column name="statistics" key="bgp-peer-uptime">
+      <column name="statistics" key="bgp_peer_uptime">
       This indicates how long since peer has been in the established state,
       or since the last route update was received.
       </column>
-      <column name="statistics" key="bgp-peer-readtime">
+      <column name="statistics" key="bgp_peer_readtime">
       This indicates the last time an update or keepalive message has been
       received.
       </column>
-      <column name="statistics" key="bgp-peer-resettime">
+      <column name="statistics" key="bgp_peer_resettime">
       Indicates the last time peer was reset.
       </column>
    </group>
