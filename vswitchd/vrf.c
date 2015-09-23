@@ -156,13 +156,6 @@ vrf_ofproto_route_add(struct vrf *vrf, struct ofproto_route *ofp_route,
         VLOG_DBG("--------------------------");
     }
 
-    if (rc != 0) { /* return on error */
-        for (i = 0; i < ofp_route->n_nexthops; i++) {
-            free(ofp_route->nexthops[i].id);
-        }
-        return;
-    }
-
     /* process the nexthop return code */
     for (i = 0; i < ofp_route->n_nexthops; i++) {
         if (ofp_route->nexthops[i].type == OFPROTO_NH_IPADDR) {
