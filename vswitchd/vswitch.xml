@@ -322,6 +322,9 @@
         through CLI, or specified in DHCP messages. If none of these are
         available, it defaults to "switch".
       </column>
+      <column name="mgmt_intf_status" key="dhcp_hostname">
+        Holds hostname configured by dhcp client.
+      </column>
       <column name="next_cfg">
         Sequence number for client to increment.  When a client modifies
         any part of the database configuration and wishes to wait for

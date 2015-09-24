@@ -535,6 +535,7 @@ enum ovsrec_interface_hw_bond_config_enabled_e {
 #define SYSTEM_MGMT_INTF_MAP_DNS_SERVER_1         "dns_server_1"
 #define SYSTEM_MGMT_INTF_MAP_DNS_SERVER_2         "dns_server_2"
 #define SYSTEM_MGMT_INTF_MAP_HOSTNAME             "hostname"
+#define SYSTEM_MGMT_INTF_MAP_DHCP_HOSTNAME        "dhcp_hostname"
 
 /* buffer monitoring statistics config table (bufmon)*/
 #define BUFMON_CONFIG_MAP_ENABLED                               "enabled"
