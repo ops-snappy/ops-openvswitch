@@ -1,8 +1,35 @@
+if OPEN_HALON
+sbin_PROGRAMS += vswitchd/ops-switchd
+else
 sbin_PROGRAMS += vswitchd/ovs-vswitchd
+endif
 man_MANS += vswitchd/ovs-vswitchd.8
 DISTCLEANFILES += \
 	vswitchd/ovs-vswitchd.8
 
+if OPEN_HALON
+vswitchd_ops_switchd_SOURCES = \
+	vswitchd/bridge.c \
+	vswitchd/bridge.h \
+	vswitchd/ovs-vswitchd.c \
+	vswitchd/subsystem.c \
+	vswitchd/system-stats.c \
+	vswitchd/system-stats.h \
+	vswitchd/xenserver.c \
+	vswitchd/xenserver.h \
+	vswitchd/bufmon.c \
+	vswitchd/vrf.c \
+	vswitchd/vrf.h
+
+vswitchd_ops_switchd_LDADD = \
+	lib/libovscommon.la \
+	ovsdb/libovsdb.la \
+	ofproto/libofproto.la \
+	lib/libsflow.la \
+	lib/libopenvswitch.la
+
+vswitchd_ops_switchd_LDFLAGS = $(AM_LDFLAGS) $(DPDK_vswitchd_LDFLAGS)
+else
 vswitchd_ovs_vswitchd_SOURCES = \
 	vswitchd/bridge.c \
 	vswitchd/bridge.h \
@@ -13,13 +40,6 @@ vswitchd_ovs_vswitchd_SOURCES = \
 	vswitchd/xenserver.c \
 	vswitchd/xenserver.h
 
-if OPEN_HALON
-vswitchd_ovs_vswitchd_SOURCES += \
-    vswitchd/bufmon.c \
-	vswitchd/vrf.c \
-	vswitchd/vrf.h
-endif
-
 vswitchd_ovs_vswitchd_LDADD = \
 	lib/libovscommon.la \
 	ovsdb/libovsdb.la \
@@ -28,6 +48,7 @@ vswitchd_ovs_vswitchd_LDADD = \
 	lib/libopenvswitch.la
 
 vswitchd_ovs_vswitchd_LDFLAGS = $(AM_LDFLAGS) $(DPDK_vswitchd_LDFLAGS)
+endif
 
 EXTRA_DIST += vswitchd/INTERNALS
 MAN_ROOTS += vswitchd/ovs-vswitchd.8.in

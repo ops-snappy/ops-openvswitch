@@ -706,11 +706,11 @@ vrf_reconfigure_routes(struct vrf *vrf)
                     nh->route->from, nh->route->prefix);
         }
     }
-    /* OPS_TODO : for port deletion, delete all routes in ofproto that has
+    /* FIXME : for port deletion, delete all routes in ofproto that has
      * NH as the deleted port. */
-    /* OPS_TODO : for VRF deletion, delete all routes in ofproto that has
+    /* FIXME : for VRF deletion, delete all routes in ofproto that has
      * NH as any of the ports in the deleted VRF */
 }
 
-/* OPS_TODO : move vrf functions from bridge.c to this file */
-/* OPS_TODO : move neighbor functions from bridge.c to this file */
+/* FIXME : move vrf functions from bridge.c to this file */
+/* FIXME : move neighbor functions from bridge.c to this file */

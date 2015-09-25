@@ -188,7 +188,11 @@ parse_command_line(int argc, char *argv[])
                   "(use --help for help)");
     }
 
+#ifdef HALON
+    return target ? target : "ops-switchd";
+#else
     return target ? target : "ovs-vswitchd";
+#endif
 }
 
 static struct jsonrpc *

@@ -1175,7 +1175,7 @@ pre_get_info(struct vsctl_context *ctx)
     ovsdb_idl_add_column(ctx->idl, &ovsrec_interface_col_ofport);
 #endif
 #ifdef HALON
-    /* HALON_TODO: We currently use presence of subsystems as an indicator
+    /* FIXME: We currently use presence of subsystems as an indicator
      * that this is a physical switch instead of a virtual switch.  This
      * isn't ideal, and we may want a more direct method of determining
      * this distinction.
@@ -2491,7 +2491,7 @@ pre_get_vrf_info(struct vsctl_context *ctx)
     ovsdb_idl_add_column(ctx->idl, &ovsrec_port_col_interfaces);
 
     ovsdb_idl_add_column(ctx->idl, &ovsrec_interface_col_name);
-    /* HALON_TODO: We currently use presence of subsystems as an indicator
+    /* FIXME: We currently use presence of subsystems as an indicator
      * that this is a physical switch instead of a virtual switch.  This
      * isn't ideal, and we may want a more direct method of determining
      * this distinction.

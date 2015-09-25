@@ -31,7 +31,7 @@ done
 ## ----- ##
 
 insert_mod_if_required () {
-	# HALON_TODO: Find better way to write this script.
+	# FIXME: Find better way to write this script.
 	# On Halon we don't need kernel modules.
 	# So for now skip all kernel module LOAD.
 	return 0
@@ -216,7 +216,7 @@ start_ovsdb () {
 
 add_managers () {
 
-	# HALON_TODO: Find better way to write this script.
+	# FIXME: Find better way to write this script.
 	# For now we don't have any remote managers.. so skip this step.
 	return 0
 
@@ -234,7 +234,7 @@ add_managers () {
 
 start_forwarding () {
 
-	# HALON_TODO: Find better way to write this script.
+	# FIXME: Find better way to write this script.
 	# We are not planning to start open-vswitchd from this script.
 	# It will be started in another script.
 	return 0
