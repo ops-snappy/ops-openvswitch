@@ -52,6 +52,8 @@
 #define OVSREC_INTERFACE_ERROR_AUTONEG_REQUIRED         "autoneg_required"
 #define OVSREC_INTERFACE_ERROR_OK                       "ok"
 
+#define OVSREC_PORT_ERROR_ADMIN_DOWN                     "port_admin_down"
+
 enum ovsrec_interface_error_e {
     INTERFACE_ERROR_UNINITIALIZED,
     INTERFACE_ERROR_ADMIN_DOWN,
@@ -64,6 +66,7 @@ enum ovsrec_interface_error_e {
     INTERFACE_ERROR_INVALID_SPEEDS,
     INTERFACE_ERROR_AUTONEG_NOT_SUPPORTED,
     INTERFACE_ERROR_AUTONEG_REQUIRED,
+    PORT_ERROR_ADMIN_DOWN,
     INTERFACE_ERROR_OK
 };
 
@@ -391,6 +394,13 @@ enum ovsrec_interface_hw_bond_config_enabled_e {
 #define PORT_LACP_STATUS_BOND_STATUS_OK                 "ok"
 #define PORT_LACP_STATUS_BOND_STATUS_DOWN               "down"
 #define PORT_LACP_STATUS_BOND_STATUS_DEFAULTED          "defaulted"
+
+#define PORT_CONFIG_ADMIN_DOWN                          "down"
+
+enum ovsrec_port_config_admin_e {
+    PORT_ADMIN_CONFIG_DOWN,
+    PORT_ADMIN_CONFIG_UP
+};
 
 /****************************** SUBSYSTEM TABLE *******************************/
 
