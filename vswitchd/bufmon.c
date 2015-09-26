@@ -30,7 +30,7 @@
 #include <ovsdb-idl.h>
 #include <openvswitch/vlog.h>
 #include <ovs-thread.h>
-#include <openhalon-idl.h>
+#include <openswitch-idl.h>
 #include <poll-loop.h>
 #include <shash.h>
 #include <unixctl.h>

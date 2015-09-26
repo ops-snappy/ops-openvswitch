@@ -20,7 +20,7 @@
 #include "shash.h"
 #include "ofproto/ofproto.h"
 #include "openvswitch/vlog.h"
-#include "openhalon-idl.h"
+#include "openswitch-idl.h"
 
 VLOG_DEFINE_THIS_MODULE(vrf);
 

@@ -72,7 +72,7 @@
 #include <string.h>
 #include <netinet/ether.h>
 #include "vrf.h"
-#include "openhalon-idl.h"
+#include "openswitch-idl.h"
 #endif
 
 VLOG_DEFINE_THIS_MODULE(bridge);

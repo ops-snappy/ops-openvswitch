@@ -38,8 +38,8 @@
 #include "lib/vswitch-idl.h"
 #include "openvswitch/vlog.h"
 
-#include "openhalon-idl.h"
-#include "openhalon-dflt.h"
+#include "openswitch-idl.h"
+#include "openswitch-dflt.h"
 
 VLOG_DEFINE_THIS_MODULE(subsystem);
 
