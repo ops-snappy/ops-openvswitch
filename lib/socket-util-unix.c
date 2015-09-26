@@ -49,10 +49,10 @@ VLOG_DEFINE_THIS_MODULE(socket_util_unix);
  * space for a null terminator. */
 #define MAX_UN_LEN (sizeof(((struct sockaddr_un *) 0)->sun_path) - 1)
 
-#ifdef HALON
+#ifdef OPS
 /* Group-ID of "ovsdb_users" group */
 #define OVSDB_USERS_GROUP_ID 1020
-#endif /* HALON */
+#endif /* OPS */
 
 void
 xpipe(int fds[2])
@@ -351,7 +351,7 @@ make_unix_socket(int style, bool nonblock,
         error = make_sockaddr_un(bind_path, &un, &un_len, &dirfd, linkname);
         if (!error) {
             error = bind_unix_socket(fd, (struct sockaddr *) &un, un_len);
-#ifdef HALON
+#ifdef OPS
             if(0 != chmod(bind_path, S_IRUSR | S_IWUSR | S_IXUSR | S_IRGRP | S_IWGRP))
             {
               VLOG_ERR("\nError while changing mode of socket file - %s.\n", bind_path);
@@ -360,7 +360,7 @@ make_unix_socket(int style, bool nonblock,
             {
               VLOG_ERR("\nError while changing group of socket file - %s.\n", bind_path);
             }
-#endif /* HALON */
+#endif /* OPS */
         }
         free_sockaddr_un(dirfd, linkname);
 

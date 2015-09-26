@@ -75,7 +75,7 @@
 
 
 VLOG_DEFINE_THIS_MODULE(netdev_linux);
-#ifndef HALON_TEMP
+#ifndef OPS_TEMP
 COVERAGE_DEFINE(netdev_set_policing);
 COVERAGE_DEFINE(netdev_arp_lookup);
 COVERAGE_DEFINE(netdev_get_ifindex);
@@ -2755,7 +2755,7 @@ netdev_linux_update_flags(struct netdev *netdev_, enum netdev_flags off,
     netdev_linux_dealloc,                                       \
     NULL,                       /* get_config */                \
     NULL,                       /* set_config */                \
-#ifdef HALON
+#ifdef OPS
     NULL,                       /* set_hw_intf_info */          \
     NULL,                       /* set_hw_intf_config */        \
 #endif

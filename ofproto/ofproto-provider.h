@@ -136,7 +136,7 @@ struct ofproto {
     uint32_t n_groups[4] OVS_GUARDED; /* # of existing groups of each type. */
     struct ofputil_group_features ogf;
 
-#ifdef HALON
+#ifdef OPS
     /* VLAN support. */
     unsigned long int *vlans_bmp;  /* Bitmap of all configured VLANs. */
 #endif
@@ -1524,7 +1524,7 @@ struct ofproto_class {
      * one port, deconfigures the bundle's bonding configuration. */
     void (*bundle_remove)(struct ofport *ofport);
 
-#ifdef HALON
+#ifdef OPS
     /* Retrieves information about bundle on 'ofproto'.
      *
      * Stores bundle information for 'ofproto' in 'bundle_handle'. */
@@ -1704,7 +1704,7 @@ struct ofproto_class {
      */
     const char *(*get_datapath_version)(const struct ofproto *);
 
-#ifdef HALON
+#ifdef OPS
     /* Add L3 host entry. */
     int (*add_l3_host_entry)(const struct ofproto *ofproto, void *aux,
                              bool is_ipv6_addr, char *ip_addr,

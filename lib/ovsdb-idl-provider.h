@@ -37,7 +37,7 @@ struct ovsdb_idl_row {
     unsigned long int *prereqs; /* Bitmap of columns to verify in "old". */
     unsigned long int *written; /* Bitmap of columns from "new" to write. */
     struct hmap_node txn_node;  /* Node in ovsdb_idl_txn's list. */
-#ifdef HALON
+#ifdef OPS
     unsigned int insert_seqno;
     unsigned int modify_seqno;
 #endif
@@ -49,7 +49,7 @@ struct ovsdb_idl_column {
     bool mutable;
     void (*parse)(struct ovsdb_idl_row *, const struct ovsdb_datum *);
     void (*unparse)(struct ovsdb_idl_row *);
-#ifdef HALON
+#ifdef OPS
     unsigned int modify_seqno;
 #endif
 };
@@ -70,7 +70,7 @@ struct ovsdb_idl_table {
     struct shash columns;    /* Contains "const struct ovsdb_idl_column *"s. */
     struct hmap rows;        /* Contains "struct ovsdb_idl_row"s. */
     struct ovsdb_idl *idl;   /* Containing idl. */
-#ifdef HALON
+#ifdef OPS
     unsigned int insert_seqno;
     unsigned int modify_seqno;
     unsigned int delete_seqno;

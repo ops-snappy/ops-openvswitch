@@ -28,7 +28,7 @@
  *
  * This is empirically a useful data structure. */
 
-#ifdef HALON
+#ifdef OPS
 #define VLAN_BITMAP_SIZE 4096
 #endif
 

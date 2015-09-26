@@ -51,7 +51,7 @@
 #include "openvswitch/vlog.h"
 #include "lib/vswitch-idl.h"
 #include "lib/netdev-dpdk.h"
-#ifdef HALON
+#ifdef OPS
 #include "subsystem.h"
 #include "bufmon-provider.h"
 #endif
@@ -111,7 +111,7 @@ main(int argc, char *argv[])
     plugins_init(plugins_path);
 
     bridge_init(remote);
-#ifdef HALON
+#ifdef OPS
     subsystem_init();
 
     bufmon_init();
@@ -134,7 +134,7 @@ main(int argc, char *argv[])
             simap_destroy(&usage);
         }
         bridge_run();
-#ifdef HALON
+#ifdef OPS
         subsystem_run();
         bufmon_run();
 #endif
@@ -144,7 +144,7 @@ main(int argc, char *argv[])
 
         memory_wait();
         bridge_wait();
-#ifdef HALON
+#ifdef OPS
         subsystem_wait();
         bufmon_wait();
 #endif
@@ -160,7 +160,7 @@ main(int argc, char *argv[])
         }
     }
     bridge_exit();
-#ifdef HALON
+#ifdef OPS
     subsystem_exit();
 #endif
     unixctl_server_destroy(unixctl);

@@ -5618,7 +5618,7 @@ const struct ofproto_class ofproto_dpif_class = {
     set_queues,
     bundle_set,
     bundle_remove,
-#ifdef HALON
+#ifdef OPS
     NULL,                       /* bundle_get */
     NULL,                       /* set_vlan */
 #endif
@@ -5642,7 +5642,7 @@ const struct ofproto_class ofproto_dpif_class = {
     group_modify,               /* group_modify */
     group_get_stats,            /* group_get_stats */
     get_datapath_version,       /* get_datapath_version */
-#ifdef HALON
+#ifdef OPS
     NULL,
     NULL,
     NULL,

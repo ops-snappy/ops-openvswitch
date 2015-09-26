@@ -215,7 +215,7 @@ ovsdb_idl_create(const char *remote, const struct ovsdb_idl_class *class,
         hmap_init(&table->rows);
         table->idl = idl;
 
-#ifdef HALON
+#ifdef OPS
         table->insert_seqno = table->modify_seqno = table->delete_seqno = 0;
 #endif
 
@@ -682,7 +682,7 @@ ovsdb_idl_parse_update__(struct ovsdb_idl *idl,
 
             if (ovsdb_idl_process_update(table, &uuid, old_json, new_json)) {
                 idl->change_seqno++;
-#ifdef HALON
+#ifdef OPS
                 table->modify_seqno = idl->change_seqno;
 #endif
             }
@@ -770,7 +770,7 @@ ovsdb_idl_row_update(struct ovsdb_idl_row *row, const struct json *row_json)
 
     SHASH_FOR_EACH (node, json_object(row_json)) {
         const char *column_name = node->name;
-#ifdef HALON
+#ifdef OPS
         struct ovsdb_idl_column *column;
 #else
         const struct ovsdb_idl_column *column;
@@ -794,7 +794,7 @@ ovsdb_idl_row_update(struct ovsdb_idl_row *row, const struct json *row_json)
                 ovsdb_datum_swap(old, &datum);
                 if (table->modes[column_idx] & OVSDB_IDL_ALERT) {
                     changed = true;
-#ifdef HALON
+#ifdef OPS
                     column->modify_seqno = (row->table->idl->change_seqno + 1);
 #endif
                 }
@@ -1005,7 +1005,7 @@ ovsdb_idl_insert_row(struct ovsdb_idl_row *row, const struct json *row_json)
 
     ovsdb_idl_row_reparse_backrefs(row);
 
-#ifdef HALON
+#ifdef OPS
     row->insert_seqno = row->table->insert_seqno
                       = row->modify_seqno
                       = row->table->modify_seqno
@@ -1020,7 +1020,7 @@ ovsdb_idl_delete_row(struct ovsdb_idl_row *row)
     ovsdb_idl_row_clear_arcs(row, true);
     ovsdb_idl_row_clear_old(row);
 
-#ifdef HALON
+#ifdef OPS
     row->table->delete_seqno = (row->table->idl->change_seqno + 1);
 #endif
 
@@ -1043,7 +1043,7 @@ ovsdb_idl_modify_row(struct ovsdb_idl_row *row, const struct json *row_json)
     changed = ovsdb_idl_row_update(row, row_json);
     ovsdb_idl_row_parse(row);
 
-#ifdef HALON
+#ifdef OPS
     if( changed )
     {
         /* +1 because its incremented after this ft */

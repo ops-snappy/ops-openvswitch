@@ -56,7 +56,7 @@
 #include "openvswitch/vlog.h"
 
 VLOG_DEFINE_THIS_MODULE(dpif_netlink);
-#ifndef HALON_TEMP
+#ifndef OPS_TEMP
 #ifdef _WIN32
 enum { WINDOWS = 1 };
 #else

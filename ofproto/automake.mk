@@ -4,7 +4,7 @@
 # are permitted in any medium without royalty provided the copyright
 # notice and this notice are preserved.  This file is offered as-is,
 # without warranty of any kind.
-if OPEN_HALON
+if OPS
 ovsofprotolibincludedir = $(includedir)/ovs/ofproto
 ovsofprotolibinclude_HEADERS = \
 	ofproto/bond.h \

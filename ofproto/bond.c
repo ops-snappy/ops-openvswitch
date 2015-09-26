@@ -200,7 +200,7 @@ bond_mode_from_string(enum bond_mode *balance, const char *s)
     } else if (!strcmp(s, bond_mode_to_string(BM_AB))) {
         *balance = BM_AB;
     }
-#ifdef HALON
+#ifdef OPS
     else if (!strcmp(s, bond_mode_to_string(BM_L2_SRC_DST_HASH))) {
         *balance = BM_L2_SRC_DST_HASH;
     }
@@ -224,7 +224,7 @@ bond_mode_to_string(enum bond_mode balance) {
         return "balance-slb";
     case BM_AB:
         return "active-backup";
-#ifdef HALON
+#ifdef OPS
     case BM_L2_SRC_DST_HASH:
         return "l2-src-dst-hash";
     case BM_L3_SRC_DST_HASH:
@@ -848,8 +848,8 @@ bond_check_admissibility(struct bond *bond, const void *slave_,
         verdict = BV_DROP_IF_MOVED;
         goto out;
 
-#ifdef HALON
-        /* Halon doesn't use software based data path. So we will never reach
+#ifdef OPS
+        /* OPS doesn't use software based data path. So we will never reach
          * this code path. Making this change to avoid compiler warnings. */
     case BM_L3_SRC_DST_HASH:
     case BM_L2_SRC_DST_HASH:

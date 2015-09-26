@@ -1,4 +1,4 @@
-if OPEN_HALON
+if OPS
 bin_PROGRAMS += \
 	utilities/ovs-appctl \
 	utilities/ovs-vsctl
@@ -114,7 +114,7 @@ man_MANS += \
 utilities_ovs_appctl_SOURCES = utilities/ovs-appctl.c
 utilities_ovs_appctl_LDADD = lib/libovscommon.la ovsdb/libovsdb.la
 
-if !OPEN_HALON
+if !OPS
 utilities_ovs_testcontroller_SOURCES = utilities/ovs-testcontroller.c
 utilities_ovs_testcontroller_LDADD = lib/libovscommon.la ovsdb/libovsdb.la lib/libopenvswitch.la $(SSL_LIBS)
 

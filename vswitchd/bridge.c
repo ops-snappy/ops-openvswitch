@@ -22,7 +22,7 @@
 #include "async-append.h"
 #include "bfd.h"
 #include "bitmap.h"
-#ifndef HALON_TEMP
+#ifndef OPS_TEMP
 #include "cfm.h"
 #endif
 #include "connectivity.h"
@@ -68,7 +68,7 @@
 #include "vlan-bitmap.h"
 #include "packets.h"
 
-#ifdef HALON
+#ifdef OPS
 #include <string.h>
 #include <netinet/ether.h>
 #include "vrf.h"
@@ -98,7 +98,7 @@ struct iface {
     const struct ovsrec_interface *cfg;
 };
 
-#ifndef HALON_TEMP
+#ifndef OPS_TEMP
 struct mirror {
     struct uuid uuid;           /* UUID of this "mirror" record in database. */
     struct hmap_node hmap_node; /* In struct bridge's "mirrors" hmap. */
@@ -117,12 +117,12 @@ struct port {
     /* An ordinary bridge port has 1 interface.
      * A bridge port for bonding has at least 2 interfaces. */
     struct ovs_list ifaces;    /* List of "struct iface"s. */
-#ifdef HALON
+#ifdef OPS
     int bond_hw_handle;        /* Hardware bond identifier. */
 #endif
 };
 
-#ifdef HALON
+#ifdef OPS
 struct vlan {
     struct hmap_node hmap_node;  /* In struct bridge's "vlans" hmap. */
     struct bridge *bridge;
@@ -150,12 +150,12 @@ struct bridge {
     struct hmap ifaces;         /* "struct iface"s indexed by ofp_port. */
     struct hmap iface_by_name;  /* "struct iface"s indexed by name. */
 
-#ifdef HALON
+#ifdef OPS
     /* Bridge VLANs. */
     struct hmap vlans;          /* "struct vlan"s indexed by VID. */
 #endif
 
-#ifndef HALON_TEMP
+#ifndef OPS_TEMP
     /* Port mirroring. */
     struct hmap mirrors;        /* "struct mirror" indexed by UUID. */
 #endif
@@ -171,7 +171,7 @@ struct bridge {
 /* All bridges, indexed by name. */
 static struct hmap all_bridges = HMAP_INITIALIZER(&all_bridges);
 
-#ifdef HALON
+#ifdef OPS
 /* Even though VRF is a separate entity from a user and schema
  * perspective, it's essentially very similar to bridge. It has ports,
  * bundles, mirros, might provide sFlow, NetFLow etc.
@@ -206,7 +206,7 @@ static void run_neighbor_update(void);
 #endif
 
 /* OVSDB IDL used to obtain configuration. */
-#ifdef HALON
+#ifdef OPS
 struct ovsdb_idl *idl;
 #else
 static struct ovsdb_idl *idl;
@@ -230,7 +230,7 @@ static bool initial_config_done;
 static struct ovsdb_idl_txn *daemonize_txn;
 
 /* Most recently processed IDL sequence number. */
-#ifdef HALON
+#ifdef OPS
 unsigned int idl_seqno;
 #else
 static unsigned int idl_seqno;
@@ -285,7 +285,7 @@ static void bridge_destroy(struct bridge *);
 static struct bridge *bridge_lookup(const char *name);
 static unixctl_cb_func bridge_unixctl_dump_flows;
 static unixctl_cb_func bridge_unixctl_reconnect;
-#ifndef HALON_TEMP
+#ifndef OPS_TEMP
 static size_t bridge_get_controllers(const struct bridge *br,
                                      struct ovsrec_controller ***controllersp);
 #endif
@@ -299,7 +299,7 @@ static void bridge_del_ports(struct bridge *,
 static void bridge_add_ports(struct bridge *,
                              const struct shash *wanted_ports);
 
-#ifdef HALON
+#ifdef OPS
 static void add_del_vrfs(const struct ovsrec_open_vswitch *);
 static void vrf_create(const struct ovsrec_vrf *);
 static void vrf_destroy(struct vrf *);
@@ -314,12 +314,12 @@ static void bridge_configure_vlans(struct bridge *br);
 static unixctl_cb_func vlan_unixctl_show;
 #endif
 static void bridge_configure_datapath_id(struct bridge *);
-#ifndef HALON_TEMP
+#ifndef OPS_TEMP
 static void bridge_configure_netflow(struct bridge *);
 static void bridge_configure_forward_bpdu(struct bridge *);
 #endif
 static void bridge_configure_mac_table(struct bridge *);
-#ifndef HALON_TEMP
+#ifndef OPS_TEMP
 static void bridge_configure_mcast_snooping(struct bridge *);
 static void bridge_configure_sflow(struct bridge *, int *sflow_bridge_number);
 static void bridge_configure_ipfix(struct bridge *);
@@ -328,7 +328,7 @@ static void bridge_configure_rstp(struct bridge *);
 static void bridge_configure_tables(struct bridge *);
 #endif
 static void bridge_configure_dp_desc(struct bridge *);
-#ifndef HALON_TEMP
+#ifndef OPS_TEMP
 static void bridge_configure_remotes(struct bridge *,
                                      const struct sockaddr_in *managers,
                                      size_t n_managers);
@@ -340,7 +340,7 @@ static uint64_t bridge_pick_datapath_id(struct bridge *,
                                         const uint8_t bridge_ea[ETH_ADDR_LEN],
                                         struct iface *hw_addr_iface);
 static uint64_t dpid_from_hash(const void *, size_t nbytes);
-#ifndef HALON_TEMP
+#ifndef OPS_TEMP
 static bool bridge_has_bond_fake_iface(const struct bridge *,
                                        const char *name);
 static bool port_is_bond_fake_iface(const struct port *);
@@ -352,18 +352,18 @@ static void port_del_ifaces(struct port *);
 static void port_destroy(struct port *);
 static struct port *port_lookup(const struct bridge *, const char *name);
 static void port_configure(struct port *);
-#ifndef HALON
+#ifndef OPS
 static struct lacp_settings *port_configure_lacp(struct port *,
                                                  struct lacp_settings *);
 #endif
 static void port_configure_bond(struct port *, struct bond_settings *);
-#ifndef HALON_TEMP
+#ifndef OPS_TEMP
 static bool port_is_synthetic(const struct port *);
 #endif
 static void reconfigure_system_stats(const struct ovsrec_open_vswitch *);
 static void run_system_stats(void);
 
-#ifndef HALON_TEMP
+#ifndef OPS_TEMP
 static void bridge_configure_mirrors(struct bridge *);
 static struct mirror *mirror_create(struct bridge *,
                                     const struct ovsrec_mirror *);
@@ -371,7 +371,7 @@ static void mirror_destroy(struct mirror *);
 static bool mirror_configure(struct mirror *);
 static void mirror_refresh_stats(struct mirror *);
 #endif
-#ifndef HALON
+#ifndef OPS
 static void iface_configure_lacp(struct iface *, struct lacp_slave_settings *);
 #endif
 static bool iface_create(struct bridge *, const struct ovsrec_interface *,
@@ -383,17 +383,17 @@ static const char *iface_get_type(const struct ovsrec_interface *,
 static void iface_destroy(struct iface *);
 static void iface_destroy__(struct iface *);
 static struct iface *iface_lookup(const struct bridge *, const char *name);
-#ifndef HALON_TEMP
+#ifndef OPS_TEMP
 static struct iface *iface_find(const char *name);
 #endif
 static struct iface *iface_from_ofp_port(const struct bridge *,
                                          ofp_port_t ofp_port);
-#ifndef HALON_TEMP
+#ifndef OPS_TEMP
 static void iface_set_mac(const struct bridge *, const struct port *, struct iface *);
 static void iface_set_ofport(const struct ovsrec_interface *, ofp_port_t ofport);
 #endif
 static void iface_clear_db_record(const struct ovsrec_interface *if_cfg, char *errp);
-#ifndef HALON_TEMP
+#ifndef OPS_TEMP
 static void iface_configure_qos(struct iface *, const struct ovsrec_qos *);
 static void iface_configure_cfm(struct iface *);
 static void iface_refresh_cfm_stats(struct iface *);
@@ -402,12 +402,12 @@ static void iface_refresh_stats(struct iface *);
 static void iface_refresh_netdev_status(struct iface *);
 static void iface_refresh_ofproto_status(struct iface *);
 static bool iface_is_synthetic(const struct iface *);
-#ifndef HALON_TEMP
+#ifndef OPS_TEMP
 static ofp_port_t iface_get_requested_ofp_port(
     const struct ovsrec_interface *);
 #endif
 static ofp_port_t iface_pick_ofport(const struct ovsrec_interface *);
-#ifndef HALON_TEMP
+#ifndef OPS_TEMP
 /* Linux VLAN device support (e.g. "eth0.10" for VLAN 10.)
  *
  * This is deprecated.  It is only for compatibility with broken device drivers
@@ -427,7 +427,7 @@ static void add_vlan_splinter_ports(struct bridge *,
                                     struct shash *ports);
 #endif
 
-#ifdef HALON
+#ifdef OPS
 /* This function waits for SYSd and CONFIGd to complete their system
  * initialization before proceeding.  This means waiting for
  * Open_vSwitch table 'cur_cfg' column to become >= 1.
@@ -493,7 +493,7 @@ bridge_init_ofproto(const struct ovsrec_open_vswitch *cfg)
             }
         }
 
-#ifdef HALON
+#ifdef OPS
         for (i = 0; i < cfg->n_vrfs; i++) {
             const struct ovsrec_vrf *vrf_cfg = cfg->vrfs[i];
             int j;
@@ -541,11 +541,11 @@ bridge_init(const char *remote)
     ovsdb_idl_omit_alert(idl, &ovsrec_open_vswitch_col_cur_cfg);
     ovsdb_idl_omit_alert(idl, &ovsrec_open_vswitch_col_statistics);
     ovsdb_idl_omit(idl, &ovsrec_open_vswitch_col_external_ids);
-#ifndef HALON_TEMP
+#ifndef OPS_TEMP
     ovsdb_idl_omit(idl, &ovsrec_open_vswitch_col_ovs_version);
 #endif
     ovsdb_idl_omit(idl, &ovsrec_open_vswitch_col_db_version);
-#ifndef HALON_TEMP
+#ifndef OPS_TEMP
     ovsdb_idl_omit(idl, &ovsrec_open_vswitch_col_system_type);
     ovsdb_idl_omit(idl, &ovsrec_open_vswitch_col_system_version);
 #endif
@@ -553,7 +553,7 @@ bridge_init(const char *remote)
     ovsdb_idl_omit_alert(idl, &ovsrec_bridge_col_datapath_id);
     ovsdb_idl_omit_alert(idl, &ovsrec_bridge_col_datapath_version);
     ovsdb_idl_omit_alert(idl, &ovsrec_bridge_col_status);
-#ifndef HALON_TEMP
+#ifndef OPS_TEMP
     ovsdb_idl_omit_alert(idl, &ovsrec_bridge_col_rstp_status);
     ovsdb_idl_omit_alert(idl, &ovsrec_bridge_col_stp_enable);
     ovsdb_idl_omit_alert(idl, &ovsrec_bridge_col_rstp_enable);
@@ -561,7 +561,7 @@ bridge_init(const char *remote)
     ovsdb_idl_omit(idl, &ovsrec_bridge_col_external_ids);
 
     ovsdb_idl_omit_alert(idl, &ovsrec_port_col_status);
-#ifndef HALON_TEMP
+#ifndef OPS_TEMP
     ovsdb_idl_omit_alert(idl, &ovsrec_port_col_rstp_status);
     ovsdb_idl_omit_alert(idl, &ovsrec_port_col_rstp_statistics);
 #endif
@@ -573,22 +573,22 @@ bridge_init(const char *remote)
     ovsdb_idl_omit_alert(idl, &ovsrec_interface_col_duplex);
     ovsdb_idl_omit_alert(idl, &ovsrec_interface_col_link_speed);
     ovsdb_idl_omit_alert(idl, &ovsrec_interface_col_link_state);
-#ifdef HALON
+#ifdef OPS
     ovsdb_idl_omit_alert(idl, &ovsrec_interface_col_pause);
     ovsdb_idl_omit_alert(idl, &ovsrec_neighbor_col_status);
 #endif
     ovsdb_idl_omit_alert(idl, &ovsrec_interface_col_link_resets);
     ovsdb_idl_omit_alert(idl, &ovsrec_interface_col_mac_in_use);
-#ifndef HALON_TEMP
+#ifndef OPS_TEMP
     ovsdb_idl_omit_alert(idl, &ovsrec_interface_col_ifindex);
 #endif
     ovsdb_idl_omit_alert(idl, &ovsrec_interface_col_mtu);
-#ifndef HALON_TEMP
+#ifndef OPS_TEMP
     ovsdb_idl_omit_alert(idl, &ovsrec_interface_col_ofport);
 #endif
     ovsdb_idl_omit_alert(idl, &ovsrec_interface_col_statistics);
     ovsdb_idl_omit_alert(idl, &ovsrec_interface_col_status);
-#ifndef HALON_TEMP
+#ifndef OPS_TEMP
     ovsdb_idl_omit_alert(idl, &ovsrec_interface_col_cfm_fault);
     ovsdb_idl_omit_alert(idl, &ovsrec_interface_col_cfm_fault_status);
     ovsdb_idl_omit_alert(idl, &ovsrec_interface_col_cfm_remote_mpids);
@@ -600,12 +600,12 @@ bridge_init(const char *remote)
     ovsdb_idl_omit_alert(idl, &ovsrec_interface_col_lacp_current);
     ovsdb_idl_omit_alert(idl, &ovsrec_interface_col_error);
     ovsdb_idl_omit(idl, &ovsrec_interface_col_external_ids);
-#ifdef HALON
+#ifdef OPS
     ovsdb_idl_omit_alert(idl, &ovsrec_interface_col_hw_intf_info);
     ovsdb_idl_omit_alert(idl, &ovsrec_interface_col_pm_info);
     ovsdb_idl_omit_alert(idl, &ovsrec_interface_col_user_config);
 #endif
-#ifndef HALON_TEMP
+#ifndef OPS_TEMP
     ovsdb_idl_omit_alert(idl, &ovsrec_controller_col_is_connected);
     ovsdb_idl_omit_alert(idl, &ovsrec_controller_col_role);
     ovsdb_idl_omit_alert(idl, &ovsrec_controller_col_status);
@@ -631,7 +631,7 @@ bridge_init(const char *remote)
 
     ovsdb_idl_omit(idl, &ovsrec_ssl_col_external_ids);
 
-#ifdef HALON
+#ifdef OPS
     /* VLAN table related. */
     ovsdb_idl_omit(idl, &ovsrec_vlan_col_admin);
     ovsdb_idl_omit(idl, &ovsrec_vlan_col_description);
@@ -642,7 +642,7 @@ bridge_init(const char *remote)
     ovsdb_idl_omit_alert(idl, &ovsrec_nexthop_col_status);
 #endif
 
-#ifdef HALON
+#ifdef OPS
     ovsdb_idl_omit(idl, &ovsrec_fan_col_status);
     ovsdb_idl_omit(idl, &ovsrec_fan_col_direction);
     ovsdb_idl_omit(idl, &ovsrec_fan_col_name);
@@ -665,7 +665,7 @@ bridge_init(const char *remote)
 #endif
 
     /* Register unixctl commands. */
-#ifndef HALON_TEMP
+#ifndef OPS_TEMP
     unixctl_command_register("qos/show", "interface", 1, 1,
                              qos_unixctl_show, NULL);
 #endif
@@ -673,17 +673,17 @@ bridge_init(const char *remote)
                              bridge_unixctl_dump_flows, NULL);
     unixctl_command_register("bridge/reconnect", "[bridge]", 0, 1,
                              bridge_unixctl_reconnect, NULL);
-#ifdef HALON
+#ifdef OPS
     unixctl_command_register("vlan/show", "[vid]", 0, 1,
                              vlan_unixctl_show, NULL);
 #endif
     lacp_init();
     bond_init();
-#ifndef HALON_TEMP
+#ifndef OPS_TEMP
     cfm_init();
 #endif
     ovs_numa_init();
-#ifndef HALON_TEMP
+#ifndef OPS_TEMP
     stp_init();
     rstp_init();
 #endif
@@ -700,7 +700,7 @@ bridge_exit(void)
     ovsdb_idl_destroy(idl);
 }
 
-#ifndef HALON_TEMP
+#ifndef OPS_TEMP
 /* Looks at the list of managers in 'ovs_cfg' and extracts their remote IP
  * addresses and ports into '*managersp' and '*n_managersp'.  The caller is
  * responsible for freeing '*managersp' (with free()).
@@ -763,13 +763,13 @@ collect_in_band_managers(const struct ovsrec_open_vswitch *ovs_cfg,
 static void
 bridge_reconfigure(const struct ovsrec_open_vswitch *ovs_cfg)
 {
-#ifndef HALON_TEMP
+#ifndef OPS_TEMP
     unsigned long int *splinter_vlans;
     struct sockaddr_in *managers;
 #endif
     struct bridge *br, *next;
 
-#ifdef HALON
+#ifdef OPS
     struct vrf *vrf, *vrf_next;
 #else
     int sflow_bridge_number;
@@ -778,7 +778,7 @@ bridge_reconfigure(const struct ovsrec_open_vswitch *ovs_cfg)
 
     COVERAGE_INC(bridge_reconfigure);
 
-#ifndef HALON_TEMP
+#ifndef OPS_TEMP
     ofproto_set_flow_limit(smap_get_int(&ovs_cfg->other_config, "flow-limit",
                                         OFPROTO_FLOW_LIMIT_DEFAULT));
     ofproto_set_max_idle(smap_get_int(&ovs_cfg->other_config, "max-idle",
@@ -799,26 +799,26 @@ bridge_reconfigure(const struct ovsrec_open_vswitch *ovs_cfg)
      * down to ofproto or lower layers. */
     add_del_bridges(ovs_cfg);
 
-#ifdef HALON
+#ifdef OPS
     add_del_vrfs(ovs_cfg);
 #endif
 
-#ifndef HALON_TEMP
+#ifndef OPS_TEMP
     splinter_vlans = collect_splinter_vlans(ovs_cfg);
 #endif
     HMAP_FOR_EACH (br, node, &all_bridges) {
-#ifndef HALON_TEMP
+#ifndef OPS_TEMP
         bridge_collect_wanted_ports(br, splinter_vlans, &br->wanted_ports);
 #else
         bridge_collect_wanted_ports(br, NULL, &br->wanted_ports);
 #endif
         bridge_del_ports(br, &br->wanted_ports);
     }
-#ifndef HALON_TEMP
+#ifndef OPS_TEMP
     free(splinter_vlans);
 #endif
 
-#ifdef HALON
+#ifdef OPS
     HMAP_FOR_EACH (vrf, node, &all_vrfs) {
         vrf_collect_wanted_ports(vrf, &vrf->up->wanted_ports);
 
@@ -847,7 +847,7 @@ bridge_reconfigure(const struct ovsrec_open_vswitch *ovs_cfg)
         }
     }
 
-#ifdef HALON
+#ifdef OPS
     HMAP_FOR_EACH (vrf, node, &all_vrfs) {
         if (vrf->up->ofproto) {
 
@@ -880,7 +880,7 @@ bridge_reconfigure(const struct ovsrec_open_vswitch *ovs_cfg)
         }
     }
 
-#ifdef HALON
+#ifdef OPS
     HMAP_FOR_EACH_SAFE (vrf, vrf_next, node, &all_vrfs) {
         if (!vrf->up->ofproto) {
             int error;
@@ -905,7 +905,7 @@ bridge_reconfigure(const struct ovsrec_open_vswitch *ovs_cfg)
         shash_destroy(&br->wanted_ports);
     }
 
-#ifdef HALON
+#ifdef OPS
     HMAP_FOR_EACH (vrf, node, &all_vrfs) {
         bridge_add_ports(vrf->up, &vrf->up->wanted_ports);
         shash_destroy(&vrf->up->wanted_ports);
@@ -917,7 +917,7 @@ bridge_reconfigure(const struct ovsrec_open_vswitch *ovs_cfg)
 //CONTINUE
 
     /* Complete the configuration. */
-#ifndef HALON_TEMP
+#ifndef OPS_TEMP
     sflow_bridge_number = 0;
     collect_in_band_managers(ovs_cfg, &managers, &n_managers);
 #endif
@@ -932,7 +932,7 @@ bridge_reconfigure(const struct ovsrec_open_vswitch *ovs_cfg)
         HMAP_FOR_EACH (port, hmap_node, &br->ports) {
             struct iface *iface;
 
-#ifdef HALON
+#ifdef OPS
             /* For a bond port, reconfigure the port if any of the
                member interface rows change. */
             bool port_iface_changed = false;
@@ -948,7 +948,7 @@ bridge_reconfigure(const struct ovsrec_open_vswitch *ovs_cfg)
                 VLOG_DBG("config port - %s", port->name);
                 port_configure(port);
 
-#ifndef HALON_TEMP
+#ifndef OPS_TEMP
                 LIST_FOR_EACH (iface, port_elem, &port->ifaces) {
                     iface_set_ofport(iface->cfg, iface->ofp_port);
 
@@ -962,19 +962,19 @@ bridge_reconfigure(const struct ovsrec_open_vswitch *ovs_cfg)
                                      &iface->cfg->bfd);
                 }
 #endif
-#ifdef HALON
+#ifdef OPS
             }
 #endif
         }
-#ifdef HALON
+#ifdef OPS
         bridge_configure_vlans(br);
 #endif
-#ifndef HALON_TEMP
+#ifndef OPS_TEMP
         bridge_configure_mirrors(br);
         bridge_configure_forward_bpdu(br);
 #endif
         bridge_configure_mac_table(br);
-#ifndef HALON_TEMP
+#ifndef OPS_TEMP
         bridge_configure_mcast_snooping(br);
         bridge_configure_remotes(br, managers, n_managers);
         bridge_configure_netflow(br);
@@ -987,7 +987,7 @@ bridge_reconfigure(const struct ovsrec_open_vswitch *ovs_cfg)
         bridge_configure_dp_desc(br);
     }
 
-#ifdef HALON
+#ifdef OPS
     HMAP_FOR_EACH (vrf, node, &all_vrfs) {
         struct port *port;
         bool   is_port_configured = false;
@@ -1027,7 +1027,7 @@ bridge_reconfigure(const struct ovsrec_open_vswitch *ovs_cfg)
 #endif
 
 
-#ifndef HALON_TEMP
+#ifndef OPS_TEMP
     free(managers);
 #endif
     /* The ofproto-dpif provider does some final reconfiguration in its
@@ -1044,7 +1044,7 @@ static void
 bridge_delete_ofprotos(void)
 {
     struct bridge *br;
-#ifdef HALON
+#ifdef OPS
     struct vrf *vrf;
 #endif
     struct sset names;
@@ -1061,7 +1061,7 @@ bridge_delete_ofprotos(void)
         ofproto_enumerate_names(type, &names);
         SSET_FOR_EACH (name, &names) {
             br = bridge_lookup(name);
-#ifndef HALON
+#ifndef OPS
             if (!br || strcmp(type, br->type)) {
                 ofproto_delete(name, type);
             }
@@ -1116,7 +1116,7 @@ bridge_delete_or_reconfigure_ports(struct bridge *br)
      * that have the wrong OpenFlow port number (and arrange to add them back
      * with the correct OpenFlow port number). */
     OFPROTO_PORT_FOR_EACH (&ofproto_port, &dump, br->ofproto) {
-#ifndef HALON_TEMP
+#ifndef OPS_TEMP
         ofp_port_t requested_ofp_port;
 #endif
         struct iface *iface;
@@ -1130,7 +1130,7 @@ bridge_delete_or_reconfigure_ports(struct bridge *br)
              *
              * As a corner case exception, keep the port if it's a bond fake
              * interface. */
-#ifndef HALON_TEMP
+#ifndef OPS_TEMP
             if (bridge_has_bond_fake_iface(br, ofproto_port.name)
                 && !strcmp(ofproto_port.type, "internal")) {
                 continue;
@@ -1151,7 +1151,7 @@ bridge_delete_or_reconfigure_ports(struct bridge *br)
          * already the correct port, then we might want to temporarily delete
          * this interface, so we can add it back again with the new OpenFlow
          * port number. */
-#ifndef HALON_TEMP
+#ifndef OPS_TEMP
         requested_ofp_port = iface_get_requested_ofp_port(iface->cfg);
         if (iface->ofp_port != OFPP_LOCAL &&
             requested_ofp_port != OFPP_NONE &&
@@ -1227,7 +1227,7 @@ bridge_delete_or_reconfigure_ports(struct bridge *br)
     sset_destroy(&ofproto_ports);
 }
 
-#ifdef HALON
+#ifdef OPS
 static void
 vrf_delete_or_reconfigure_ports(struct vrf *vrf)
 {
@@ -1256,7 +1256,7 @@ vrf_delete_or_reconfigure_ports(struct vrf *vrf)
      * that have the wrong OpenFlow port number (and arrange to add them back
      * with the correct OpenFlow port number). */
     OFPROTO_PORT_FOR_EACH (&ofproto_port, &dump, vrf->up->ofproto) {
-#ifndef HALON_TEMP
+#ifndef OPS_TEMP
         ofp_port_t requested_ofp_port;
 #endif
         struct iface *iface;
@@ -1323,7 +1323,7 @@ vrf_delete_or_reconfigure_ports(struct vrf *vrf)
 
 static void
 bridge_add_ports__(struct bridge *br, const struct shash *wanted_ports
-#ifndef HALON_TEMP
+#ifndef OPS_TEMP
                    , bool with_requested_port
 #endif
     )
@@ -1337,7 +1337,7 @@ bridge_add_ports__(struct bridge *br, const struct shash *wanted_ports
         VLOG_DBG("bridge_add_ports__ adding port %s", port_node->name);
         for (i = 0; i < port_cfg->n_interfaces; i++) {
             const struct ovsrec_interface *iface_cfg = port_cfg->interfaces[i];
-#ifndef HALON_TEMP
+#ifndef OPS_TEMP
             ofp_port_t requested_ofp_port;
 
             requested_ofp_port = iface_get_requested_ofp_port(iface_cfg);
@@ -1348,7 +1348,7 @@ bridge_add_ports__(struct bridge *br, const struct shash *wanted_ports
                 if (!iface) {
                     iface_create(br, iface_cfg, port_cfg);
                 }
-#ifndef HALON_TEMP
+#ifndef OPS_TEMP
             }
 #endif
         }
@@ -1358,14 +1358,14 @@ bridge_add_ports__(struct bridge *br, const struct shash *wanted_ports
 static void
 bridge_add_ports(struct bridge *br, const struct shash *wanted_ports)
 {
-#ifndef HALON_TEMP
+#ifndef OPS_TEMP
     /* First add interfaces that request a particular port number. */
     bridge_add_ports__(br, wanted_ports, true);
 #endif
     /* Then add interfaces that want automatic port number assignment.
      * We add these afterward to avoid accidentally taking a specifically
      * requested port number. */
-#ifndef HALON_TEMP
+#ifndef OPS_TEMP
     bridge_add_ports__(br, wanted_ports, false);
 #else
     bridge_add_ports__(br, wanted_ports);
@@ -1377,18 +1377,18 @@ port_configure(struct port *port)
 {
     const struct ovsrec_port *cfg = port->cfg;
     struct bond_settings bond_settings;
-#ifndef HALON
+#ifndef OPS
     struct lacp_settings lacp_settings;
 #endif
     struct ofproto_bundle_settings s;
     struct iface *iface;
-#ifdef HALON
+#ifdef OPS
     int prev_bond_handle = port->bond_hw_handle;
     int cfg_slave_count;
     bool lacp_enabled = false;
     bool lacp_active = false;   /* Not used. */
 #endif
-#ifndef HALON_TEMP
+#ifndef OPS_TEMP
     if (cfg->vlan_mode && !strcmp(cfg->vlan_mode, "splinter")) {
         configure_splinter_port(port);
         return;
@@ -1400,7 +1400,7 @@ port_configure(struct port *port)
     /* Get slaves. */
     s.n_slaves = 0;
     s.slaves = xmalloc(list_size(&port->ifaces) * sizeof *s.slaves);
-#ifdef HALON
+#ifdef OPS
     cfg_slave_count = list_size(&port->ifaces);
     s.slaves_entered = cfg_slave_count;
     s.n_slaves_tx_enable = 0;
@@ -1410,7 +1410,7 @@ port_configure(struct port *port)
     lacp_enabled  = enable_lacp(port, &lacp_active);
 #endif
     LIST_FOR_EACH (iface, port_elem, &port->ifaces) {
-#ifndef HALON_TEMP
+#ifndef OPS_TEMP
         s.slaves[s.n_slaves++] = iface->ofp_port;
 #else
         if ((cfg_slave_count > 1) || lacp_enabled) {
@@ -1439,7 +1439,7 @@ port_configure(struct port *port)
         }
 #endif
     }
-#ifdef HALON
+#ifdef OPS
     VLOG_DBG("port %s has %d configured interfaces, %d eligible "
              "interfaces, lacp_enabled=%d",
              s.name, cfg_slave_count, (int)s.n_slaves, lacp_enabled);
@@ -1453,7 +1453,7 @@ port_configure(struct port *port)
 #endif
     /* Get VLAN tag. */
     s.vlan = -1;
-#ifdef HALON
+#ifdef OPS
     if (cfg->tag && *cfg->tag >= 1 && *cfg->tag <= 4094) {
 #else
     if (cfg->tag && *cfg->tag >= 0 && *cfg->tag <= 4095) {
@@ -1495,7 +1495,7 @@ port_configure(struct port *port)
             s.vlan_mode = PORT_VLAN_TRUNK;
         }
     }
-#ifdef HALON
+#ifdef OPS
     /* If port is in TRUNK mode, VLAN tag needs to be ignored. */
     if (s.vlan_mode == PORT_VLAN_TRUNK) {
         s.vlan = -1;
@@ -1504,8 +1504,8 @@ port_configure(struct port *port)
     s.use_priority_tags = smap_get_bool(&cfg->other_config, "priority-tags",
                                         false);
 
-/* For HALON, LACP support is handled by lacpd. */
-#ifndef HALON
+/* For OPS, LACP support is handled by lacpd. */
+#ifndef OPS
     /* Get LACP settings. */
     s.lacp = port_configure_lacp(port, &lacp_settings);
     if (s.lacp) {
@@ -1531,7 +1531,7 @@ port_configure(struct port *port)
         }
     }
 
-#ifdef HALON_TEMP
+#ifdef OPS_TEMP
     /* Setup port configuration option array and save
        its address in bundle setting */
     s.port_options[PORT_OPT_VLAN] = &cfg->vlan_options;
@@ -1541,7 +1541,7 @@ port_configure(struct port *port)
 
     /* Register. */
     ofproto_bundle_register(port->bridge->ofproto, port, &s);
-#ifdef HALON
+#ifdef OPS
     ofproto_bundle_get(port->bridge->ofproto, port, &port->bond_hw_handle);
     if (prev_bond_handle != port->bond_hw_handle) {
         struct smap smap;
@@ -1562,11 +1562,11 @@ port_configure(struct port *port)
 #endif
     /* Clean up. */
     free(s.slaves);
-#ifdef HALON
+#ifdef OPS
     free(s.slaves_tx_enable);
 #endif
     free(s.trunks);
-#ifndef HALON
+#ifndef OPS
     free(s.lacp_slaves);
 #endif
 }
@@ -1605,7 +1605,7 @@ bridge_configure_datapath_id(struct bridge *br)
     free(dpid_string);
 }
 
-#ifndef HALON_TEMP
+#ifndef OPS_TEMP
 /* Returns a bitmap of "enum ofputil_protocol"s that are allowed for use with
  * 'br'. */
 static uint32_t
@@ -2290,7 +2290,7 @@ add_del_bridges(const struct ovsrec_open_vswitch *cfg)
     shash_destroy(&new_br);
 }
 
-#ifdef HALON
+#ifdef OPS
 static void
 add_del_vrfs(const struct ovsrec_open_vswitch *cfg)
 {
@@ -2353,7 +2353,7 @@ iface_set_netdev_config(const struct ovsrec_interface *iface_cfg,
 static int
 iface_do_create(const struct bridge *br,
                 const struct ovsrec_interface *iface_cfg,
-#ifndef HALON_TEMP
+#ifndef OPS_TEMP
                 const struct ovsrec_port *port_cfg,
 #endif
                 ofp_port_t *ofp_portp,
@@ -2378,7 +2378,7 @@ iface_do_create(const struct bridge *br,
         goto error;
     }
 
-#ifdef HALON
+#ifdef OPS
     /* Initialize mac to default system mac.
      * For internal interface system mac will be used.
      * For hw interfaces this will be changed to mac from hw_intf_info
@@ -2409,7 +2409,7 @@ iface_do_create(const struct bridge *br,
     VLOG_DBG("bridge %s: added interface %s on port %d",
               br->name, iface_cfg->name, *ofp_portp);
 
-#ifndef HALON_TEMP
+#ifndef OPS_TEMP
     if (port_cfg->vlan_mode && !strcmp(port_cfg->vlan_mode, "splinter")) {
         netdev_turn_flags_on(netdev, NETDEV_UP, NULL);
     }
@@ -2442,7 +2442,7 @@ iface_create(struct bridge *br, const struct ovsrec_interface *iface_cfg,
 
     /* Do the bits that can fail up front. */
     ovs_assert(!iface_lookup(br, iface_cfg->name));
-#ifndef HALON_TEMP
+#ifndef OPS_TEMP
     error = iface_do_create(br, iface_cfg, port_cfg, &ofp_port, &netdev, &errp);
 #else
     error = iface_do_create(br, iface_cfg,           &ofp_port, &netdev, &errp);
@@ -2477,7 +2477,7 @@ iface_create(struct bridge *br, const struct ovsrec_interface *iface_cfg,
     iface_refresh_stats(iface);
     iface_refresh_netdev_status(iface);
 
-#ifndef HALON_TEMP
+#ifndef OPS_TEMP
     /* Add bond fake iface if necessary. */
     if (port_is_bond_fake_iface(port)) {
         struct ofproto_port ofproto_port;
@@ -2505,7 +2505,7 @@ iface_create(struct bridge *br, const struct ovsrec_interface *iface_cfg,
     return true;
 }
 
-#ifndef HALON_TEMP
+#ifndef OPS_TEMP
 /* Set forward BPDU option. */
 static void
 bridge_configure_forward_bpdu(struct bridge *br)
@@ -2539,7 +2539,7 @@ bridge_configure_mac_table(struct bridge *br)
     ofproto_set_mac_table_config(br->ofproto, idle_time, mac_table_size);
 }
 
-#ifndef HALON_TEMP
+#ifndef OPS_TEMP
 /* Set multicast snooping table configuration for 'br'. */
 static void
 bridge_configure_mcast_snooping(struct bridge *br)
@@ -2590,13 +2590,13 @@ static void
 find_local_hw_addr(const struct bridge *br, uint8_t ea[ETH_ADDR_LEN],
                    const struct port *fake_br, struct iface **hw_addr_iface)
 {
-#ifndef HALON_TEMP
+#ifndef OPS_TEMP
     struct hmapx mirror_output_ports;
 #endif
     struct port *port;
     bool found_addr = false;
     int error;
-#ifndef HALON_TEMP
+#ifndef OPS_TEMP
     int i;
 
     /* Mirror output ports don't participate in picking the local hardware
@@ -2618,7 +2618,7 @@ find_local_hw_addr(const struct bridge *br, uint8_t ea[ETH_ADDR_LEN],
         struct iface *candidate;
         struct iface *iface;
 
-#ifndef HALON_TEMP
+#ifndef OPS_TEMP
         /* Mirror output ports don't participate. */
         if (hmapx_contains(&mirror_output_ports, port->cfg)) {
             continue;
@@ -2691,7 +2691,7 @@ find_local_hw_addr(const struct bridge *br, uint8_t ea[ETH_ADDR_LEN],
         *hw_addr_iface = NULL;
     }
 
-#ifndef HALON_TEMP
+#ifndef OPS_TEMP
     hmapx_destroy(&mirror_output_ports);
 #endif
 }
@@ -2798,7 +2798,7 @@ iface_refresh_netdev_status(struct iface *iface)
     const char *link_state;
     uint8_t mac[ETH_ADDR_LEN];
     int64_t bps, mtu_64,
-#ifndef HALON_TEMP
+#ifndef OPS_TEMP
     ifindex64,
 #endif
     link_resets;
@@ -2808,7 +2808,7 @@ iface_refresh_netdev_status(struct iface *iface)
         return;
     }
 
-#ifdef HALON
+#ifdef OPS
     /* Interface status is updated from subsystem.c. */
     if (!iface->type || !strcmp(iface->type, "system")) {
             return;
@@ -2877,7 +2877,7 @@ iface_refresh_netdev_status(struct iface *iface)
         ovsrec_interface_set_mac_in_use(iface->cfg, NULL);
     }
 
-#ifndef HALON_TEMP
+#ifndef OPS_TEMP
     /* The netdev may return a negative number (such as -EOPNOTSUPP)
      * if there is no valid ifindex number. */
     ifindex64 = netdev_get_ifindex(iface->netdev);
@@ -2891,7 +2891,7 @@ iface_refresh_netdev_status(struct iface *iface)
 static void
 iface_refresh_ofproto_status(struct iface *iface)
 {
-#ifndef HALON_TEMP
+#ifndef OPS_TEMP
     int current;
 #endif
 
@@ -2899,7 +2899,7 @@ iface_refresh_ofproto_status(struct iface *iface)
         return;
     }
 
-#ifndef HALON_TEMP
+#ifndef OPS_TEMP
     current = ofproto_port_is_lacp_current(iface->port->bridge->ofproto,
                                            iface->ofp_port);
     if (current >= 0) {
@@ -2929,7 +2929,7 @@ iface_refresh_ofproto_status(struct iface *iface)
 #endif
 }
 
-#ifndef HALON_TEMP
+#ifndef OPS_TEMP
 /* Writes 'iface''s CFM statistics to the database. 'iface' must not be
  * synthetic. */
 static void
@@ -2993,7 +2993,7 @@ static void
 iface_refresh_stats(struct iface *iface)
 {
 
-#ifdef HALON
+#ifdef OPS
     /* Interface stats are updated from subsystem.c. */
     if (!iface->type || !strcmp(iface->type, "system")) {
             return;
@@ -3060,7 +3060,7 @@ br_refresh_datapath_info(struct bridge *br)
                                        version ? version : "<unknown>");
 }
 
-#ifndef HALON_TEMP
+#ifndef OPS_TEMP
 static void
 br_refresh_stp_status(struct bridge *br)
 {
@@ -3315,7 +3315,7 @@ run_system_stats(void)
     }
 }
 
-#ifndef HALON_TEMP
+#ifndef OPS_TEMP
 static const char *
 ofp12_controller_role_to_str(enum ofp12_controller_role role)
 {
@@ -3397,13 +3397,13 @@ run_stats_update(void)
         if (!stats_txn) {
             struct bridge *br;
 
-#ifdef HALON_TEMP
+#ifdef OPS_TEMP
             struct vrf *vrf;
 #endif
             stats_txn = ovsdb_idl_txn_create(idl);
             HMAP_FOR_EACH (br, node, &all_bridges) {
                 struct port *port;
-#ifndef HALON_TEMP
+#ifndef OPS_TEMP
                 struct mirror *m;
 #endif
                 HMAP_FOR_EACH (port, hmap_node, &br->ports) {
@@ -3412,18 +3412,18 @@ run_stats_update(void)
                     LIST_FOR_EACH (iface, port_elem, &port->ifaces) {
                         iface_refresh_stats(iface);
                     }
-#ifndef HALON_TEMP
+#ifndef OPS_TEMP
                     port_refresh_stp_stats(port);
 #endif
                 }
-#ifndef HALON_TEMP
+#ifndef OPS_TEMP
                 HMAP_FOR_EACH (m, hmap_node, &br->mirrors) {
                     mirror_refresh_stats(m);
                 }
 #endif
             }
 
-#ifdef HALON
+#ifdef OPS
             HMAP_FOR_EACH (vrf, node, &all_vrfs) {
                 struct port *port;
                 HMAP_FOR_EACH (port, hmap_node, &vrf->up->ports) {
@@ -3436,7 +3436,7 @@ run_stats_update(void)
             }
 #endif
 
-#ifndef HALON_TEMP
+#ifndef OPS_TEMP
             refresh_controller_status();
 #endif
         }
@@ -3462,7 +3462,7 @@ run_status_update(void)
         seq = seq_read(connectivity_seq_get());
         if (seq != connectivity_seqno || status_txn_try_again) {
             struct bridge *br;
-#ifdef HALON
+#ifdef OPS
             struct vrf *vrf;
 #endif
             connectivity_seqno = seq;
@@ -3470,7 +3470,7 @@ run_status_update(void)
             HMAP_FOR_EACH (br, node, &all_bridges) {
                 struct port *port;
 
-#ifndef HALON_TEMP
+#ifndef OPS_TEMP
                 br_refresh_stp_status(br);
                 br_refresh_rstp_status(br);
 #endif
@@ -3478,7 +3478,7 @@ run_status_update(void)
                 HMAP_FOR_EACH (port, hmap_node, &br->ports) {
                     struct iface *iface;
 
-#ifndef HALON_TEMP
+#ifndef OPS_TEMP
                     port_refresh_stp_status(port);
                     port_refresh_rstp_status(port);
                     port_refresh_bond_status(port, status_txn_try_again);
@@ -3490,7 +3490,7 @@ run_status_update(void)
                 }
             }
 
-#ifdef HALON
+#ifdef OPS
             HMAP_FOR_EACH (vrf, node, &all_vrfs) {
                 struct port *port;
 
@@ -3555,7 +3555,7 @@ static void
 bridge_run__(void)
 {
     struct bridge *br;
-#ifdef HALON
+#ifdef OPS
     struct vrf *vrf;
 #endif
     struct sset types;
@@ -3574,7 +3574,7 @@ bridge_run__(void)
         ofproto_run(br->ofproto);
     }
 
-#ifdef HALON
+#ifdef OPS
     HMAP_FOR_EACH (vrf, node, &all_vrfs) {
         ofproto_run(vrf->up->ofproto);
     }
@@ -3587,7 +3587,7 @@ bridge_run(void)
     static struct ovsrec_open_vswitch null_cfg;
     const struct ovsrec_open_vswitch *cfg;
 
-#ifndef HALON_TEMP
+#ifndef OPS_TEMP
     bool vlan_splinters_changed;
 #endif
     ovsrec_open_vswitch_init(&null_cfg);
@@ -3597,7 +3597,7 @@ bridge_run(void)
     if (ovsdb_idl_is_lock_contended(idl)) {
         static struct vlog_rate_limit rl = VLOG_RATE_LIMIT_INIT(1, 1);
         struct bridge *br, *next_br;
-#ifdef HALON
+#ifdef OPS
         struct vrf *vrf, *next_vrf;
 #endif
         VLOG_ERR_RL(&rl, "another ovs-vswitchd process is running, "
@@ -3608,7 +3608,7 @@ bridge_run(void)
             bridge_destroy(br);
         }
 
-#ifdef HALON
+#ifdef OPS
         HMAP_FOR_EACH_SAFE (vrf, next_vrf, node, &all_vrfs) {
             vrf_destroy(vrf);
         }
@@ -3651,7 +3651,7 @@ bridge_run(void)
         stream_ssl_set_ca_cert_file(ssl->ca_cert, ssl->bootstrap_ca_cert);
     }
 
-#ifndef HALON_TEMP
+#ifndef OPS_TEMP
     /* If VLAN splinters are in use, then we need to reconfigure if VLAN
      * usage has changed. */
     vlan_splinters_changed = false;
@@ -3667,20 +3667,20 @@ bridge_run(void)
     }
 #endif
     if  (ovsdb_idl_get_seqno(idl) != idl_seqno
-#ifndef HALON_TEMP
+#ifndef OPS_TEMP
         || vlan_splinters_changed
 #endif
         ) {
         struct ovsdb_idl_txn *txn;
 
-#ifndef HALON
+#ifndef OPS
         idl_seqno = ovsdb_idl_get_seqno(idl);
 #endif
         txn = ovsdb_idl_txn_create(idl);
 
         bridge_reconfigure(cfg ? cfg : &null_cfg);
 
-#ifdef HALON
+#ifdef OPS
         /* Update seqno after bridge_reconfigure, to access earlier
          * seqno for comparision inside bridge_reconfigure */
         idl_seqno = ovsdb_idl_get_seqno(idl);
@@ -3724,7 +3724,7 @@ bridge_run(void)
     run_stats_update();
     run_status_update();
     run_system_stats();
-#ifdef HALON
+#ifdef OPS
     run_neighbor_update();
 #endif
 }
@@ -3781,7 +3781,7 @@ bridge_get_memory_usage(struct simap *usage)
         ofproto_get_memory_usage(br->ofproto, usage);
     }
 }
-#ifndef HALON_TEMP
+#ifndef OPS_TEMP
 
 /* QoS unixctl user interface functions. */
 
@@ -3881,7 +3881,7 @@ static void
 bridge_create(const struct ovsrec_bridge *br_cfg)
 {
     struct bridge *br;
-#ifdef HALON
+#ifdef OPS
     const struct ovsrec_open_vswitch* ovs = ovsrec_open_vswitch_first(idl);
 #endif
     ovs_assert(!bridge_lookup(br_cfg->name));
@@ -3891,7 +3891,7 @@ bridge_create(const struct ovsrec_bridge *br_cfg)
     br->type = xstrdup(ofproto_normalize_type(br_cfg->datapath_type));
     br->cfg = br_cfg;
 
-#ifdef HALON
+#ifdef OPS
     /* Use system mac as default mac */
     memcpy(br->default_ea, ether_aton(ovs->system_mac), ETH_ADDR_LEN);
 #else
@@ -3904,16 +3904,16 @@ bridge_create(const struct ovsrec_bridge *br_cfg)
     hmap_init(&br->ports);
     hmap_init(&br->ifaces);
     hmap_init(&br->iface_by_name);
-#ifdef HALON
+#ifdef OPS
     hmap_init(&br->vlans);
 #endif
-#ifndef HALON_TEMP
+#ifndef OPS_TEMP
     hmap_init(&br->mirrors);
 #endif
     hmap_insert(&all_bridges, &br->node, hash_string(br->name, 0));
 }
 
-#ifdef HALON
+#ifdef OPS
 static void
 vrf_create(const struct ovsrec_vrf *vrf_cfg)
 {
@@ -3946,7 +3946,7 @@ static void
 bridge_destroy(struct bridge *br)
 {
     if (br) {
-#ifndef HALON_TEMP
+#ifndef OPS_TEMP
         struct mirror *mirror, *next_mirror;
 #endif
         struct port *port, *next_port;
@@ -3954,7 +3954,7 @@ bridge_destroy(struct bridge *br)
         HMAP_FOR_EACH_SAFE (port, next_port, hmap_node, &br->ports) {
             port_destroy(port);
         }
-#ifndef HALON_TEMP
+#ifndef OPS_TEMP
         HMAP_FOR_EACH_SAFE (mirror, next_mirror, hmap_node, &br->mirrors) {
             mirror_destroy(mirror);
         }
@@ -3964,10 +3964,10 @@ bridge_destroy(struct bridge *br)
         hmap_destroy(&br->ifaces);
         hmap_destroy(&br->ports);
         hmap_destroy(&br->iface_by_name);
-#ifdef HALON
+#ifdef OPS
         hmap_destroy(&br->vlans);
 #endif
-#ifndef HALON_TEMP
+#ifndef OPS_TEMP
         hmap_destroy(&br->mirrors);
 #endif
         free(br->name);
@@ -3977,7 +3977,7 @@ bridge_destroy(struct bridge *br)
 }
 
 
-#ifdef HALON
+#ifdef OPS
 static void
 vrf_destroy(struct vrf *vrf)
 {
@@ -4020,7 +4020,7 @@ bridge_lookup(const char *name)
     return NULL;
 }
 
-#ifdef HALON
+#ifdef OPS
 static struct vrf *
 vrf_lookup(const char *name)
 {
@@ -4071,11 +4071,11 @@ bridge_unixctl_reconnect(struct unixctl_conn *conn, int argc,
             unixctl_command_reply_error(conn,  "Unknown bridge");
             return;
         }
-#ifndef HALON_TEMP
+#ifndef OPS_TEMP
         ofproto_reconnect_controllers(br->ofproto);
 #endif
     }
-#ifndef HALON_TEMP
+#ifndef OPS_TEMP
     else {
         HMAP_FOR_EACH (br, node, &all_bridges) {
             ofproto_reconnect_controllers(br->ofproto);
@@ -4085,7 +4085,7 @@ bridge_unixctl_reconnect(struct unixctl_conn *conn, int argc,
     unixctl_command_reply(conn, NULL);
 }
 
-#ifndef HALON_TEMP
+#ifndef OPS_TEMP
 static size_t
 bridge_get_controllers(const struct bridge *br,
                        struct ovsrec_controller ***controllersp)
@@ -4110,7 +4110,7 @@ bridge_get_controllers(const struct bridge *br,
 
 static void
 bridge_collect_wanted_ports(struct bridge *br,
-#ifndef HALON_TEMP
+#ifndef OPS_TEMP
                             const unsigned long int *splinter_vlans,
 #else
                             const unsigned long int *splinter_vlans OVS_UNUSED,
@@ -4129,7 +4129,7 @@ bridge_collect_wanted_ports(struct bridge *br,
         }
     }
 
-#ifndef HALON_TEMP
+#ifndef OPS_TEMP
     if (bridge_get_controllers(br, NULL)
         && !shash_find(wanted_ports, br->name)) {
         VLOG_WARN("bridge %s: no port named %s, synthesizing one",
@@ -4156,7 +4156,7 @@ bridge_collect_wanted_ports(struct bridge *br,
 #endif
 }
 
-#ifdef HALON
+#ifdef OPS
 static void
 vrf_collect_wanted_ports(struct vrf *vrf,
                          struct shash *wanted_ports)
@@ -4220,7 +4220,7 @@ bridge_del_ports(struct bridge *br, const struct shash *wanted_ports)
     }
 }
 
-#ifdef HALON
+#ifdef OPS
 static void
 vrf_del_ports(struct vrf *vrf, const struct shash *wanted_ports)
 {
@@ -4266,7 +4266,7 @@ vrf_del_ports(struct vrf *vrf, const struct shash *wanted_ports)
 }
 #endif
 
-#ifndef HALON_TEMP
+#ifndef OPS_TEMP
 /* Initializes 'oc' appropriately as a management service controller for
  * 'br'.
  *
@@ -4619,7 +4619,7 @@ bridge_configure_dp_desc(struct bridge *br)
                         smap_get(&br->cfg->other_config, "dp-desc"));
 }
 
-#ifdef HALON
+#ifdef OPS
 
 /* VLAN functions. */
 static struct vlan *
@@ -4702,7 +4702,7 @@ static void
 vlan_create(struct bridge *br, const struct ovsrec_vlan *vlan_cfg)
 {
     struct vlan *new_vlan = NULL;
-#ifndef HALON
+#ifndef OPS
     const char *hw_cfg_enable;
 #endif
 
@@ -4822,7 +4822,7 @@ port_create(struct bridge *br, const struct ovsrec_port *cfg)
     port->bridge = br;
     port->name = xstrdup(cfg->name);
     port->cfg = cfg;
-#ifdef HALON
+#ifdef OPS
     port->bond_hw_handle = -1;
 #endif
     list_init(&port->ifaces);
@@ -4916,7 +4916,7 @@ enable_lacp(struct port *port, bool *activep)
     }
 }
 
-#ifndef HALON
+#ifndef OPS
 static struct lacp_settings *
 port_configure_lacp(struct port *port, struct lacp_settings *s)
 {
@@ -5000,7 +5000,7 @@ port_configure_bond(struct port *port, struct bond_settings *s)
     int miimon_interval;
 
     s->name = port->name;
-#ifdef HALON
+#ifdef OPS
     s->balance = BM_L3_SRC_DST_HASH;
 #else
     s->balance = BM_AB;
@@ -5022,12 +5022,12 @@ port_configure_bond(struct port *port, struct bond_settings *s)
                      bond_mode_to_string(s->balance));
     }
 
-#ifdef HALON
+#ifdef OPS
     VLOG_DBG("port %s: bond_mode is set to %s",
                       port->name, bond_mode_to_string(s->balance));
 #endif
 
-#ifndef HALON_TEMP
+#ifndef OPS_TEMP
     if (s->balance == BM_SLB && port->bridge->cfg->n_flood_vlans) {
         VLOG_WARN("port %s: SLB bonds are incompatible with flood_vlans, "
                   "please use another bond type or disable flood_vlans",
@@ -5050,7 +5050,7 @@ port_configure_bond(struct port *port, struct bond_settings *s)
         miimon_interval = 0;
     }
 
-#ifndef HALON_TEMP
+#ifndef OPS_TEMP
     s->up_delay = MAX(0, port->cfg->bond_updelay);
     s->down_delay = MAX(0, port->cfg->bond_downdelay);
 #endif
@@ -5076,7 +5076,7 @@ port_configure_bond(struct port *port, struct bond_settings *s)
     }
 }
 
-#ifndef HALON_TEMP
+#ifndef OPS_TEMP
 /* Returns true if 'port' is synthetic, that is, if we constructed it locally
  * instead of obtaining it from the database. */
 static bool
@@ -5172,7 +5172,7 @@ iface_lookup(const struct bridge *br, const char *name)
     return NULL;
 }
 
-#ifndef HALON_TEMP
+#ifndef OPS_TEMP
 static struct iface *
 iface_find(const char *name)
 {
@@ -5203,7 +5203,7 @@ iface_from_ofp_port(const struct bridge *br, ofp_port_t ofp_port)
     return NULL;
 }
 
-#ifndef HALON_TEMP
+#ifndef OPS_TEMP
 /* Set Ethernet address of 'iface', if one is specified in the configuration
  * file. */
 static void
@@ -5258,14 +5258,14 @@ iface_set_ofport(const struct ovsrec_interface *if_cfg, ofp_port_t ofport)
  * This is appropriate when 'if_cfg''s interface cannot be created or is
  * otherwise invalid. */
 static void
-#ifndef HALON_TEMP
+#ifndef OPS_TEMP
 iface_clear_db_record(const struct ovsrec_interface *if_cfg, char *errp)
 #else
 iface_clear_db_record(const struct ovsrec_interface *if_cfg, char *errp OVS_UNUSED)
 #endif
 {
     if (!ovsdb_idl_row_is_synthetic(&if_cfg->header_)) {
-#ifndef HALON_TEMP
+#ifndef OPS_TEMP
         iface_set_ofport(if_cfg, OFPP_NONE);
         ovsrec_interface_set_error(if_cfg, errp);
 #endif
@@ -5276,20 +5276,20 @@ iface_clear_db_record(const struct ovsrec_interface *if_cfg, char *errp OVS_UNUS
         ovsrec_interface_set_link_state(if_cfg, NULL);
         ovsrec_interface_set_mac_in_use(if_cfg, NULL);
         ovsrec_interface_set_mtu(if_cfg, NULL, 0);
-#ifndef HALON_TEMP
+#ifndef OPS_TEMP
         ovsrec_interface_set_cfm_fault(if_cfg, NULL, 0);
         ovsrec_interface_set_cfm_fault_status(if_cfg, NULL, 0);
         ovsrec_interface_set_cfm_remote_mpids(if_cfg, NULL, 0);
         ovsrec_interface_set_lacp_current(if_cfg, NULL, 0);
 #endif
         ovsrec_interface_set_statistics(if_cfg, NULL, NULL, 0);
-#ifndef HALON_TEMP
+#ifndef OPS_TEMP
         ovsrec_interface_set_ifindex(if_cfg, NULL, 0);
 #endif
     }
 }
 
-#ifndef HALON_TEMP
+#ifndef OPS_TEMP
 static bool
 queue_ids_include(const struct ovsdb_datum *queues, int64_t target)
 {
@@ -5447,7 +5447,7 @@ iface_validate_ofport__(size_t n, int64_t *ofport)
             : OFPP_NONE);
 }
 
-#ifndef HALON_TEMP
+#ifndef OPS_TEMP
 static ofp_port_t
 iface_get_requested_ofp_port(const struct ovsrec_interface *cfg)
 {
@@ -5456,13 +5456,13 @@ iface_get_requested_ofp_port(const struct ovsrec_interface *cfg)
 #endif
 
 static ofp_port_t
-#ifndef HALON_TEMP
+#ifndef OPS_TEMP
 iface_pick_ofport(const struct ovsrec_interface *cfg)
 #else
 iface_pick_ofport(const struct ovsrec_interface *cfg OVS_UNUSED)
 #endif
 {
-#ifndef HALON_TEMP
+#ifndef OPS_TEMP
     ofp_port_t requested_ofport = iface_get_requested_ofp_port(cfg);
     return (requested_ofport != OFPP_NONE
             ? requested_ofport
@@ -5471,7 +5471,7 @@ iface_pick_ofport(const struct ovsrec_interface *cfg OVS_UNUSED)
     return iface_validate_ofport__(0, NULL);
 #endif
 }
-#ifndef HALON_TEMP
+#ifndef OPS_TEMP
 
 /* Port mirroring. */
 
@@ -5492,7 +5492,7 @@ static void
 bridge_configure_mirrors(struct bridge *br)
 {
     const struct ovsdb_datum *mc;
-#ifndef HALON_TEMP
+#ifndef OPS_TEMP
     unsigned long *flood_vlans;
 #endif
     struct mirror *m, *next;
@@ -5522,7 +5522,7 @@ bridge_configure_mirrors(struct bridge *br)
         }
     }
 
-#ifndef HALON_TEMP
+#ifndef OPS_TEMP
     /* Update flooded vlans (for RSPAN). */
     flood_vlans = vlan_bitmap_from_array(br->cfg->flood_vlans,
                                          br->cfg->n_flood_vlans);
@@ -5965,7 +5965,7 @@ mirror_refresh_stats(struct mirror *m)
 }
 #endif
 
-#ifdef HALON
+#ifdef OPS
 /* Neighbor Functions */
 /* Function to cleanup neighbor from hash, in case of any failures */
 static void

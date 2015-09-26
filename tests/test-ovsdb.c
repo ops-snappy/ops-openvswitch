@@ -1969,7 +1969,7 @@ do_idl(int argc, char *argv[])
     printf("%03d: done\n", step);
 }
 
-#ifdef HALON
+#ifdef OPS
 static void
 print_idl_seqno_info(struct ovsdb_idl *idl, int step)
 {
@@ -2187,7 +2187,7 @@ static struct command all_commands[] = {
     { "execute", NULL, 2, INT_MAX, do_execute },
     { "trigger", NULL, 2, INT_MAX, do_trigger },
     { "idl", NULL, 1, INT_MAX, do_idl },
-#ifdef HALON
+#ifdef OPS
     { "idl-seqno-info", NULL, 1, INT_MAX, do_idl_seqno },
     { "idl-delete-seqno", NULL, 1, INT_MAX, do_idl_seqno },
 #endif

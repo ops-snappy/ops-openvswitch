@@ -1202,7 +1202,7 @@ netdev_vport_range(struct unixctl_conn *conn, int argc,
 }
 
 
-#ifdef HALON
+#ifdef OPS
 #define SET_HW_INTF_CONFIG NULL,
 #define SET_HW_INTF_INFO NULL,
 #define ENABLE_L3 NULL,

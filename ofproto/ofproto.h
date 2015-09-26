@@ -208,7 +208,7 @@ struct ofproto_controller {
     uint8_t dscp;               /* DSCP value for controller connection. */
 };
 
-#ifdef HALON
+#ifdef OPS
 
 #define OFPROTO_MAX_NH_PER_ROUTE    32 /* maximum number of nexthops per route.
                                           only consider non-weighted ECMP now */
@@ -424,7 +424,7 @@ enum port_vlan_mode {
     PORT_VLAN_NATIVE_UNTAGGED
 };
 
-#ifdef HALON
+#ifdef OPS
 /* Port option configuration list */
 enum port_option_args {
     /* Port vlan configuration option change */
@@ -466,7 +466,7 @@ struct ofproto_bundle_settings {
      * widespread use, we will delete these interfaces. */
     ofp_port_t realdev_ofp_port;/* OpenFlow port number of real device. */
 
-#ifdef HALON
+#ifdef OPS
     const struct smap *port_options[PORT_OPT_MAX];  /* Port options list */
     bool hw_bond_should_exist;    /* Indicates if a bond should exist in h/w
                                      for this bundle.  If hw_bond_handle exists
@@ -487,7 +487,7 @@ int ofproto_bundle_register(struct ofproto *, void *aux,
                             const struct ofproto_bundle_settings *);
 int ofproto_bundle_unregister(struct ofproto *, void *aux);
 
-#ifdef HALON
+#ifdef OPS
 int ofproto_bundle_get(struct ofproto *, void *aux, int *bundle_handle);
 /* Configuration of VLANs. */
 int ofproto_set_vlan(struct ofproto *, int vid, bool add);

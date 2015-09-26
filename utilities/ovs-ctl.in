@@ -32,7 +32,7 @@ done
 
 insert_mod_if_required () {
 	# FIXME: Find better way to write this script.
-	# On Halon we don't need kernel modules.
+	# On OPS we don't need kernel modules.
 	# So for now skip all kernel module LOAD.
 	return 0
 

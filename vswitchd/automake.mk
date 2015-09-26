@@ -1,4 +1,4 @@
-if OPEN_HALON
+if OPS
 sbin_PROGRAMS += vswitchd/ops-switchd
 else
 sbin_PROGRAMS += vswitchd/ovs-vswitchd
@@ -7,7 +7,7 @@ man_MANS += vswitchd/ovs-vswitchd.8
 DISTCLEANFILES += \
 	vswitchd/ovs-vswitchd.8
 
-if OPEN_HALON
+if OPS
 vswitchd_ops_switchd_SOURCES = \
 	vswitchd/bridge.c \
 	vswitchd/bridge.h \

@@ -27,7 +27,7 @@ void bridge_wait(void);
 
 void bridge_get_memory_usage(struct simap *usage);
 
-#ifdef HALON
+#ifdef OPS
 void wait_for_config_complete(void);
 #endif
 

@@ -58,7 +58,7 @@ struct netdev {
     int n_rxq;
     int ref_cnt;                        /* Times this devices was opened. */
     struct shash_node *node;            /* Pointer to element in global map. */
-#ifdef HALON
+#ifdef OPS
     struct shash_node *refd_node;  /* Pointer to element in netdev_refd map */
 #endif
     struct ovs_list saved_flags_list; /* Contains "struct netdev_saved_flags". */
@@ -252,7 +252,7 @@ struct netdev_class {
      * pointer. */
     int (*set_config)(struct netdev *netdev, const struct smap *args);
 
-#ifdef HALON
+#ifdef OPS
     /* Sets the device 'netdev''s hw_intf_info to 'args'.
      *
      * If this netdev class does not support hardware info, this may be a null

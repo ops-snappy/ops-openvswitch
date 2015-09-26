@@ -129,7 +129,7 @@ main(int argc, char *argv[])
             database = argv[optind++];
         } else if (dbs.n == 1) {
             database = xstrdup(dbs.names[0]);
-#ifdef HALON
+#ifdef OPS
         } else if (svec_contains(&dbs, "OpenHalon")) {
             database = "OpenHalon";
 #endif

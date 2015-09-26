@@ -30,7 +30,7 @@ AM_CPPFLAGS += -I $(top_builddir)/libltdl
 
 AM_CPPFLAGS += $(SSL_INCLUDES)
 
-AM_CFLAGS = -Wstrict-prototypes -DHALON -DHALON_TEMP
+AM_CFLAGS = -Wstrict-prototypes -DOPS -DOPS_TEMP
 AM_CFLAGS += $(WARNING_FLAGS)
 AM_CFLAGS += $(OVS_CFLAGS)
 
@@ -355,7 +355,7 @@ dist-docs:
 	VERSION=$(VERSION) $(srcdir)/build-aux/dist-docs $(srcdir) $(docs)
 .PHONY: dist-docs
 
-if OPEN_HALON
+if OPS
 nodist_ovslibincludedir = $(includedir)/ovs
 nodist_ovslibinclude_HEADERS = config.h
 endif
@@ -364,7 +364,7 @@ include m4/automake.mk
 include lib/automake.mk
 include ofproto/automake.mk
 include utilities/automake.mk
-if !OPEN_HALON
+if !OPS
 include tests/automake.mk
 endif
 include include/automake.mk

@@ -186,10 +186,10 @@ static bool is_condition_satisfied(const struct vsctl_table_class *,
  *
  * keep track of interfaces to be checked post OVSDB reload. */
 static void post_db_reload_check_init(void);
-#ifndef HALON_TEMP
+#ifndef OPS_TEMP
 static void post_db_reload_do_checks(const struct vsctl_context *);
 #endif
-#ifdef HALON
+#ifdef OPS
 static struct vsctl_iface *
 find_orphan_iface(struct vsctl_context *ctx, const char *name, bool must_exist);
 #endif
@@ -724,7 +724,7 @@ Options:\n\
   --dry-run                   do not commit changes to database\n\
   --oneline                   print exactly one line of output per command\n",
            program_name, program_name, default_db());
-#ifdef HALON
+#ifdef OPS
     printf("\
 \n\
 VLAN commands:\n\
@@ -805,7 +805,7 @@ struct vsctl_context {
     struct shash bridges;   /* Maps from bridge name to struct vsctl_bridge. */
     struct shash ports;     /* Maps from port name to struct vsctl_port. */
     struct shash ifaces;    /* Maps from port name to struct vsctl_iface. */
-#ifdef HALON
+#ifdef OPS
     struct shash vrfs;      /* Maps from vrf name to struct vsctl_vrf. */
     struct shash orphan_ifaces; /* unused interfaces */
                             /* Maps from iface name to struct vsctl_iface. */
@@ -817,7 +817,7 @@ struct vsctl_context {
     bool try_again;
 };
 
-#ifdef HALON
+#ifdef OPS
 struct vsctl_vrf {
     struct ovsrec_vrf *vrf_cfg;
     char *name;
@@ -845,7 +845,7 @@ struct vsctl_port {
     struct ovs_list ifaces;      /* Contains "struct vsctl_iface"s. */
     struct ovsrec_port *port_cfg;
     struct vsctl_bridge *bridge;
-#ifdef HALON
+#ifdef OPS
     enum {BR_PORT, VRF_PORT} port_type;
     struct vsctl_vrf *vrf;
 #endif
@@ -952,7 +952,7 @@ del_cached_bridge(struct vsctl_context *ctx, struct vsctl_bridge *br)
 {
     ovs_assert(list_is_empty(&br->ports));
     ovs_assert(hmap_is_empty(&br->children));
-#ifndef HALON_TEMP
+#ifndef OPS_TEMP
     if (br->parent) {
         hmap_remove(&br->parent->children, &br->children_node);
     }
@@ -967,7 +967,7 @@ del_cached_bridge(struct vsctl_context *ctx, struct vsctl_bridge *br)
     free(br);
 }
 
-#ifndef HALON_TEMP
+#ifndef OPS_TEMP
 static bool
 port_is_fake_bridge(const struct ovsrec_port *port_cfg)
 {
@@ -992,7 +992,7 @@ find_vlan_bridge(struct vsctl_bridge *parent, int vlan)
     return NULL;
 }
 
-#ifdef HALON
+#ifdef OPS
 static struct vsctl_vrf *
 add_vrf_to_cache(struct vsctl_context *ctx,
                  struct ovsrec_vrf *vrf_cfg, const char *name)
@@ -1045,7 +1045,7 @@ add_port_to_cache(struct vsctl_context *ctx, struct vsctl_bridge *parent,
     list_init(&port->ifaces);
     port->port_cfg = port_cfg;
     port->bridge = parent;
-#ifdef HALON
+#ifdef OPS
     port->port_type = BR_PORT;
 #endif
     shash_add(&ctx->ports, port_cfg->name, port);
@@ -1063,7 +1063,7 @@ del_cached_port(struct vsctl_context *ctx, struct vsctl_port *port)
     free(port);
 }
 
-#ifdef HALON
+#ifdef OPS
 static struct vsctl_iface *
 add_orphan_iface_to_cache(struct vsctl_context *ctx,
                    const struct ovsrec_interface *iface_cfg)
@@ -1135,7 +1135,7 @@ vsctl_context_invalidate_cache(struct vsctl_context *ctx)
     }
     shash_destroy(&ctx->bridges);
 
-#ifdef HALON
+#ifdef OPS
     SHASH_FOR_EACH (node, &ctx->vrfs) {
         struct vsctl_vrf *vrf = node->data;
         free(vrf->name);
@@ -1146,7 +1146,7 @@ vsctl_context_invalidate_cache(struct vsctl_context *ctx)
 
     shash_destroy_free_data(&ctx->ports);
     shash_destroy_free_data(&ctx->ifaces);
-#ifdef HALON
+#ifdef OPS
     shash_destroy_free_data(&ctx->orphan_ifaces);
 #endif
 }
@@ -1157,24 +1157,24 @@ pre_get_info(struct vsctl_context *ctx)
     ovsdb_idl_add_column(ctx->idl, &ovsrec_open_vswitch_col_bridges);
 
     ovsdb_idl_add_column(ctx->idl, &ovsrec_bridge_col_name);
-#ifndef HALON_TEMP
+#ifndef OPS_TEMP
     ovsdb_idl_add_column(ctx->idl, &ovsrec_bridge_col_controller);
     ovsdb_idl_add_column(ctx->idl, &ovsrec_bridge_col_fail_mode);
 #endif
     ovsdb_idl_add_column(ctx->idl, &ovsrec_bridge_col_ports);
 
     ovsdb_idl_add_column(ctx->idl, &ovsrec_port_col_name);
-#ifndef HALON_TEMP
+#ifndef OPS_TEMP
     ovsdb_idl_add_column(ctx->idl, &ovsrec_port_col_fake_bridge);
 #endif
     ovsdb_idl_add_column(ctx->idl, &ovsrec_port_col_tag);
     ovsdb_idl_add_column(ctx->idl, &ovsrec_port_col_interfaces);
 
     ovsdb_idl_add_column(ctx->idl, &ovsrec_interface_col_name);
-#ifndef HALON_TEMP
+#ifndef OPS_TEMP
     ovsdb_idl_add_column(ctx->idl, &ovsrec_interface_col_ofport);
 #endif
-#ifdef HALON
+#ifdef OPS
     /* FIXME: We currently use presence of subsystems as an indicator
      * that this is a physical switch instead of a virtual switch.  This
      * isn't ideal, and we may want a more direct method of determining
@@ -1189,7 +1189,7 @@ vsctl_context_populate_cache(struct vsctl_context *ctx)
 {
     const struct ovsrec_open_vswitch *ovs = ctx->ovs;
     struct sset bridges, ports;
-#ifdef HALON
+#ifdef OPS
     struct sset vrfs;
 #endif
     size_t i;
@@ -1202,10 +1202,10 @@ vsctl_context_populate_cache(struct vsctl_context *ctx)
     shash_init(&ctx->bridges);
     shash_init(&ctx->ports);
     shash_init(&ctx->ifaces);
-#ifdef HALON
+#ifdef OPS
     shash_init(&ctx->vrfs);
     shash_init(&ctx->orphan_ifaces);
-    /* HALON: Use presence of subsystems as an indicator that this
+    /* OPS: Use presence of subsystems as an indicator that this
      * is a physical switch instead of a virtual switch.  This may be
      * changed to something explicit in the future.
      */
@@ -1237,7 +1237,7 @@ vsctl_context_populate_cache(struct vsctl_context *ctx)
                 continue;
             }
 
-#ifndef HALON_TEMP
+#ifndef OPS_TEMP
             if (port_is_fake_bridge(port_cfg)
                 && sset_add(&bridges, port_cfg->name)) {
                 add_bridge_to_cache(ctx, NULL, port_cfg->name, br,
@@ -1279,7 +1279,7 @@ vsctl_context_populate_cache(struct vsctl_context *ctx)
                 continue;
             }
 
-#ifndef HALON_TEMP
+#ifndef OPS_TEMP
             if (port_is_fake_bridge(port_cfg)
                 && !sset_add(&bridges, port_cfg->name)) {
                 continue;
@@ -1313,7 +1313,7 @@ vsctl_context_populate_cache(struct vsctl_context *ctx)
         }
     }
 
-#ifdef HALON
+#ifdef OPS
     if (ctx->subsystems_exist) {
         const struct ovsrec_interface *iface_cfg;
         struct vsctl_iface *iface;
@@ -1329,7 +1329,7 @@ vsctl_context_populate_cache(struct vsctl_context *ctx)
 
     sset_destroy(&bridges);
 
-#ifdef HALON
+#ifdef OPS
     sset_init(&vrfs);
     sset_init(&ports);
     for (i = 0; i < ovs->n_vrfs; i++) {
@@ -1441,7 +1441,7 @@ check_conflicts(struct vsctl_context *ctx, const char *name,
                     "bridge %s", msg, name, port->bridge->name);
     }
 
-    /* HALON: Note that we are only checking in the ifaces dictionary,
+    /* OPS: Note that we are only checking in the ifaces dictionary,
      * not the orphan_ifaces dictionary.  That means that we are only
      * checking for in-use interfaces, since there can be interfaces
      * that exist but aren't referenced by any port.  That means that the
@@ -1471,7 +1471,7 @@ find_bridge(struct vsctl_context *ctx, const char *name, bool must_exist)
     return br;
 }
 
-#ifndef HALON_TEMP
+#ifndef OPS_TEMP
 static struct vsctl_bridge *
 find_real_bridge(struct vsctl_context *ctx, const char *name, bool must_exist)
 {
@@ -1500,7 +1500,7 @@ find_port(struct vsctl_context *ctx, const char *name, bool must_exist)
     return port;
 }
 
-#ifdef HALON
+#ifdef OPS
 static struct vsctl_iface *
 find_orphan_iface(struct vsctl_context *ctx, const char *name, bool must_exist)
 {
@@ -1604,10 +1604,10 @@ static struct cmd_show_table cmd_show_tables[] = {
      NULL,
      {&ovsrec_open_vswitch_col_manager_options,
       &ovsrec_open_vswitch_col_bridges,
-#ifdef HALON
+#ifdef OPS
       &ovsrec_open_vswitch_col_vrfs,
 #endif
-#ifndef HALON_TEMP
+#ifndef OPS_TEMP
       &ovsrec_open_vswitch_col_ovs_version},
 #else
       &ovsrec_open_vswitch_col_subsystems},
@@ -1617,7 +1617,7 @@ static struct cmd_show_table cmd_show_tables[] = {
     {&ovsrec_table_bridge,
      &ovsrec_bridge_col_name,
      {
-#ifndef HALON_TEMP
+#ifndef OPS_TEMP
       &ovsrec_bridge_col_controller,
       &ovsrec_bridge_col_fail_mode,
 #else
@@ -1626,7 +1626,7 @@ static struct cmd_show_table cmd_show_tables[] = {
       &ovsrec_bridge_col_ports},
      false},
 
-#ifdef HALON
+#ifdef OPS
     {&ovsrec_table_vrf,
      &ovsrec_vrf_col_name,
      {&ovsrec_vrf_col_ports},
@@ -1649,13 +1649,13 @@ static struct cmd_show_table cmd_show_tables[] = {
     {&ovsrec_table_interface,
      &ovsrec_interface_col_name,
      {&ovsrec_interface_col_type,
-#ifndef HALON_TEMP
+#ifndef OPS_TEMP
       &ovsrec_interface_col_options,
 #endif
       &ovsrec_interface_col_error},
      false},
 
-#ifndef HALON_TEMP
+#ifndef OPS_TEMP
     {&ovsrec_table_controller,
      &ovsrec_controller_col_target,
      {&ovsrec_controller_col_is_connected,
@@ -1663,7 +1663,7 @@ static struct cmd_show_table cmd_show_tables[] = {
       NULL},
      false},
 #endif
-#ifdef HALON
+#ifdef OPS
     {&ovsrec_table_subsystem,
      &ovsrec_subsystem_col_name,
      {&ovsrec_subsystem_col_fans,
@@ -1839,7 +1839,7 @@ pre_cmd_emer_reset(struct vsctl_context *ctx)
     ovsdb_idl_add_column(ctx->idl, &ovsrec_open_vswitch_col_manager_options);
     ovsdb_idl_add_column(ctx->idl, &ovsrec_open_vswitch_col_ssl);
 
-#ifndef HALON_TEMP
+#ifndef OPS_TEMP
     ovsdb_idl_add_column(ctx->idl, &ovsrec_bridge_col_controller);
     ovsdb_idl_add_column(ctx->idl, &ovsrec_bridge_col_fail_mode);
     ovsdb_idl_add_column(ctx->idl, &ovsrec_bridge_col_mirrors);
@@ -1852,7 +1852,7 @@ pre_cmd_emer_reset(struct vsctl_context *ctx)
 
     ovsdb_idl_add_column(ctx->idl, &ovsrec_port_col_other_config);
 
-#ifndef HALON_TEMP
+#ifndef OPS_TEMP
     ovsdb_idl_add_column(ctx->idl,
                           &ovsrec_interface_col_ingress_policing_rate);
     ovsdb_idl_add_column(ctx->idl,
@@ -1866,17 +1866,17 @@ cmd_emer_reset(struct vsctl_context *ctx)
     const struct ovsdb_idl *idl = ctx->idl;
     const struct ovsrec_bridge *br;
     const struct ovsrec_port *port;
-#ifndef HALON_TEMP
+#ifndef OPS_TEMP
     const struct ovsrec_interface *iface;
     const struct ovsrec_mirror *mirror, *next_mirror;
     const struct ovsrec_controller *ctrl, *next_ctrl;
 #endif
     const struct ovsrec_manager *mgr, *next_mgr;
-#ifndef HALON_TEMP
+#ifndef OPS_TEMP
     const struct ovsrec_netflow *nf, *next_nf;
 #endif
     const struct ovsrec_ssl *ssl, *next_ssl;
-#ifndef HALON_TEMP
+#ifndef OPS_TEMP
     const struct ovsrec_sflow *sflow, *next_sflow;
     const struct ovsrec_ipfix *ipfix, *next_ipfix;
     const struct ovsrec_flow_sample_collector_set *fscset, *next_fscset;
@@ -1888,7 +1888,7 @@ cmd_emer_reset(struct vsctl_context *ctx)
     OVSREC_BRIDGE_FOR_EACH (br, idl) {
         const char *hwaddr;
 
-#ifndef HALON_TEMP
+#ifndef OPS_TEMP
         ovsrec_bridge_set_controller(br, NULL, 0);
         ovsrec_bridge_set_fail_mode(br, NULL);
         ovsrec_bridge_set_mirrors(br, NULL, 0);
@@ -1914,7 +1914,7 @@ cmd_emer_reset(struct vsctl_context *ctx)
         ovsrec_port_set_other_config(port, NULL);
     }
 
-#ifndef HALON_TEMP
+#ifndef OPS_TEMP
     OVSREC_INTERFACE_FOR_EACH (iface, idl) {
         /* xxx What do we do about gre/patch devices created by mgr? */
 
@@ -1934,7 +1934,7 @@ cmd_emer_reset(struct vsctl_context *ctx)
         ovsrec_manager_delete(mgr);
     }
 
-#ifndef HALON_TEMP
+#ifndef OPS_TEMP
     OVSREC_NETFLOW_FOR_EACH_SAFE (nf, next_nf, idl) {
         ovsrec_netflow_delete(nf);
     }
@@ -1943,7 +1943,7 @@ cmd_emer_reset(struct vsctl_context *ctx)
         ovsrec_ssl_delete(ssl);
     }
 
-#ifndef HALON_TEMP
+#ifndef OPS_TEMP
     OVSREC_SFLOW_FOR_EACH_SAFE (sflow, next_sflow, idl) {
         ovsrec_sflow_delete(sflow);
     }
@@ -1964,7 +1964,7 @@ cmd_add_br(struct vsctl_context *ctx)
 {
     bool may_exist = shash_find(&ctx->options, "--may-exist") != NULL;
     const char *br_name, *parent_name;
-#ifndef HALON
+#ifndef OPS
     struct ovsrec_interface *iface;
     int vlan;
 #endif
@@ -1972,11 +1972,11 @@ cmd_add_br(struct vsctl_context *ctx)
     br_name = ctx->argv[1];
     if (ctx->argc == 2) {
         parent_name = NULL;
-#ifndef HALON
+#ifndef OPS
         vlan = 0;
 #endif
     }
-#ifndef HALON
+#ifndef OPS
     else if (ctx->argc == 4) {
         parent_name = ctx->argv[2];
         vlan = atoi(ctx->argv[3]);
@@ -1986,7 +1986,7 @@ cmd_add_br(struct vsctl_context *ctx)
     }
 #endif
     else {
-#ifndef HALON
+#ifndef OPS
         vsctl_fatal("'%s' command takes exactly 1 or 3 arguments",
 #else
         vsctl_fatal("'%s' command takes exactly 1 argument",
@@ -2000,7 +2000,7 @@ cmd_add_br(struct vsctl_context *ctx)
 
         br = find_bridge(ctx, br_name, false);
         if (br) {
-#ifndef HALON
+#ifndef OPS
             if (!parent_name) {
                 if (br->parent) {
                     vsctl_fatal("\"--may-exist add-br %s\" but %s is "
@@ -2031,12 +2031,12 @@ cmd_add_br(struct vsctl_context *ctx)
                     xasprintf("cannot create a bridge named %s", br_name));
 
     if (!parent_name) {
-#ifndef HALON
+#ifndef OPS
         struct ovsrec_port *port;
 #endif
         struct ovsrec_bridge *br;
 
-#ifndef HALON
+#ifndef OPS
         iface = ovsrec_interface_insert(ctx->txn);
         ovsrec_interface_set_name(iface, br_name);
         ovsrec_interface_set_type(iface, "internal");
@@ -2048,13 +2048,13 @@ cmd_add_br(struct vsctl_context *ctx)
 
         br = ovsrec_bridge_insert(ctx->txn);
         ovsrec_bridge_set_name(br, br_name);
-#ifndef HALON
+#ifndef OPS
         ovsrec_bridge_set_ports(br, &port, 1);
 #endif
 
         ovs_insert_bridge(ctx->ovs, br);
     }
-#ifndef HALON
+#ifndef OPS
     else {
         struct vsctl_bridge *conflict;
         struct vsctl_bridge *parent;
@@ -2112,11 +2112,11 @@ del_port(struct vsctl_context *ctx, struct vsctl_port *port)
 static void
 del_bridge(struct vsctl_context *ctx, struct vsctl_bridge *br)
 {
-#ifndef HALON
+#ifndef OPS
     struct vsctl_bridge *child, *next_child;
 #endif
     struct vsctl_port *port, *next_port;
-#ifndef HALON_TEMP
+#ifndef OPS_TEMP
     const struct ovsrec_flow_sample_collector_set *fscset, *next_fscset;
 
     HMAP_FOR_EACH_SAFE (child, next_child, children_node, &br->children) {
@@ -2128,7 +2128,7 @@ del_bridge(struct vsctl_context *ctx, struct vsctl_bridge *br)
         del_port(ctx, port);
     }
 
-#ifndef HALON_TEMP
+#ifndef OPS_TEMP
     OVSREC_FLOW_SAMPLE_COLLECTOR_SET_FOR_EACH_SAFE (fscset, next_fscset,
                                                     ctx->idl) {
         if (fscset->bridge == br->br_cfg) {
@@ -2150,8 +2150,8 @@ cmd_del_br(struct vsctl_context *ctx)
     if (bridge) {
         del_bridge(ctx, bridge);
     }
-#ifdef HALON
-    /* There is a difference in behavior between HALON and standard OVS:
+#ifdef OPS
+    /* There is a difference in behavior between OPS and standard OVS:
      * (interface automatic deletion) means that we don't know if
      * the cache is correct or not after deleting a port
      */
@@ -2308,7 +2308,7 @@ cmd_br_get_external_id(struct vsctl_context *ctx)
     }
 }
 
-#ifdef HALON
+#ifdef OPS
 /* We only support VLAN IDs 1-4094. */
 #define VALID_VLAN_ID(v)  ((v) > 0 && (v) < 4095)
 
@@ -2738,7 +2738,7 @@ cmd_del_vrf_port(struct vsctl_context *ctx)
 
         del_vrf_port(ctx, port);
     }
-    /* difference in behavior between HALON and standard OVS
+    /* difference in behavior between OPS and standard OVS
      * (interface automatic deletion) means that we don't know if
      * the cache is correct or not after deleting a port
      */
@@ -2901,7 +2901,7 @@ static void
 add_port(struct vsctl_context *ctx,
          const char *br_name, const char *port_name,
          bool may_exist,
-#ifndef HALON_TEMP
+#ifndef OPS_TEMP
          bool fake_iface,
 #else
          bool fake_iface OVS_UNUSED,
@@ -2936,7 +2936,7 @@ add_port(struct vsctl_context *ctx,
             }
             svec_sort(&have_names);
 
-#ifdef HALON
+#ifdef OPS
             if (vsctl_port->port_type == BR_PORT && 
                 strcmp(vsctl_port->bridge->name, br_name)) {
                 char *command = vsctl_context_to_string(ctx);
@@ -2980,7 +2980,7 @@ add_port(struct vsctl_context *ctx,
 
     ifaces = xmalloc(n_ifaces * sizeof *ifaces);
     for (i = 0; i < n_ifaces; i++) {
-#ifdef HALON
+#ifdef OPS
         /* find the existing interface in the orphan_ifaces dictionary */
         if (ctx->subsystems_exist) {
             struct vsctl_iface *iface;
@@ -2998,7 +2998,7 @@ add_port(struct vsctl_context *ctx,
     port = ovsrec_port_insert(ctx->txn);
     ovsrec_port_set_name(port, port_name);
     ovsrec_port_set_interfaces(port, ifaces, n_ifaces);
-#ifndef HALON_TEMP
+#ifndef OPS_TEMP
     ovsrec_port_set_bond_fake_iface(port, fake_iface);
 #endif
     if (bridge->parent) {
@@ -3016,7 +3016,7 @@ add_port(struct vsctl_context *ctx,
 
     vsctl_port = add_port_to_cache(ctx, bridge, port);
     for (i = 0; i < n_ifaces; i++) {
-#ifdef HALON
+#ifdef OPS
         if (ctx->subsystems_exist) {
             move_orphan_iface_to_cache(ctx, vsctl_port, ifaces[i]);
         } else
@@ -3114,8 +3114,8 @@ cmd_del_port(struct vsctl_context *ctx)
 
         del_port(ctx, port);
     }
-#ifdef HALON
-    /* difference in behavior between HALON and standard OVS
+#ifdef OPS
+    /* difference in behavior between OPS and standard OVS
      * (interface automatic deletion) means that we don't know if
      * the cache is correct or not after deleting a port
      */
@@ -3196,7 +3196,7 @@ cmd_iface_to_br(struct vsctl_context *ctx)
     ds_put_format(&ctx->output, "%s\n", iface->port->bridge->name);
 }
 
-#ifndef HALON_TEMP
+#ifndef OPS_TEMP
 static void
 verify_controllers(struct ovsrec_bridge *bridge)
 {
@@ -3549,19 +3549,19 @@ struct vsctl_table_class {
 static const struct vsctl_table_class tables[] = {
     {&ovsrec_table_bridge,
      {{&ovsrec_table_bridge, &ovsrec_bridge_col_name, NULL}
-#ifndef HALON_TEMP
+#ifndef OPS_TEMP
     ,{&ovsrec_table_flow_sample_collector_set, NULL,
        &ovsrec_flow_sample_collector_set_col_bridge}
 #endif
     }},
 
-#ifndef HALON_TEMP
+#ifndef OPS_TEMP
     {&ovsrec_table_controller,
      {{&ovsrec_table_bridge,
        &ovsrec_bridge_col_name,
        &ovsrec_bridge_col_controller}}},
 #endif
-#ifdef HALON
+#ifdef OPS
     {&ovsrec_table_subsystem,
      {{&ovsrec_table_subsystem, &ovsrec_subsystem_col_name, NULL},
      {NULL, NULL, NULL}}},
@@ -3591,7 +3591,7 @@ static const struct vsctl_table_class tables[] = {
      {{&ovsrec_table_interface, &ovsrec_interface_col_name, NULL},
       {NULL, NULL, NULL}}},
 
-#ifndef HALON_TEMP
+#ifndef OPS_TEMP
     {&ovsrec_table_mirror,
      {{&ovsrec_table_mirror, &ovsrec_mirror_col_name, NULL},
       {NULL, NULL, NULL}}},
@@ -3600,7 +3600,7 @@ static const struct vsctl_table_class tables[] = {
      {{&ovsrec_table_manager, &ovsrec_manager_col_target, NULL},
       {NULL, NULL, NULL}}},
 
-#ifndef HALON_TEMP
+#ifndef OPS_TEMP
     {&ovsrec_table_netflow,
      {{&ovsrec_table_bridge,
        &ovsrec_bridge_col_name,
@@ -3615,7 +3615,7 @@ static const struct vsctl_table_class tables[] = {
      {{&ovsrec_table_port, &ovsrec_port_col_name, NULL},
       {NULL, NULL, NULL}}},
 
-#ifndef HALON_TEMP
+#ifndef OPS_TEMP
     {&ovsrec_table_qos,
      {{&ovsrec_table_port, &ovsrec_port_col_name, &ovsrec_port_col_qos},
       {NULL, NULL, NULL}}},
@@ -3627,7 +3627,7 @@ static const struct vsctl_table_class tables[] = {
     {&ovsrec_table_ssl,
      {{&ovsrec_table_open_vswitch, NULL, &ovsrec_open_vswitch_col_ssl}}},
 
-#ifndef HALON_TEMP
+#ifndef OPS_TEMP
     {&ovsrec_table_sflow,
      {{&ovsrec_table_bridge,
        &ovsrec_bridge_col_name,
@@ -4754,7 +4754,7 @@ post_db_reload_expect_iface(const struct ovsrec_interface *iface)
     neoteric_ifaces[n_neoteric_ifaces++] = iface->header_.uuid;
 }
 
-#ifndef HALON_TEMP
+#ifndef OPS_TEMP
 static void
 post_db_reload_do_checks(const struct vsctl_context *ctx)
 {
@@ -5277,7 +5277,7 @@ do_vsctl(const char *args, struct vsctl_command *commands, size_t n_commands,
             ovsdb_idl_run(idl);
             OVSREC_OPEN_VSWITCH_FOR_EACH (ovs, idl) {
                 if (ovs->cur_cfg >= next_cfg) {
-#ifndef HALON_TEMP
+#ifndef OPS_TEMP
                     post_db_reload_do_checks(&ctx);
 #endif
                     goto done;
@@ -5318,7 +5318,7 @@ static const struct vsctl_command_syntax all_commands[] = {
     /* Bridge commands. */
     {"add-br", 1, 3, pre_get_info, cmd_add_br, NULL, "--may-exist", RW},
     {"del-br", 1, 1, pre_get_info, cmd_del_br, NULL, "--if-exists", RW},
-#ifndef HALON_TEMP
+#ifndef OPS_TEMP
     {"list-br", 0, 0, pre_get_info, cmd_list_br, NULL, "--real,--fake", RO},
 #else
     {"list-br", 0, 0, pre_get_info, cmd_list_br, NULL, "", RO},
@@ -5331,7 +5331,7 @@ static const struct vsctl_command_syntax all_commands[] = {
     {"br-get-external-id", 1, 2, pre_cmd_br_get_external_id,
      cmd_br_get_external_id, NULL, "", RO},
 
-#ifdef HALON
+#ifdef OPS
     /* VLAN commands. */
     {"list-vlans", 1, 1, pre_get_vlan_info, cmd_list_vlans, NULL, "", RO},
     {"add-vlan", 2, INT_MAX, pre_get_vlan_info, cmd_add_vlan, NULL,
@@ -5370,7 +5370,7 @@ static const struct vsctl_command_syntax all_commands[] = {
     {"list-ifaces", 1, 1, pre_get_info, cmd_list_ifaces, NULL, "", RO},
     {"iface-to-br", 1, 1, pre_get_info, cmd_iface_to_br, NULL, "", RO},
 
-#ifndef HALON_TEMP
+#ifndef OPS_TEMP
     /* Controller commands. */
     {"get-controller", 1, 1, pre_controller, cmd_get_controller, NULL, "", RO},
     {"del-controller", 1, 1, pre_controller, cmd_del_controller, NULL, "", RW},

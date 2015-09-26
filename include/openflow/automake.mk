@@ -1,7 +1,7 @@
 # Install all the OVS header files under 
 # /usr/include/ovs directory to avoid
 # name collision with standard headers.
-if OPEN_HALON
+if OPS
 openflowincludedir = $(includedir)/ovs/openflow
 else
 openflowincludedir = $(includedir)/openflow

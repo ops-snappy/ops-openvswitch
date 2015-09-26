@@ -68,7 +68,7 @@ static struct ovs_mutex netdev_mutex = OVS_MUTEX_INITIALIZER;
 static struct shash netdev_shash OVS_GUARDED_BY(netdev_mutex)
     = SHASH_INITIALIZER(&netdev_shash);
 
-#ifdef HALON
+#ifdef OPS
 /* Contains alls netdevs, even those that are "netdev_remove"d, but are
  * still not unrefed and freed. Allows netdev_open to resurrect those netdevs
  * avoiding creation of duplicates */
@@ -145,7 +145,7 @@ netdev_initialize(void)
 
         fatal_signal_add_hook(restore_all_flags, NULL, NULL, true);
         netdev_vport_patch_register();
-#if defined (__linux__) && ! defined (HALON_TEMP)
+#if defined (__linux__) && ! defined (OPS_TEMP)
         netdev_register_provider(&netdev_linux_class);
         netdev_register_provider(&netdev_internal_class);
         netdev_register_provider(&netdev_tap_class);
@@ -153,7 +153,7 @@ netdev_initialize(void)
 #endif
 
 
-#ifndef HALON_TEMP
+#ifndef OPS_TEMP
 
 #if defined(__FreeBSD__) || defined(__NetBSD__)
         netdev_register_provider(&netdev_tap_class);
@@ -375,7 +375,7 @@ netdev_open(const char *name, const char *type, struct netdev **netdevp)
     if (!netdev) {
         struct netdev_registered_class *rc;
 
-#ifdef HALON
+#ifdef OPS
         /* may be netdev was "netdev_remove"d, but still exists */
         netdev = shash_find_data(&netdev_refd_shash, name);
         if (!netdev) {
@@ -389,7 +389,7 @@ netdev_open(const char *name, const char *type, struct netdev **netdevp)
                     netdev->name = xstrdup(name);
                     netdev->change_seq = 1;
                     netdev->node = shash_add(&netdev_shash, name, netdev);
-#ifdef HALON
+#ifdef OPS
                     netdev->refd_node = shash_add(&netdev_refd_shash, name, netdev);
 #endif
                     /* By default enable one tx and rx queue per netdev. */
@@ -406,7 +406,7 @@ netdev_open(const char *name, const char *type, struct netdev **netdevp)
                         free(netdev->name);
                         ovs_assert(list_is_empty(&netdev->saved_flags_list));
                         shash_delete(&netdev_shash, netdev->node);
-#ifdef HALON
+#ifdef OPS
                         shash_delete(&netdev_refd_shash, netdev->refd_node);
 #endif
                         rc->class->dealloc(netdev);
@@ -419,7 +419,7 @@ netdev_open(const char *name, const char *type, struct netdev **netdevp)
                           name, type);
                 error = EAFNOSUPPORT;
             }
-#ifdef HALON
+#ifdef OPS
         } else {
             /* netdev is resurrected after it was previously "netdev_remove"d */
             netdev->node = shash_add(&netdev_shash, name, netdev);
@@ -483,7 +483,7 @@ netdev_set_config(struct netdev *netdev, const struct smap *args, char **errp)
     return 0;
 }
 
-#ifdef HALON
+#ifdef OPS
 int
 netdev_set_hw_intf_info(struct netdev *netdev, const struct smap *args)
     OVS_EXCLUDED(netdev_mutex)
@@ -593,7 +593,7 @@ netdev_unref(struct netdev *dev)
             shash_delete(&netdev_shash, dev->node);
         }
 
-#ifdef HALON
+#ifdef OPS
         if (dev->refd_node) {
             shash_delete(&netdev_refd_shash, dev->refd_node);
         }
@@ -1206,7 +1206,7 @@ do_update_flags(struct netdev *netdev, enum netdev_flags off,
     error = netdev->netdev_class->update_flags(netdev, off & ~on, on,
                                                &old_flags);
     if (error) {
-#ifdef HALON
+#ifdef OPS
         if (error == EOPNOTSUPP) {
             VLOG_DBG_RL(&rl, "%s flags for network device %s: %s not supported",
                          off || on ? "set" : "get", netdev_get_name(netdev),

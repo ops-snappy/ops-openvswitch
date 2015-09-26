@@ -33,7 +33,7 @@ enum lacp_status;
 enum bond_mode {
     BM_TCP, /* Transport Layer Load Balance. */
     BM_SLB, /* Source Load Balance. */
-#ifdef HALON
+#ifdef OPS
     BM_AB,               /* Active Backup. */
     BM_L2_SRC_DST_HASH,  /* Layer 2 Src and Dest Mac Hash */
     BM_L3_SRC_DST_HASH   /* Layer 3 Src and Dest IP Hash */

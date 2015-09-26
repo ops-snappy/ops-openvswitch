@@ -154,7 +154,7 @@ void netdev_parse_name(const char *netdev_name, char **name, char **type);
 /* Options. */
 int netdev_set_config(struct netdev *, const struct smap *args, char **errp);
 int netdev_get_config(const struct netdev *, struct smap *);
-#ifdef HALON
+#ifdef OPS
 int netdev_set_hw_intf_info(struct netdev *, const struct smap *args);
 int netdev_set_hw_intf_config(struct netdev *, const struct smap *args);
 #endif

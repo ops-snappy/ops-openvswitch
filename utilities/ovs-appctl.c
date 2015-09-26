@@ -188,7 +188,7 @@ parse_command_line(int argc, char *argv[])
                   "(use --help for help)");
     }
 
-#ifdef HALON
+#ifdef OPS
     return target ? target : "ops-switchd";
 #else
     return target ? target : "ovs-vswitchd";

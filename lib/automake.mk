@@ -5,7 +5,7 @@
 # notice and this notice are preserved.  This file is offered as-is,
 # without warranty of any kind.
 
-if OPEN_HALON
+if OPS
 ovslibincludedir = $(includedir)/ovs
 ovslibinclude_HEADERS = \
 	lib/bfd.h \
@@ -434,7 +434,7 @@ lib_libopenvswitch_la_SOURCES = \
 	lib/vtep-idl.c \
 	lib/vtep-idl.h
 
-if OPEN_HALON
+if OPS
 lib_libopenvswitch_la_SOURCES += \
 	vswitchd/bufmon-provider.c
 endif

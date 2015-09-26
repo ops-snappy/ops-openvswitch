@@ -61,7 +61,7 @@
 #include "unixctl.h"
 #include "openvswitch/vlog.h"
 #include "bundles.h"
-#ifdef HALON
+#ifdef OPS
 #include "vlan-bitmap.h"
 #endif
 
@@ -337,7 +337,7 @@ ofproto_init(const struct shash *iface_hints)
     struct shash_node *node;
     size_t i;
 
-#ifndef HALON_TEMP
+#ifndef OPS_TEMP
     ofproto_class_register(&ofproto_dpif_class);
 #endif
 
@@ -571,7 +571,7 @@ ofproto_create(const char *datapath_name, const char *datapath_type,
     ofproto->meters = xzalloc((ofproto->meter_features.max_meters + 1)
                               * sizeof(struct meter *));
 
-#ifdef HALON
+#ifdef OPS
     ofproto->vlans_bmp = bitmap_allocate(VLAN_BITMAP_SIZE);
 #endif
 
@@ -1206,7 +1206,7 @@ ofproto_bundle_unregister(struct ofproto *ofproto, void *aux)
     return ofproto_bundle_register(ofproto, aux, NULL);
 }
 
-#ifdef HALON
+#ifdef OPS
 /* Retrieves bundle information in 'ofproto'.
  * Stores bundle handle in 'bundle_handle'. */
 int
@@ -1497,7 +1497,7 @@ ofproto_destroy(struct ofproto *p)
         return;
     }
 
-#ifdef HALON
+#ifdef OPS
     bitmap_free(p->vlans_bmp);
 #endif
 
@@ -7004,7 +7004,7 @@ ofproto_unixctl_list(struct unixctl_conn *conn, int argc OVS_UNUSED,
     ds_destroy(&results);
 }
 
-#ifdef HALON
+#ifdef OPS
 static void
 ofproto_print_details(struct ds *ds, const struct ofproto *ofproto)
 {
@@ -7058,7 +7058,7 @@ ofproto_unixctl_init(void)
     unixctl_command_register("ofproto/list", "", 0, 0,
                              ofproto_unixctl_list, NULL);
 
-#ifdef HALON
+#ifdef OPS
     unixctl_command_register("ofproto/show", "[name]", 0, 1,
                              ofproto_unixctl_show, NULL);
 #endif
@@ -7152,7 +7152,7 @@ ofproto_port_set_realdev(struct ofproto *ofproto, ofp_port_t vlandev_ofp_port,
     return error;
 }
 
-#ifdef HALON
+#ifdef OPS
 /* Function to add l3 host entry */
 int
 ofproto_add_l3_host_entry(struct ofproto *ofproto, void *aux,

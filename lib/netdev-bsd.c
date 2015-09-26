@@ -1561,7 +1561,7 @@ netdev_bsd_update_flags(struct netdev *netdev_, enum netdev_flags off,
     netdev_bsd_dealloc,                              \
     NULL, /* get_config */                           \
     NULL, /* set_config */                           \
-#ifdef HALON
+#ifdef OPS
     NULL, /* set_hw_intf_info */                     \
     NULL, /* set_hw_intf_config */                   \
 #endif

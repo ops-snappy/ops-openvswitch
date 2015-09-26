@@ -33,7 +33,7 @@
 #include "openvswitch/vlog.h"
 #include "hmap.h"
 #include "hash.h"
-#ifdef HALON
+#ifdef OPS
 #include "poll-loop.h"
 #endif
 
@@ -42,7 +42,7 @@ VLOG_DEFINE_THIS_MODULE(poll_loop);
 COVERAGE_DEFINE(poll_create_node);
 COVERAGE_DEFINE(poll_zero_timeout);
 
-#ifndef HALON
+#ifndef OPS
 struct poll_node {
     struct hmap_node hmap_node;
     struct pollfd pollfd;       /* Events to pass to time_poll(). */
@@ -61,7 +61,7 @@ struct poll_loop {
 };
 #endif
 
-#ifndef HALON
+#ifndef OPS
 static struct poll_loop *poll_loop(void);
 #endif
 
@@ -297,7 +297,7 @@ log_wakeup(const char *where, const struct pollfd *pollfd, int timeout)
     ds_destroy(&s);
 }
 
-#ifdef HALON
+#ifdef OPS
 void
 #else
 static void
@@ -406,7 +406,7 @@ free_poll_loop(void *loop_)
     free(loop);
 }
 
-#ifdef HALON
+#ifdef OPS
 struct poll_loop *
 #else
 static struct poll_loop *

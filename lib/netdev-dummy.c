@@ -1059,7 +1059,7 @@ static const struct netdev_class dummy_class = {
     netdev_dummy_dealloc,
     netdev_dummy_get_config,
     netdev_dummy_set_config,
-#ifdef HALON
+#ifdef OPS
     NULL,                       /* set_hw_intf_info */
     NULL,                       /* set_hw_intf_config */
 #endif

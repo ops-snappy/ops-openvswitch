@@ -36,7 +36,7 @@
 
 #include <poll.h>
 #include "util.h"
-#ifdef HALON
+#ifdef OPS
 #include "hmap.h"
 #endif
 
@@ -74,7 +74,7 @@ void poll_immediate_wake_at(const char *where);
 /* Wait until an event occurs. */
 void poll_block(void);
 
-#ifdef HALON
+#ifdef OPS
 struct poll_node {
     struct hmap_node hmap_node;
     struct pollfd pollfd;       /* Events to pass to time_poll(). */
