@@ -73,6 +73,7 @@
 #include <netinet/ether.h>
 #include "vrf.h"
 #include "openswitch-idl.h"
+#include "openswitch-dflt.h"
 #endif
 
 VLOG_DEFINE_THIS_MODULE(bridge);
@@ -1409,6 +1410,10 @@ port_configure(struct port *port)
     s.slaves_entered = cfg_slave_count;
     s.n_slaves_tx_enable = 0;
     s.slaves_tx_enable = xmalloc(cfg_slave_count * sizeof *s.slaves);
+
+    s.enable = smap_get_bool(&cfg->hw_config,
+            PORT_HW_CONFIG_MAP_ENABLE,
+            PORT_HW_CONFIG_MAP_ENABLE_DEFAULT);
 
     /* Determine if bond mode is dynamic (LACP). */
     lacp_enabled  = enable_lacp(port, &lacp_active);

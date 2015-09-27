@@ -504,7 +504,6 @@ struct ofproto_bundle_settings {
                                      tx_enable state. */
     size_t n_slaves_tx_enable;    /* Number of slaves in tx_enable state. */
     size_t slaves_entered;         /* Number of slaves entered while adding a bond*/
-
     int  ip_change;
     char *ip4_address;
     char *ip6_address;
@@ -512,7 +511,7 @@ struct ofproto_bundle_settings {
     char **ip4_address_secondary; /* List of secondary IP address */
     size_t n_ip6_address_secondary;
     char **ip6_address_secondary; /* List of secondary IPv6 address */
-
+    bool enable;                  /* Port enable */
 #endif
 };
 
