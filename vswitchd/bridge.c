@@ -107,6 +107,8 @@ struct mirror {
     const struct ovsrec_mirror *cfg;
 };
 #endif
+
+#ifndef OPS /* Moved to bridge.h, to access in vrf.c */
 struct port {
     struct hmap_node hmap_node; /* Element in struct bridge's "ports" hmap. */
     struct bridge *bridge;
@@ -121,6 +123,8 @@ struct port {
     int bond_hw_handle;        /* Hardware bond identifier. */
 #endif
 };
+#endif
+
 
 #ifdef OPS
 struct vlan {
@@ -1537,6 +1541,11 @@ port_configure(struct port *port)
     s.port_options[PORT_OPT_VLAN] = &cfg->vlan_options;
     s.port_options[PORT_OPT_BOND] = &cfg->bond_options;
     s.port_options[PORT_HW_CONFIG] = &cfg->hw_config;
+#endif
+
+#ifdef OPS
+    /* Check for port L3 ip changes */
+    vrf_port_reconfig_ipaddr(port, &s);
 #endif
 
     /* Register. */

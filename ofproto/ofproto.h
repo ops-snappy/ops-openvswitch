@@ -210,6 +210,7 @@ struct ofproto_controller {
 
 #ifdef OPS
 
+/* FIXME: Use MAX_NEXTHOPS_PER_ROUTE from common header */
 #define OFPROTO_MAX_NH_PER_ROUTE    32 /* maximum number of nexthops per route.
                                           only consider non-weighted ECMP now */
 enum ofproto_route_family {
@@ -255,6 +256,23 @@ struct ofproto_route {
 #define OFPROTO_ECMP_HASH_DSTPORT        0x2     /* source L4 port */
 #define OFPROTO_ECMP_HASH_SRCIP          0x4     /* source IP v4/v6 */
 #define OFPROTO_ECMP_HASH_DSTIP          0x8     /* source IP v4/v6 */
+
+enum ofproto_host_action {
+    OFPROTO_HOST_ADD,
+    OFPROTO_HOST_DELETE,
+    OFPROTO_NEIGHBOR_ADD,
+    OFPROTO_NEIGHBOR_MODIFY,
+    OFPROTO_NEIGHBOR_DELETE
+};
+
+struct ofproto_l3_host {
+    bool family;                      /* Type of host */
+    char *ip_address;                 /* V4/6 IP address (prefix/len)*/
+    int  rc;                          /* rc = 0 means success */
+    const char *err_str;              /* set if rc != 0 */
+    char *mac;                        /* These are for neighbor, mac */
+    int  l3_egress_id;                /* Egress ID in case if we need */
+};
 
 #endif
 
@@ -439,6 +457,12 @@ enum port_option_args {
     /* Array size */
     PORT_OPT_MAX
 };
+
+/* Indicate whether port primary/secondary v4/v6 ip is changed */
+#define PORT_PRIMARY_IPv4_CHANGED     0x1
+#define PORT_PRIMARY_IPv6_CHANGED     0x2
+#define PORT_SECONDARY_IPv4_CHANGED   0x4
+#define PORT_SECONDARY_IPv6_CHANGED   0x8
 #endif
 
 /* Configuration of bundles. */
@@ -480,6 +504,15 @@ struct ofproto_bundle_settings {
                                      tx_enable state. */
     size_t n_slaves_tx_enable;    /* Number of slaves in tx_enable state. */
     size_t slaves_entered;         /* Number of slaves entered while adding a bond*/
+
+    int  ip_change;
+    char *ip4_address;
+    char *ip6_address;
+    size_t n_ip4_address_secondary;
+    char **ip4_address_secondary; /* List of secondary IP address */
+    size_t n_ip6_address_secondary;
+    char **ip6_address_secondary; /* List of secondary IPv6 address */
+
 #endif
 };
 

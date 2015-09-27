@@ -15,6 +15,7 @@
 
 #include <arpa/inet.h>
 #include <errno.h>
+#include "bridge.h"
 #include "vrf.h"
 #include "hash.h"
 #include "shash.h"
@@ -712,5 +713,53 @@ vrf_reconfigure_routes(struct vrf *vrf)
      * NH as any of the ports in the deleted VRF */
 }
 
+/*
+** Function to handle add/delete/modify of port ipv4/v6 address.
+*/
+void
+vrf_port_reconfig_ipaddr(struct port *port,
+                         struct ofproto_bundle_settings *bundle_setting)
+{
+    const struct ovsrec_port *idl_port = port->cfg;
+
+    /* If primary ipv4 got changed */
+    bundle_setting->ip_change = 0;
+    if (OVSREC_IDL_IS_COLUMN_MODIFIED(ovsrec_port_col_ip4_address,
+                                      idl_seqno) ) {
+        VLOG_DBG("ip4_address modified");
+        bundle_setting->ip_change |= PORT_PRIMARY_IPv4_CHANGED;
+        bundle_setting->ip4_address = idl_port->ip4_address;
+    }
+
+    /* If primary ipv6 got changed */
+    if (OVSREC_IDL_IS_COLUMN_MODIFIED(ovsrec_port_col_ip6_address,
+                                      idl_seqno) ) {
+        VLOG_DBG("ip6_address modified");
+        bundle_setting->ip_change |= PORT_PRIMARY_IPv6_CHANGED;
+        bundle_setting->ip6_address = idl_port->ip6_address;
+    }
+    /*
+     * Configure secondary network addresses
+     */
+    if (OVSREC_IDL_IS_COLUMN_MODIFIED(ovsrec_port_col_ip4_address_secondary,
+                                      idl_seqno) ) {
+        VLOG_DBG("ip4_address_secondary modified");
+        bundle_setting->ip_change |= PORT_SECONDARY_IPv4_CHANGED;
+        bundle_setting->n_ip4_address_secondary =
+                                      idl_port->n_ip4_address_secondary;
+        bundle_setting->ip4_address_secondary =
+                                      idl_port->ip4_address_secondary;
+    }
+
+    if (OVSREC_IDL_IS_COLUMN_MODIFIED(ovsrec_port_col_ip6_address_secondary,
+                                      idl_seqno) ) {
+        VLOG_DBG("ip6_address_secondary modified");
+        bundle_setting->ip_change |= PORT_SECONDARY_IPv6_CHANGED;
+        bundle_setting->n_ip6_address_secondary =
+                                      idl_port->n_ip6_address_secondary;
+        bundle_setting->ip6_address_secondary =
+                                      idl_port->ip6_address_secondary;
+    }
+}
 /* FIXME : move vrf functions from bridge.c to this file */
 /* FIXME : move neighbor functions from bridge.c to this file */
