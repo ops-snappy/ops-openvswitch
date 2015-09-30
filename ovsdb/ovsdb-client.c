@@ -130,8 +130,8 @@ main(int argc, char *argv[])
         } else if (dbs.n == 1) {
             database = xstrdup(dbs.names[0]);
 #ifdef OPS
-        } else if (svec_contains(&dbs, "OpenHalon")) {
-            database = "OpenHalon";
+        } else if (svec_contains(&dbs, "OpenSwitch")) {
+            database = "OpenSwitch";
 #endif
         } else if (svec_contains(&dbs, "Open_vSwitch")) {
             database = "Open_vSwitch";

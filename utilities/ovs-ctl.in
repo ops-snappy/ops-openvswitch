@@ -196,14 +196,14 @@ start_ovsdb () {
         done
         set "$@" -vconsole:emer -vsyslog:err -vfile:info
         set "$@" --remote=punix:"$DB_SOCK"
-        set "$@" --private-key=db:OpenHalon,SSL,private_key
-        set "$@" --certificate=db:OpenHalon,SSL,certificate
-        set "$@" --bootstrap-ca-cert=db:OpenHalon,SSL,ca_cert
+        set "$@" --private-key=db:OpenSwitch,SSL,private_key
+        set "$@" --certificate=db:OpenSwitch,SSL,certificate
+        set "$@" --bootstrap-ca-cert=db:OpenSwitch,SSL,ca_cert
         start_daemon "$OVSDB_SERVER_PRIORITY" "$OVSDB_SERVER_WRAPPER" "$@" \
             || return 1
 
         # Initialize database settings.
-        ovs_vsctl -- init -- set OpenHalon . db-version="$schemaver" \
+        ovs_vsctl -- init -- set OpenSwitch . db-version="$schemaver" \
             || return 1
         set_system_ids || return 1
         if test X"$DELETE_BRIDGES" = Xyes; then
@@ -229,7 +229,7 @@ add_managers () {
     # exist at startup.)
     action "Enabling remote OVSDB managers" \
 	ovs-appctl -t ovsdb-server ovsdb-server/add-remote \
-	    db:OpenHalon,Open_vSwitch,manager_options
+	    db:OpenSwitch,Open_vSwitch,manager_options
 }
 
 start_forwarding () {
