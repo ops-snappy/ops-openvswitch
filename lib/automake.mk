@@ -43,8 +43,6 @@ ovslibinclude_HEADERS = \
 	lib/ofp-actions.h \
 	lib/ofp-errors.h \
 	lib/ofp-util.h \
-	lib/openhalon-dflt.h \
-	lib/openhalon-idl.h \
 	lib/openswitch-dflt.h \
 	lib/openswitch-idl.h \
 	lib/ovs-atomic.h \
