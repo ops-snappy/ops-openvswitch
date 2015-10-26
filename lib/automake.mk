@@ -32,6 +32,7 @@ ovslibinclude_HEADERS = \
 	lib/hmap.h \
         lib/hmapx.h \
 	lib/json.h \
+	lib/jsonrpc.h \
 	lib/lacp.h \
         lib/latch.h \
 	lib/list.h \
@@ -153,7 +154,6 @@ lib_libovscommon_la_SOURCES = \
         lib/jhash.c \
         lib/json.c \
         lib/json.h \
-        lib/jsonrpc.h \
         lib/jhash.h \
         lib/list.h \
         lib/lockfile.c \
