@@ -28,6 +28,8 @@ AM_CPPFLAGS += -I $(top_srcdir)/lib
 AM_CPPFLAGS += -I $(top_builddir)/lib
 AM_CPPFLAGS += -I $(top_srcdir)/libltdl
 AM_CPPFLAGS += -I $(top_builddir)/libltdl
+AM_CPPFLAGS += -I $(top_srcdir)/plugins
+AM_CPPFLAGS += -I $(top_builddir)/plugins
 
 AM_CPPFLAGS += $(SSL_INCLUDES)
 
@@ -378,6 +380,7 @@ endif
 include m4/automake.mk
 include lib/automake.mk
 include ofproto/automake.mk
+include plugins/automake.mk
 include utilities/automake.mk
 include include/automake.mk
 include vswitchd/automake.mk

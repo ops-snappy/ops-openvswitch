@@ -26,7 +26,8 @@ vswitchd_ops_switchd_LDADD = \
 	ovsdb/libovsdb.la \
 	ofproto/libofproto.la \
 	lib/libsflow.la \
-	lib/libopenvswitch.la
+	lib/libopenvswitch.la \
+	plugins/libplugins.la
 
 vswitchd_ops_switchd_LDFLAGS = $(AM_LDFLAGS) $(DPDK_vswitchd_LDFLAGS)
 else

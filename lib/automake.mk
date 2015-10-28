@@ -116,7 +116,6 @@ ovslibinclude_HEADERS = \
 	lib/packets.h \
 	lib/pcap-file.h \
 	lib/perf-counter.h \
-	lib/plugins.h \
 	lib/poll-loop.h \
 	lib/process.h \
 	lib/pvector.h \
@@ -168,8 +167,9 @@ ovslibinclude_HEADERS = \
 	lib/vlan-bitmap.h \
 	lib/vlandev.h \
 	lib/vswitch-idl.h \
-        vswitchd/bufmon-provider.h \
-        include/odp-netlink.h
+	vswitchd/bufmon-provider.h \
+	include/odp-netlink.h
+
 endif
 
 lib_LTLIBRARIES += lib/libovscommon.la
@@ -269,7 +269,6 @@ lib_libovscommon_la_SOURCES = \
         lib/ovs-thread.h \
 	lib/packets.c \
 	lib/packets.h \
-        lib/plugins.c \
         lib/poll-loop.c \
         lib/poll-loop.h \
         lib/process.c \
@@ -403,7 +402,7 @@ MAN_FRAGMENTS += \
 
 lib_LTLIBRARIES += lib/libopenvswitch.la
 
-lib_libopenvswitch_la_LIBADD = $(SSL_LIBS) lib/libovscommon.la ovsdb/libovsdb.la
+lib_libopenvswitch_la_LIBADD = $(SSL_LIBS) lib/libovscommon.la ovsdb/libovsdb.la plugins/libplugins.la
 
 if WIN32
 lib_libopenvswitch_la_LIBADD += ${PTHREAD_LIBS}
