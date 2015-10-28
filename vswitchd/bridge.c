@@ -76,6 +76,8 @@
 #include "openswitch-dflt.h"
 #endif
 
+#include "plugins.h"
+
 VLOG_DEFINE_THIS_MODULE(bridge);
 
 COVERAGE_DEFINE(bridge_reconfigure);

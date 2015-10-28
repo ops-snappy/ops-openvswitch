@@ -24,6 +24,9 @@ extern "C" {
 #endif
 
 #ifdef __linux__
+void plugins_reconfigure_delete(void);
+void plugins_reconfigure_add(void);
+void plugins_reconfigure_modify(void);
 void plugins_init(const char *path);
 void plugins_run(void);
 void plugins_wait(void);
@@ -32,6 +35,9 @@ void plugins_netdev_register(void);
 void plugins_ofproto_register(void);
 void plugins_bufmon_register(void);
 #else
+#define plugins_reconfigure_delete();
+#define plugins_reconfigure_add();
+#define plugins_reconfigure_modify();
 #define plugins_init(path)
 #define plugins_run()
 #define plugins_wait()

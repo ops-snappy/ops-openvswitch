@@ -54,9 +54,12 @@
 #define BUILD_ASSERT_DECL(EXPR) \
         extern int (*build_assert(void))[BUILD_ASSERT__(EXPR)]
 #else /* __cplusplus */
-#include <boost/static_assert.hpp>
+/*#include <boost/static_assert.hpp>
 #define BUILD_ASSERT BOOST_STATIC_ASSERT
-#define BUILD_ASSERT_DECL BOOST_STATIC_ASSERT
+#define BUILD_ASSERT_DECL BOOST_STATIC_ASSERT*/
+#define BUILD_ASSERT_FAILED_MSG(EXPR) "Assertion " #EXPR " failed during compilation."
+#define BUILD_ASSERT(EXPR) static_assert(EXPR,BUILD_ASSERT_FAILED_MSG(EXPR))
+#define BUILD_ASSERT_DECL(EXPR) static_assert(EXPR,BUILD_ASSERT_FAILED_MSG(EXPR))
 #endif /* __cplusplus */
 
 #ifdef __GNUC__
