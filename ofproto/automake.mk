@@ -12,7 +12,8 @@ ovsofprotolibinclude_HEADERS = \
 	ofproto/netflow.h \
 	ofproto/ofproto.h \
 	ofproto/ofproto-provider.h \
-	ofproto/tunnel.h
+	ofproto/tunnel.h \
+	ofproto/ofproto-extensions.h
 endif
 
 lib_LTLIBRARIES += ofproto/libofproto.la
@@ -60,7 +61,9 @@ ofproto_libofproto_la_SOURCES = \
 	ofproto/tunnel.c \
 	ofproto/tunnel.h \
 	ofproto/bundles.c \
-	ofproto/bundles.h
+	ofproto/bundles.h \
+	ofproto/ofproto-extensions.c \
+	ofproto/ofproto-extensions.h
 
 ofproto_libofproto_la_CPPFLAGS = $(AM_CPPFLAGS)
 ofproto_libofproto_la_CFLAGS = $(AM_CFLAGS)
