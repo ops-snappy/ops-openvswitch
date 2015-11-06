@@ -77,6 +77,7 @@ struct ecmp {
     bool dst_port_enabled;
     bool src_ip_enabled;
     bool dst_ip_enabled;
+    bool resilient_hash_enabled;
 };
 
 void vrf_reconfigure_routes(struct vrf *vrf);
