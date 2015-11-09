@@ -54,4 +54,7 @@
 /* Default for port hw_config */
 #define PORT_HW_CONFIG_MAP_ENABLE_DEFAULT                       "true"
 
+/* Default for port status */
+#define PORT_STATUS_MAP_ERROR_DEFAULT                           "up"
+
 #endif /* OPENSWITCH_DFLT_HEADER */
