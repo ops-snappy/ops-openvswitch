@@ -1239,28 +1239,17 @@ vrf_delete_or_reconfigure_subintf(struct smap *sub_intf_info,
     const struct ovsrec_interface *parent_intf_cfg = NULL;
     int sub_intf_vlan = 0;
 
-    if (iface_cfg != NULL)
+    if (iface_cfg->n_subintf_parent > 0)
     {
-       if (iface_cfg->n_subintf_parent > 0)
-       {
-          parent_intf_cfg = iface_cfg->value_subintf_parent[0];
-          sub_intf_vlan = iface_cfg->key_subintf_parent[0];
-       }
+       parent_intf_cfg = iface_cfg->value_subintf_parent[0];
+       sub_intf_vlan = iface_cfg->key_subintf_parent[0];
     }
 
-    if (parent_intf_cfg != NULL)
-    {
-       smap_add(sub_intf_info, "parent_intf_name", parent_intf_cfg->name);
-    } else {
-       smap_add(sub_intf_info, "parent_intf_name", "");
-    }
+    smap_add(sub_intf_info,
+         "parent_intf_name",
+         parent_intf_cfg ? parent_intf_cfg->name : "");
 
-    if (sub_intf_vlan != 0)
-    {
-       smap_add_format(sub_intf_info, "vlan", "%d", sub_intf_vlan);
-    } else {
-       smap_add_format(sub_intf_info, "vlan", "%d", 0);
-    }
+    smap_add_format(sub_intf_info, "vlan", "%d", sub_intf_vlan);
 
     VLOG_DBG("parent_intf_name %s\n", parent_intf_cfg->name);
     VLOG_DBG("vlan %d\n", sub_intf_vlan);
@@ -1311,8 +1300,7 @@ vrf_delete_or_reconfigure_ports(struct vrf *vrf)
             goto delete;
         }
 
-        if (!strcmp(iface->cfg->type, OVSREC_INTERFACE_TYPE_VLANSUBINT))
-        {
+        if (!strcmp(iface->cfg->type, OVSREC_INTERFACE_TYPE_VLANSUBINT)) {
            smap_init(&sub_intf_info);
            vrf_delete_or_reconfigure_subintf(&sub_intf_info, iface->cfg);
            ret = netdev_set_config(iface->netdev, &sub_intf_info, NULL);
@@ -2436,7 +2424,7 @@ iface_do_create(const struct bridge *br,
     error = netdev_open(iface_cfg->name,
                         iface_get_type(iface_cfg, br->cfg), &netdev);
     VLOG_DBG("Interface %s is of type %s\n",
-             iface_cfg->name,iface_get_type(iface_cfg, br->cfg));
+             iface_cfg->name, iface_get_type(iface_cfg, br->cfg));
 
     if (error) {
         VLOG_WARN_BUF(errp, "could not open network device %s (%s)",
@@ -2461,10 +2449,9 @@ iface_do_create(const struct bridge *br,
         goto error;
     }
 #endif
-    if (!strcmp(iface_cfg->type,OVSREC_INTERFACE_TYPE_VLANSUBINT)) {
+    if (!strcmp(iface_cfg->type, OVSREC_INTERFACE_TYPE_VLANSUBINT)) {
           smap_init(&sub_intf_info);
           vrf_delete_or_reconfigure_subintf(&sub_intf_info, iface_cfg);
-          ret = netdev_set_config(netdev, &sub_intf_info, NULL);
           smap_destroy(&sub_intf_info);
           if (ret) {
               goto error;
@@ -2887,9 +2874,7 @@ iface_refresh_netdev_status(struct iface *iface)
     if (!iface->type || !strcmp(iface->type, "system") ||
                         !strcmp(iface->type, "loopback")) {
         return;
-    }
-
-    else if (!iface->type ||
+    } else if (!iface->type ||
              !strcmp(iface->type, OVSREC_INTERFACE_TYPE_VLANSUBINT)) {
         error = netdev_get_flags(iface->netdev, &flags);
         if (!error) {
