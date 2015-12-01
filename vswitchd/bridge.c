@@ -904,7 +904,6 @@ bridge_reconfigure(const struct ovsrec_open_vswitch *ovs_cfg)
     }
 #endif
 
-
     HMAP_FOR_EACH (br, node, &all_bridges) {
         bridge_add_ports(br, &br->wanted_ports);
         shash_destroy(&br->wanted_ports);
@@ -1006,6 +1005,7 @@ bridge_reconfigure(const struct ovsrec_open_vswitch *ovs_cfg)
             bool port_iface_changed = false;
             LIST_FOR_EACH (iface, port_elem, &port->ifaces) {
                 if (OVSREC_IDL_IS_ROW_MODIFIED(iface->cfg, idl_seqno)) {
+                    VLOG_DBG("%s interface row is modified\n", iface->name);
                     port_iface_changed = true;
                     break;
                 }
@@ -1232,6 +1232,40 @@ bridge_delete_or_reconfigure_ports(struct bridge *br)
     sset_destroy(&ofproto_ports);
 }
 
+static void
+vrf_delete_or_reconfigure_subintf(struct smap *sub_intf_info,
+                                  const struct ovsrec_interface *iface_cfg)
+{
+    const struct ovsrec_interface *parent_intf_cfg = NULL;
+    int sub_intf_vlan = 0;
+
+    if (iface_cfg != NULL)
+    {
+       if (iface_cfg->n_subintf_parent > 0)
+       {
+          parent_intf_cfg = iface_cfg->value_subintf_parent[0];
+          sub_intf_vlan = iface_cfg->key_subintf_parent[0];
+       }
+    }
+
+    if (parent_intf_cfg != NULL)
+    {
+       smap_add(sub_intf_info, "parent_intf_name", parent_intf_cfg->name);
+    } else {
+       smap_add(sub_intf_info, "parent_intf_name", "");
+    }
+
+    if (sub_intf_vlan != 0)
+    {
+       smap_add_format(sub_intf_info, "vlan", "%d", sub_intf_vlan);
+    } else {
+       smap_add_format(sub_intf_info, "vlan", "%d", 0);
+    }
+
+    VLOG_DBG("parent_intf_name %s\n", parent_intf_cfg->name);
+    VLOG_DBG("vlan %d\n", sub_intf_vlan);
+}
+
 #ifdef OPS
 static void
 vrf_delete_or_reconfigure_ports(struct vrf *vrf)
@@ -1241,6 +1275,9 @@ vrf_delete_or_reconfigure_ports(struct vrf *vrf)
 
     struct sset ofproto_ports;
     struct port *port, *port_next;
+    struct iface *iface;
+    struct smap sub_intf_info;
+    int ret = 0;
 
     /* List of "ofp_port"s to delete.  We make a list instead of deleting them
      * right away because ofproto implementations aren't necessarily able to
@@ -1264,7 +1301,6 @@ vrf_delete_or_reconfigure_ports(struct vrf *vrf)
 #ifndef OPS_TEMP
         ofp_port_t requested_ofp_port;
 #endif
-        struct iface *iface;
 
         sset_add(&ofproto_ports, ofproto_port.name);
 
@@ -1273,6 +1309,17 @@ vrf_delete_or_reconfigure_ports(struct vrf *vrf)
             /* No such iface is configured, so we should delete this
              * ofproto_port. */
             goto delete;
+        }
+
+        if (!strcmp(iface->cfg->type, OVSREC_INTERFACE_TYPE_VLANSUBINT))
+        {
+           smap_init(&sub_intf_info);
+           vrf_delete_or_reconfigure_subintf(&sub_intf_info, iface->cfg);
+           ret = netdev_set_config(iface->netdev, &sub_intf_info, NULL);
+           smap_destroy(&sub_intf_info);
+           if (ret)
+              goto delete;
+           continue;
         }
 
         if  (strcmp(ofproto_port.type, iface->type)
@@ -2375,7 +2422,9 @@ iface_do_create(const struct bridge *br,
                 char **errp)
 {
     struct netdev *netdev = NULL;
+    struct smap sub_intf_info;
     int error;
+    int ret = 0;
 
     if (netdev_is_reserved_name(iface_cfg->name)) {
         VLOG_WARN("could not create interface %s, name is reserved",
@@ -2386,6 +2435,9 @@ iface_do_create(const struct bridge *br,
 
     error = netdev_open(iface_cfg->name,
                         iface_get_type(iface_cfg, br->cfg), &netdev);
+    VLOG_DBG("Interface %s is of type %s\n",
+             iface_cfg->name,iface_get_type(iface_cfg, br->cfg));
+
     if (error) {
         VLOG_WARN_BUF(errp, "could not open network device %s (%s)",
                       iface_cfg->name, ovs_strerror(error));
@@ -2409,11 +2461,19 @@ iface_do_create(const struct bridge *br,
         goto error;
     }
 #endif
-    error = iface_set_netdev_config(iface_cfg, netdev, errp);
-    if (error) {
-        goto error;
+    if (!strcmp(iface_cfg->type,OVSREC_INTERFACE_TYPE_VLANSUBINT)) {
+          smap_init(&sub_intf_info);
+          vrf_delete_or_reconfigure_subintf(&sub_intf_info, iface_cfg);
+          smap_destroy(&sub_intf_info);
+          if (ret) {
+              goto error;
+          }
+    }else {
+        error = iface_set_netdev_config(iface_cfg, netdev, errp);
+        if (error) {
+            goto error;
+        }
     }
-
     *ofp_portp = iface_pick_ofport(iface_cfg);
     error = ofproto_port_add(br->ofproto, netdev, ofp_portp);
     if (error) {
@@ -2817,15 +2877,27 @@ iface_refresh_netdev_status(struct iface *iface)
 #endif
     link_resets;
     int mtu, error;
-
     if (iface_is_synthetic(iface)) {
         return;
     }
 
 #ifdef OPS
     /* Interface status is updated from subsystem.c. */
-    if (!iface->type || !strcmp(iface->type, "system")) {
-            return;
+    if (!iface->type || !strcmp(iface->type, "system") ||
+                        !strcmp(iface->type, "loopback")) {
+        return;
+    }
+
+    else if (!iface->type ||
+             !strcmp(iface->type, OVSREC_INTERFACE_TYPE_VLANSUBINT)) {
+        error = netdev_get_flags(iface->netdev, &flags);
+        if (!error) {
+            const char *state = flags & NETDEV_UP ? "up" : "down";
+            ovsrec_interface_set_admin_state(iface->cfg, state);
+        } else {
+            ovsrec_interface_set_admin_state(iface->cfg, NULL);
+        }
+        return;
     }
 #endif
 
@@ -5127,7 +5199,6 @@ iface_get_type(const struct ovsrec_interface *iface,
     } else {
         type = iface->type[0] ? iface->type : "system";
     }
-
     return ofproto_port_open_type(br ? br->datapath_type : "vrf", type);
 }
 
