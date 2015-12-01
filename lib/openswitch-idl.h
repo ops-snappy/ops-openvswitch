@@ -433,6 +433,11 @@ enum ovsrec_port_config_admin_e {
 #define SYSTEM_OTHER_CONFIG_MAP_LLDP_HOLD_MIN             2
 #define SYSTEM_OTHER_CONFIG_MAP_LLDP_HOLD_MAX             10
 
+#define SYSTEM_OTHER_CONFIG_MAP_LLDP_REINIT               "lldp_reinit"
+#define SYSTEM_OTHER_CONFIG_MAP_LLDP_REINIT_DEFAULT       2
+#define SYSTEM_OTHER_CONFIG_MAP_LLDP_REINIT_MIN           1
+#define SYSTEM_OTHER_CONFIG_MAP_LLDP_REINIT_MAX           10
+
 #define SYSTEM_OTHER_CONFIG_MAP_LLDP_MGMT_ADDR            "lldp_mgmt_addr"
 
 #define SYSTEM_OTHER_CONFIG_MAP_LLDP_TLV_SYS_NAME_ENABLE                 \
