@@ -2451,7 +2451,7 @@ iface_do_create(const struct bridge *br,
 #endif
     if (!strcmp(iface_cfg->type, OVSREC_INTERFACE_TYPE_VLANSUBINT)) {
           smap_init(&sub_intf_info);
-          vrf_delete_or_reconfigure_subintf(&sub_intf_info, iface_cfg);
+          ret = vrf_delete_or_reconfigure_subintf(&sub_intf_info, iface_cfg);
           smap_destroy(&sub_intf_info);
           if (ret) {
               goto error;
