@@ -48,10 +48,10 @@ VLOG_DEFINE_THIS_MODULE(bufmon);
 
 COVERAGE_DEFINE(bufmon_reconfigure);
 
-#define DEFAULT_COLLECTION_INTERVAL 5 //seconds
-#define DEFAULT_TRIGGER_RATE_LIMIT_COUNT 60 //per Min
-#define DEFAULT_TRIGGER_RATE_LIMIT_DURATION 60 //seconds
-
+#define DEFAULT_COLLECTION_INTERVAL 5 /* seconds */
+#define DEFAULT_TRIGGER_RATE_LIMIT_COUNT 60 /* per Min */
+#define DEFAULT_TRIGGER_RATE_LIMIT_DURATION 60 /* seconds */
+#define DEFAULT_TRIGGER_REPORT_INTERVAL 100 /* msec */
 #define COUNTER_MODE_PEAK "peak"
 
 /* OVSDB IDL used to obtain configuration. */
@@ -114,6 +114,9 @@ bufmon_enabled_counters_count(void)
 {
     const struct ovsrec_bufmon *counter_row = NULL;
     int count = 0;
+
+    if (!bufmon_cfg.enabled)
+        return count;
 
     OVSREC_BUFMON_FOR_EACH(counter_row, idl) {
         if (counter_row && counter_row->enabled) {
@@ -182,8 +185,8 @@ bufmon_create_counters_list(void)
         }
     }
 
-    num_active_counters = count;
 End:
+    num_active_counters = count;
     ovs_mutex_unlock(&bufmon_mutex);
 
 } /* bufmon_create_counters_list */
@@ -289,13 +292,24 @@ bufmon_run_stats_update(bool triggered)
     }
 
     /* Time for a poll? */
-    if (!bufmon_cfg.periodic_collection_enabled ||
-        ((now < next_poll_interval) && !triggered)) {
+    if ((!bufmon_cfg.periodic_collection_enabled ||
+             (now < next_poll_interval)) && !triggered) {
+        goto End;
+    }
+
+    /* Trigger Enabled? */
+    if (triggered &&
+        !bufmon_cfg.threshold_trigger_collection_enabled) {
         goto End;
     }
 
     bufmon_get_current_counters_value(triggered);
     next_poll_interval = now + (bufmon_cfg.collection_period * 1000);
+
+    /* Reconfigure the System */
+    if (triggered) {
+        bufmon_set_system_config(&bufmon_cfg);
+    }
 
 End:
     ovs_mutex_unlock(&bufmon_mutex);
@@ -330,6 +344,9 @@ bufmon_system_config_update(const struct ovsrec_open_vswitch *row)
             smap_get_int(&row->bufmon_config,
                          BUFMON_CONFIG_MAP_COLLECTION_PERIOD,
                          DEFAULT_COLLECTION_INTERVAL);
+
+    bufmon_cfg.collection_period = MAX(bufmon_cfg.collection_period,
+                                       DEFAULT_COLLECTION_INTERVAL);
 
     bufmon_cfg.threshold_trigger_collection_enabled =
             smap_get_bool(&row->bufmon_config,
@@ -396,6 +413,7 @@ bufmon_reconfigure(void)
     const struct ovsrec_open_vswitch *system_cfg = NULL;
     const struct ovsrec_bufmon *counter_row = NULL;
     bool bufmon_modified = false;
+    bool bufmon_enabled = false;
 
     COVERAGE_INC(bufmon_reconfigure);
 
@@ -409,21 +427,23 @@ bufmon_reconfigure(void)
 
     if (OVSREC_IDL_IS_ROW_INSERTED(system_cfg, idl_seqno)
         || OVSREC_IDL_IS_ROW_MODIFIED(system_cfg, idl_seqno)) {
-
-        bufmon_system_config_update(system_cfg);
+        bufmon_enabled = smap_get_bool(&system_cfg->bufmon_config,
+                                       BUFMON_CONFIG_MAP_ENABLED, false);
+        bufmon_modified = true;
     }
 
-    /* Any changes in the bufmon counter row */
+    /* Any changes in the bufmon table or system table row */
     OVSREC_BUFMON_FOR_EACH (counter_row, idl) {
         if (OVSREC_IDL_IS_ROW_INSERTED(counter_row, idl_seqno)
-            || OVSREC_IDL_IS_ROW_MODIFIED(counter_row, idl_seqno)) {
-
+            || OVSREC_IDL_IS_ROW_MODIFIED(counter_row, idl_seqno)
+            || bufmon_enabled) {
             bufmon_counter_config_update(counter_row);
             bufmon_modified = true;
         }
     }
 
     if (bufmon_modified) {
+        bufmon_system_config_update(system_cfg);
         bufmon_create_counters_list();
     }
 } /* bufmon_reconfigure */
@@ -485,6 +505,8 @@ bufmon_trigger_rate_limit(bool flag)
     if (flag) {
         bufmon_trigger_enable(false);
     } else if (bufmon_cfg.threshold_trigger_collection_enabled) {
+        /* Reconfigure the System */
+        bufmon_set_system_config(&bufmon_cfg);
         /* Enable Trigger notifications */
         bufmon_trigger_enable(true);
     }
@@ -500,7 +522,7 @@ bufmon_stats_thread(void *arg OVS_UNUSED)
     int trigger_rate_limit;
     static bool trigger_disabled = false;
     uint64_t cur_seqno = seq_read(bufmon_trigger_seq_get());
-    long long int next_poll_msec = 0;
+    long long int next_poll_msec = 0, next_trigger_msec = 0;
     int last_rate_limit_time = time_now();
 
     pthread_detach(pthread_self());
@@ -535,13 +557,16 @@ bufmon_stats_thread(void *arg OVS_UNUSED)
                 cur_seqno =  seq_read(bufmon_trigger_seq_get());
 
                 /* Trigger Rate limit is crossed? */
-                if (trigger_reports_count > trigger_rate_limit) {
+                if (trigger_reports_count > trigger_rate_limit
+                    || time_msec() < next_trigger_msec) {
                     /* Disable Trigger notification */
                     trigger_disabled = true;
                     bufmon_trigger_rate_limit(trigger_disabled);
                 } else {
                     /* Process the trigger notification */
                     trigger_collection = true;
+                    next_trigger_msec =
+                            time_msec() + DEFAULT_TRIGGER_REPORT_INTERVAL;
                     break;
                 }
             } else { /* Periodic poll timeout? */
