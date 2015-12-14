@@ -465,6 +465,9 @@ enum ovsrec_port_config_admin_e {
                                                             "ascending"
 #define SYSTEM_OTHER_CONFIG_MAP_INTERNAL_VLAN_POLICY_DESCENDING        \
                                                             "descending"
+/*Source interface selection parameters */
+#define SYSTEM_OTHER_CONFIG_MAP_TFTP_SOURCE          "tftp_source"
+#define SYSTEM_OTHER_CONFIG_MAP_PROTOCOLS_SOURCE     "protocols_source"
 
 /* lacp global configuration parameters */
 #define SYSTEM_LACP_CONFIG_MAP_LACP_SYSTEM_ID        "lacp-system-id"
