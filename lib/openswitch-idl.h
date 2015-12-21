@@ -419,6 +419,8 @@ enum ovsrec_port_config_admin_e {
 
 /************************* OPEN vSWITCH TABLE  ***************************/
 
+#define SYSTEM_OTHER_CONFIG_MAP_CLI_SESSION_TIMEOUT       "cli_session_timeout"
+
 /* LLDP related */
 #define SYSTEM_OTHER_CONFIG_MAP_LLDP_ENABLE               "lldp_enable"
 #define SYSTEM_OTHER_CONFIG_MAP_LLDP_ENABLE_DEFAULT       false
