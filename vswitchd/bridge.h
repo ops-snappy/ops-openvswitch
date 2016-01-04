@@ -50,6 +50,18 @@ void bridge_get_memory_usage(struct simap *usage);
 
 #ifdef OPS
 void wait_for_config_complete(void);
+
+struct ofproto_class;
+
+extern unsigned int idl_seqno;
+extern struct ovsdb_idl *idl;
+const struct ofproto_class *get_bridge_provider_ofproto_class(void);
+struct ofproto *get_bridge_ofproto(struct bridge *bridge);
+struct port* global_port_lookup(const char *name);
+
+/* Flags use to track special reconfigure events */
+extern bool switchd_restarted;
+extern bool ovsdb_reconnected;
 #endif
 
 #endif /* bridge.h */

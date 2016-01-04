@@ -5817,11 +5817,18 @@ const struct ofproto_class ofproto_dpif_class = {
     group_get_stats,            /* group_get_stats */
     get_datapath_version,       /* get_datapath_version */
 #ifdef OPS
-    NULL,
-    NULL,
-    NULL,
-    NULL,
-    NULL,
-    NULL,
+    NULL,                       /* Add l3 host entry */
+    NULL,                       /* Delete l3 host entry */
+    NULL,                       /* Get l3 host entry hit bits */
+    NULL,                       /* l3 route action - install, update, delete */
+    NULL,                       /* enable/disable ECMP globally */
+    NULL,                       /* enable/disable ECMP hash configs */
+    NULL,                       /* ops_cls_apply */
+    NULL,                       /* ops_cls_remove */
+    NULL,                       /* ops_cls_replace */
+    NULL,                       /* ops_cls_list_update */
+    NULL,                       /* ops_cls_statistics_get */
+    NULL,                       /* ops_cls_statistics_clear */
+    NULL                        /* ops_cls_statistics_clear_all */
 #endif
 };

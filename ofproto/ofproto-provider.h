@@ -50,6 +50,7 @@
 #include "shash.h"
 #include "simap.h"
 #include "timeval.h"
+#include "vswitchd/plugins/ops-classifier/include/ofproto-ops-classifier.h"
 
 struct match;
 struct ofputil_flow_mod;
@@ -1810,6 +1811,19 @@ struct ofproto_class {
     /* Enable/Disable ECMP hash config */
     int (*l3_ecmp_hash_set)(const struct ofproto *ofproto, unsigned int hash,
                             bool enable);
+
+/* ## ---------------------------------------------------------------- ## */
+/* ## Classifier List routines                                         ## */
+/* ## typedefs and descriptions can be found in:                       ## */
+/* ## vswitchd/plugins/ops-classifier/include/ofproto-ops-classifier.h ## */
+/* ## ---------------------------------------------------------------- ## */
+    ofproto_ops_cls_apply                ops_cls_apply;
+    ofproto_ops_cls_remove               ops_cls_remove;
+    ofproto_ops_cls_replace              ops_cls_replace;
+    ofproto_ops_cls_list_update          ops_cls_list_update;
+    ofproto_ops_cls_statistics_get       ops_cls_statistics_get;
+    ofproto_ops_cls_statistics_clear     ops_cls_statistics_clear;
+    ofproto_ops_cls_statistics_clear_all ops_cls_statistics_clear_all;
 #endif
 };
 

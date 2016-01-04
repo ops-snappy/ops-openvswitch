@@ -75,6 +75,7 @@
 #include "openswitch-idl.h"
 #include "openswitch-dflt.h"
 #include "reconfigure-blocks.h"
+#include "plugins/ops-classifier/include/ops-classifier.h"
 #endif
 
 VLOG_DEFINE_THIS_MODULE(bridge);
@@ -238,6 +239,8 @@ static struct ovsdb_idl_txn *daemonize_txn;
 /* Most recently processed IDL sequence number. */
 #ifdef OPS
 unsigned int idl_seqno;
+/* idl_monitor_seqno used to detect reconnection to ovsdb */
+static unsigned int idl_monitor_seqno;
 #else
 static unsigned int idl_seqno;
 #endif
@@ -283,6 +286,12 @@ static long long int stats_timer = LLONG_MIN;
  * This allows the rest of the code to catch up on important things like
  * forwarding packets. */
 #define OFP_PORT_ACTION_WINDOW 10
+
+#ifdef OPS
+/* Flags use to track special reconfigure events */
+bool switchd_restarted = false;
+bool ovsdb_reconnected = false;
+#endif
 
 static void add_del_bridges(const struct ovsrec_open_vswitch *);
 static void bridge_run__(void);
@@ -541,6 +550,13 @@ bridge_init(const char *remote)
     /* Create connection to database. */
     idl = ovsdb_idl_create(remote, &ovsrec_idl_class, true, true);
     idl_seqno = ovsdb_idl_get_seqno(idl);
+#ifdef OPS
+    /* Set flag to indicate that the next reconfigure() call is special */
+    switchd_restarted = true;
+
+    idl_monitor_seqno = ovsdb_idl_get_last_monitor_request_seqno(idl);
+#endif
+
     ovsdb_idl_set_lock(idl, "ovs_vswitchd");
     ovsdb_idl_verify_write_only(idl);
 
@@ -693,6 +709,7 @@ bridge_init(const char *remote)
     stp_init();
     rstp_init();
 #endif
+    ops_cls_init();
 }
 
 void
@@ -1083,6 +1100,9 @@ bridge_reconfigure(const struct ovsrec_open_vswitch *ovs_cfg)
         execute_reconfigure_block(&bridge_blk_params, BLK_RECONFIGURE_NEIGHBORS);
 
     }
+
+    /* Handle configuration changes to ACLs & P2ACLs */
+    ops_cls_reconfigure();
 #endif
 
 
@@ -3810,6 +3830,25 @@ bridge_run(void)
 #ifndef OPS
         idl_seqno = ovsdb_idl_get_seqno(idl);
 #endif
+
+// Must find new source of checking for reconnection after OVS upgrade
+#ifdef TODO_OVSDB_RECONNECTED
+#ifdef OPS
+        /* check if we've reconnected to ovsdb since the last time
+           we called bridge_reconfigure */
+        unsigned int monitor_seqno =
+            ovsdb_idl_get_last_monitor_request_seqno(idl);
+        if (idl_monitor_seqno != monitor_seqno) {
+            idl_monitor_seqno = monitor_seqno;
+
+            /* set flag used to track special reconfigure event */
+            ovsdb_reconnected = true;
+        }
+
+        /* assert that if switchd_restarted then ovsdb_reconnected */
+        ovs_assert(!switchd_restarted || ovsdb_reconnected);
+#endif
+#endif // TODO_OVSDB_RECONNECTED
         txn = ovsdb_idl_txn_create(idl);
 
         bridge_reconfigure(cfg ? cfg : &null_cfg);
@@ -3818,6 +3857,10 @@ bridge_run(void)
         /* Update seqno after bridge_reconfigure, to access earlier
          * seqno for comparision inside bridge_reconfigure */
         idl_seqno = ovsdb_idl_get_seqno(idl);
+
+        /* clear flags used to track special reconfigure events */
+        switchd_restarted = false;
+        ovsdb_reconnected = false;
 #endif
 
         if (cfg) {
@@ -6551,4 +6594,61 @@ vrf_l3_ecmp_hash_set(struct vrf *vrf, unsigned int hash, bool enable)
 {
     return ofproto_l3_ecmp_hash_set(vrf->up->ofproto, hash, enable);
 }
+
+
+const struct ofproto_class *
+get_bridge_provider_ofproto_class(void)
+{
+  /* Some routines need access to the provider ofproto_class
+   * independent of any particular instance of ofproto that can be
+   * found in bridge->ofproto.
+   * Since openswitch will only ever have one provider for all bridges,
+   * the first time we need the provider class, we just extract it
+   * from the first bridge we can find that has one. We remember it and
+   * return it for all subsequent requests without any additional work.
+   */
+  static const struct ofproto_class *ofproto_class;
+  struct bridge *br;
+  struct shash_node *node OVS_UNUSED;
+
+  if (!ofproto_class) {
+    HMAP_FOR_EACH (br, node, &all_bridges) {
+        if (br->ofproto) {
+            ofproto_class = br->ofproto->ofproto_class;
+            break;
+        }
+    }
+    ovs_assert(ofproto_class);
+  }
+  return ofproto_class;
+}
+
+struct ofproto *
+get_bridge_ofproto(struct bridge *bridge)
+{
+    return bridge->ofproto;
+}
+
+struct port*
+global_port_lookup(const char *name)
+{
+    struct bridge *br, *next_br OVS_UNUSED;
+    struct vrf    *vrf,*next_vrf OVS_UNUSED;
+    struct port *port;
+
+    HMAP_FOR_EACH_SAFE (vrf, next_vrf, node, &all_vrfs) {
+        port = port_lookup(vrf->up, name);
+        if (port) {
+            return port;
+        }
+    }
+    HMAP_FOR_EACH_SAFE (br, next_br, node, &all_bridges) {
+        port = port_lookup(br, name);
+        if (port) {
+            return port;
+        }
+    }
+    return NULL;
+}
+
 #endif
