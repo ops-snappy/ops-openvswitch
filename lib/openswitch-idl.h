@@ -134,6 +134,7 @@ enum ovsrec_interface_pm_info_power_mode_e {
 
 #define INTERFACE_OTHER_CONFIG_MAP_LACP_PORT_ID                 "lacp-port-id"
 #define INTERFACE_OTHER_CONFIG_MAP_LACP_PORT_PRIORITY           "lacp-port-priority"
+#define INTERFACE_OTHER_CONFIG_MAP_LACP_AGGREGATION_KEY         "lacp-aggregation-key"
 
 #define INTERFACE_USER_CONFIG_MAP_ADMIN                         "admin"
 
@@ -419,6 +420,8 @@ enum ovsrec_port_config_admin_e {
 
 /************************* OPEN vSWITCH TABLE  ***************************/
 
+#define SYSTEM_OTHER_CONFIG_MAP_CLI_SESSION_TIMEOUT       "cli_session_timeout"
+
 /* LLDP related */
 #define SYSTEM_OTHER_CONFIG_MAP_LLDP_ENABLE               "lldp_enable"
 #define SYSTEM_OTHER_CONFIG_MAP_LLDP_ENABLE_DEFAULT       false
@@ -432,6 +435,11 @@ enum ovsrec_port_config_admin_e {
 #define SYSTEM_OTHER_CONFIG_MAP_LLDP_HOLD_DEFAULT         4
 #define SYSTEM_OTHER_CONFIG_MAP_LLDP_HOLD_MIN             2
 #define SYSTEM_OTHER_CONFIG_MAP_LLDP_HOLD_MAX             10
+
+#define SYSTEM_OTHER_CONFIG_MAP_LLDP_REINIT               "lldp_reinit"
+#define SYSTEM_OTHER_CONFIG_MAP_LLDP_REINIT_DEFAULT       2
+#define SYSTEM_OTHER_CONFIG_MAP_LLDP_REINIT_MIN           1
+#define SYSTEM_OTHER_CONFIG_MAP_LLDP_REINIT_MAX           10
 
 #define SYSTEM_OTHER_CONFIG_MAP_LLDP_MGMT_ADDR            "lldp_mgmt_addr"
 
@@ -465,6 +473,9 @@ enum ovsrec_port_config_admin_e {
                                                             "ascending"
 #define SYSTEM_OTHER_CONFIG_MAP_INTERNAL_VLAN_POLICY_DESCENDING        \
                                                             "descending"
+/*Source interface selection parameters */
+#define SYSTEM_OTHER_CONFIG_MAP_TFTP_SOURCE          "tftp_source"
+#define SYSTEM_OTHER_CONFIG_MAP_PROTOCOLS_SOURCE     "protocols_source"
 
 /* lacp global configuration parameters */
 #define SYSTEM_LACP_CONFIG_MAP_LACP_SYSTEM_ID        "lacp-system-id"
