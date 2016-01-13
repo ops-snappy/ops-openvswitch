@@ -64,6 +64,8 @@ ovslibinclude_HEADERS = \
 	lib/rculist.h \
 	lib/rstp.h \
         lib/seq.h \
+	lib/sflow.h \
+	lib/sflow_api.h \
 	lib/simap.h \
 	lib/shash.h \
 	lib/smap.h \
