@@ -204,8 +204,14 @@ bond_mode_from_string(enum bond_mode *balance, const char *s)
     else if (!strcmp(s, bond_mode_to_string(BM_L2_SRC_DST_HASH))) {
         *balance = BM_L2_SRC_DST_HASH;
     }
+    else if (!strcmp(s, bond_mode_to_string(BM_L2VID_SRC_DST_HASH))) {
+        *balance = BM_L2VID_SRC_DST_HASH;
+    }
     else if (!strcmp(s, bond_mode_to_string(BM_L3_SRC_DST_HASH))) {
         *balance = BM_L3_SRC_DST_HASH;
+    }
+    else if (!strcmp(s, bond_mode_to_string(BM_L4_SRC_DST_HASH))) {
+        *balance = BM_L4_SRC_DST_HASH;
     }
 #endif
     else {
@@ -227,8 +233,12 @@ bond_mode_to_string(enum bond_mode balance) {
 #ifdef OPS
     case BM_L2_SRC_DST_HASH:
         return "l2-src-dst-hash";
+    case BM_L2VID_SRC_DST_HASH:
+        return "l2vid-src-dst-hash";
     case BM_L3_SRC_DST_HASH:
         return "l3-src-dst-hash";
+    case BM_L4_SRC_DST_HASH:
+        return "l4-src-dst-hash";
 #endif
     }
     OVS_NOT_REACHED();
@@ -851,7 +861,9 @@ bond_check_admissibility(struct bond *bond, const void *slave_,
 #ifdef OPS
         /* OPS doesn't use software based data path. So we will never reach
          * this code path. Making this change to avoid compiler warnings. */
+    case BM_L4_SRC_DST_HASH:
     case BM_L3_SRC_DST_HASH:
+    case BM_L2VID_SRC_DST_HASH:
     case BM_L2_SRC_DST_HASH:
         goto out;
 #endif
