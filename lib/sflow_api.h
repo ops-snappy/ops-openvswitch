@@ -11,7 +11,7 @@
 /* define SFLOW_DO_SOCKET to 1 if you want the agent
    to send the packets itself, otherwise set the sendFn
    callback in sfl_agent_init.*/
-/* #define SFLOW_DO_SOCKET */
+#define SFLOW_DO_SOCKET 1
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -107,6 +107,8 @@ typedef struct _SFLReceiver {
     /* private fields */
     SFLSampleCollector sampleCollector;
 #ifdef SFLOW_DO_SOCKET
+    int sockfd4;
+    int sockfd6;
     struct sockaddr_in receiver4;
     struct sockaddr_in6 receiver6;
 #endif

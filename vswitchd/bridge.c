@@ -530,7 +530,7 @@ bridge_init_ofproto(const struct ovsrec_open_vswitch *cfg)
     shash_destroy_free_data(&iface_hints);
     initialized = true;
 }
-
+
 /* Public functions. */
 
 /* Initializes the bridge module, configuring it to obtain its configuration
@@ -2247,6 +2247,8 @@ bridge_configure_sflow(struct bridge *br, int *sflow_bridge_number)
     struct ofproto_sflow_options oso;
 
     if (!cfg) {
+        VLOG_ERR("%s:%d, disable sflow config", __FUNCTION__, __LINE__);
+
         ofproto_set_sflow(br->ofproto, NULL);
         return;
     }
@@ -3409,7 +3411,7 @@ refresh_controller_status(void)
     ofproto_free_ofproto_controller_info(&info);
 }
 #endif
-
+
 /* Update interface and mirror statistics if necessary. */
 static void
 run_stats_update(void)
@@ -3825,7 +3827,7 @@ bridge_get_memory_usage(struct simap *usage)
     }
 }
 #ifndef OPS_TEMP
-
+
 /* QoS unixctl user interface functions. */
 
 struct qos_unixctl_show_cbdata {
@@ -3918,7 +3920,7 @@ qos_unixctl_show(struct unixctl_conn *conn, int argc OVS_UNUSED,
     ds_destroy(&ds);
 }
 #endif
-
+
 /* Bridge reconfiguration functions. */
 static void
 bridge_create(const struct ovsrec_bridge *br_cfg)
@@ -4663,7 +4665,7 @@ bridge_configure_dp_desc(struct bridge *br)
 }
 
 #ifdef OPS
-
+
 /* VLAN functions. */
 static struct vlan *
 vlan_lookup_by_name(const struct bridge *br, const char *name)
@@ -4853,7 +4855,7 @@ bridge_configure_vlans(struct bridge *br)
 }
 #endif
 
-
+
 /* Port functions. */
 
 static struct port *
@@ -5128,7 +5130,7 @@ port_is_synthetic(const struct port *port)
     return ovsdb_idl_row_is_synthetic(&port->cfg->header_);
 }
 #endif
-
+
 /* Interface functions. */
 
 static bool
@@ -5515,7 +5517,7 @@ iface_pick_ofport(const struct ovsrec_interface *cfg OVS_UNUSED)
 #endif
 }
 #ifndef OPS_TEMP
-
+
 /* Port mirroring. */
 
 static struct mirror *
@@ -5706,7 +5708,7 @@ mirror_configure(struct mirror *m)
 
     return true;
 }
-
+
 /* Linux VLAN device support (e.g. "eth0.10" for VLAN 10.)
  *
  * This is deprecated.  It is only for compatibility with broken device drivers
