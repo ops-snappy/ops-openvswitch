@@ -36,7 +36,9 @@ enum bond_mode {
 #ifdef OPS
     BM_AB,               /* Active Backup. */
     BM_L2_SRC_DST_HASH,  /* Layer 2 Src and Dest Mac Hash */
-    BM_L3_SRC_DST_HASH   /* Layer 3 Src and Dest IP Hash */
+    BM_L2VID_SRC_DST_HASH,  /* Layer 2 and VID Src and Dest Mac Hash */
+    BM_L3_SRC_DST_HASH,  /* Layer 3 Src and Dest IP Hash */
+    BM_L4_SRC_DST_HASH   /* Layer 4 Src and Dest IP Hash */
 #else
     BM_AB                /* Active Backup. */
 #endif
