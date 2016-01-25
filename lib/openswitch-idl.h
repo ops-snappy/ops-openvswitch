@@ -385,6 +385,8 @@ enum ovsrec_interface_hw_bond_config_enabled_e {
 
 #define PORT_OTHER_CONFIG_MAP_LACP_TIME                 "lacp-time"
 
+#define PORT_OTHER_CONFIG_LACP_FALLBACK                 "lacp-fallback"
+
 #define PORT_OTHER_CONFIG_LACP_TIME_SLOW                "slow"
 #define PORT_OTHER_CONFIG_LACP_TIME_FAST                "fast"
 
@@ -418,7 +420,10 @@ enum ovsrec_port_config_admin_e {
 #define VLAN_HW_CONFIG_MAP_ENABLE_TRUE                          "true"
 #define VLAN_INTERNAL_USAGE_L3PORT                              "l3port"
 
-/************************* OPEN vSWITCH TABLE  ***************************/
+/************************* System TABLE  ***************************/
+
+/* software_info column keys */
+#define SYSTEM_SOFTWARE_INFO_OS_NAME                      "os_name"
 
 #define SYSTEM_OTHER_CONFIG_MAP_CLI_SESSION_TIMEOUT       "cli_session_timeout"
 
