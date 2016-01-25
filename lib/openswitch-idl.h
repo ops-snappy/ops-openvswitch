@@ -565,6 +565,8 @@ enum ovsrec_port_config_admin_e {
 #define SYSTEM_MGMT_INTF_MAP_DNS_SERVER_2         "dns_server_2"
 #define SYSTEM_MGMT_INTF_MAP_HOSTNAME             "hostname"
 #define SYSTEM_MGMT_INTF_MAP_DHCP_HOSTNAME        "dhcp_hostname"
+#define SYSTEM_MGMT_INTF_MAP_DOMAIN_NAME          "domain_name"
+#define SYSTEM_MGMT_INTF_MAP_DHCP_DOMAIN_NAME     "dhcp_domain_name"
 
 /* buffer monitoring statistics config table (bufmon)*/
 #define BUFMON_CONFIG_MAP_ENABLED                               "enabled"
