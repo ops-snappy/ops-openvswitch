@@ -62,6 +62,7 @@ struct ovsdb_table {
      * ovsdb_row"s.  Each of the hmap_nodes in indexes[i] are at index 'i' at
      * the end of struct ovsdb_row, following the 'fields' member. */
     struct hmap *indexes;
+    bool pending_fetch;
 };
 
 struct ovsdb_table *ovsdb_table_create(struct ovsdb_table_schema *);

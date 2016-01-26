@@ -72,6 +72,15 @@ struct ovsdb_idl_arc {
     struct ovsdb_idl_row *dst;  /* Destination row. */
 };
 
+/* Keeps the information of fetch request for on-demand fetch columns. */
+struct ovsdb_idl_fetch_node {
+   struct hmap_node hmap_node;      /* To store this structure in hmaps */
+   struct shash columns;            /* Contains the columns requested */
+   struct ovsdb_idl_table *table;   /* Pointer to the requested table */
+   enum ovsdb_idl_fetch_type fetch_type; /* Type of the request: row, column
+                                            or table */
+};
+
 struct ovsdb_idl {
     const struct ovsdb_idl_class *class;
     struct jsonrpc_session *session;
@@ -91,6 +100,10 @@ struct ovsdb_idl {
     /* Transaction support. */
     struct ovsdb_idl_txn *txn;
     struct hmap outstanding_txns;
+
+    /* On-demand fetch. */
+    struct hmap pending_fetches; /* Contains the data of the on-going
+                                    fetch operations */
 };
 
 struct ovsdb_idl_txn {
@@ -133,6 +146,13 @@ static bool ovsdb_idl_process_update(struct ovsdb_idl_table *,
                                      const struct uuid *,
                                      const struct json *old,
                                      const struct json *new);
+static void ovsdb_idl_parse_fetch_reply(struct ovsdb_idl *,
+                                        struct hmap_node *,
+                                        const struct json *);
+static struct ovsdb_error *ovsdb_idl_parse_fetch_reply__(
+                                     struct ovsdb_idl *,
+                                     struct ovsdb_idl_fetch_node *,
+                                     const struct json *);
 static void ovsdb_idl_insert_row(struct ovsdb_idl_row *, const struct json *);
 static void ovsdb_idl_delete_row(struct ovsdb_idl_row *);
 static bool ovsdb_idl_modify_row(struct ovsdb_idl_row *, const struct json *);
@@ -160,6 +180,8 @@ static void ovsdb_idl_parse_lock_reply(struct ovsdb_idl *,
 static void ovsdb_idl_parse_lock_notify(struct ovsdb_idl *,
                                         const struct json *params,
                                         bool new_has_lock);
+static struct json *
+where_uuid_equals(const struct uuid *uuid);
 
 /* Creates and returns a connection to database 'remote', which should be in a
  * form acceptable to jsonrpc_session_open().  The connection will maintain an
@@ -222,6 +244,7 @@ ovsdb_idl_create(const char *remote, const struct ovsdb_idl_class *class,
     }
     idl->last_monitor_request_seqno = UINT_MAX;
     hmap_init(&idl->outstanding_txns);
+    hmap_init(&idl->pending_fetches);
 
     return idl;
 }
@@ -241,6 +264,7 @@ ovsdb_idl_destroy(struct ovsdb_idl *idl)
             struct ovsdb_idl_table *table = &idl->tables[i];
             shash_destroy(&table->columns);
             hmap_destroy(&table->rows);
+            shash_destroy(&table->column_pending_fetches);
             free(table->modes);
         }
         shash_destroy(&idl->table_by_name);
@@ -249,6 +273,7 @@ ovsdb_idl_destroy(struct ovsdb_idl *idl)
         free(idl->lock_name);
         json_destroy(idl->lock_request_id);
         hmap_destroy(&idl->outstanding_txns);
+        hmap_destroy(&idl->pending_fetches);
         free(idl);
     }
 }
@@ -296,6 +321,7 @@ void
 ovsdb_idl_run(struct ovsdb_idl *idl)
 {
     int i;
+    struct hmap_node *fetch_node;
 
     ovs_assert(!idl->txn);
     jsonrpc_session_run(idl->session);
@@ -326,6 +352,13 @@ ovsdb_idl_run(struct ovsdb_idl *idl)
             && msg->params->u.array.elems[0]->type == JSON_NULL) {
             /* Database contents changed. */
             ovsdb_idl_parse_update(idl, msg->params->u.array.elems[1]);
+        } else if (msg->type == JSONRPC_REPLY
+                   && msg->result->type == JSON_ARRAY
+                   && (fetch_node = hmap_first_with_hash(
+                                        &idl->pending_fetches,
+                                        json_hash(msg->id, 0))) != NULL) {
+            /* On-demand fetch reply received. */
+            ovsdb_idl_parse_fetch_reply(idl, fetch_node, msg->result->u.array.elems[0]);
         } else if (msg->type == JSONRPC_REPLY
                    && idl->monitor_request_id
                    && json_equal(idl->monitor_request_id, msg->id)) {
@@ -483,6 +516,21 @@ add_ref_table(struct ovsdb_idl *idl, const struct ovsdb_base_type *base)
                       idl->class->database, base->u.uuid.refTableName);
         }
     }
+}
+
+/*
+ * Turns on OVSDB_IDL_MANUAL_FETCH for 'column' in 'idl'. Columns in this mode
+ * are not synchronized automatically.
+ *
+ * In order to get its value from the database, it is necessary to explicity
+ * ask them from the server by calling one of this functions: ovsdb_idl_fetch_row,
+ * ovsdb_idl_fetch_column, ovsdb_idl_fetch_table.
+ */
+void
+ovsdb_idl_add_on_demand_column(struct ovsdb_idl *idl,
+                                  const struct ovsdb_idl_column *column)
+{
+    *ovsdb_idl_get_mode(idl, column) = OVSDB_IDL_ON_DEMAND;
 }
 
 /* Turns on OVSDB_IDL_MONITOR and OVSDB_IDL_ALERT for 'column' in 'idl'.  Also
@@ -687,6 +735,148 @@ ovsdb_idl_parse_update__(struct ovsdb_idl *idl,
 #endif
             }
         }
+    }
+
+    return NULL;
+}
+
+/* Processes an on-demand fetch request.
+ * 'pending_node' is a pointer to the request associated to the 'fetch_reply'.
+ * This function changes the IDL seqno.
+ */
+static void
+ovsdb_idl_parse_fetch_reply(struct ovsdb_idl *idl,
+                            struct hmap_node *pending_node,
+                            const struct json *fetch_reply)
+{
+
+    struct ovsdb_error *error = NULL;
+    struct ovsdb_idl_fetch_node *fetch_node;
+    /* Retrive the fetch node from the pending fetch hash */
+    fetch_node = CONTAINER_OF(pending_node, struct ovsdb_idl_fetch_node,
+            hmap_node);
+
+    if (fetch_reply->type != JSON_OBJECT) {
+        error = ovsdb_syntax_error(fetch_reply, NULL,
+                "<fetch_reply> is not an object");
+    } else {
+        error = ovsdb_idl_parse_fetch_reply__(idl, fetch_node, fetch_reply);
+    }
+
+    hmap_remove(&idl->pending_fetches, pending_node);
+    shash_destroy(&fetch_node->columns);
+    free(pending_node);
+
+    if (error) {
+        if (!VLOG_DROP_WARN(&syntax_rl)) {
+            char *s = ovsdb_error_to_string(error);
+            VLOG_WARN_RL(&syntax_rl, "%s", s);
+            free(s);
+        }
+        ovsdb_error_destroy(error);
+        return;
+    }
+
+    idl->change_seqno++;
+}
+
+/* Parses the JSON reply and updates the local replica.
+ * It clears the pending fetch flag of the row, column, or table fetched.
+ */
+static struct ovsdb_error *
+ovsdb_idl_parse_fetch_reply__(struct ovsdb_idl *idl,
+                              struct ovsdb_idl_fetch_node *fetch_node,
+                              const struct json* fetch_reply)
+{
+    struct uuid uuid;
+    const struct json_array *array;
+    const struct json *uuid_array;
+    const struct json *column_value;
+    struct ovsdb_datum column_data;
+    struct ovsdb_idl_row *row;
+    struct ovsdb_idl_column *column;
+    struct shash_node *shash_node;
+    struct ovsdb_idl_table *table = fetch_node->table;
+
+    shash_node = shash_first(&fetch_node->columns);
+
+    if (!shash_node) {
+        return ovsdb_error(NULL,
+               "Missing column information for processing reply");
+    }
+
+    column = shash_node->data;
+
+    if (fetch_reply->type != JSON_OBJECT) {
+        return ovsdb_syntax_error(fetch_reply, NULL,
+               "<fetch_reply> is not an object");
+    }
+
+    /* Parse the json reply and get the UUID and value of the fetched column */
+    array = json_array(shash_find_data(json_object(fetch_reply), "rows"));
+
+    struct json_array *rows_array = json_array(shash_find_data(json_object(fetch_reply), "rows"));
+    for (int i = 0; i < rows_array->n; ++i) {
+        /* Read the uuid of the fetched row */
+        uuid_array = shash_find_data(json_object(rows_array->elems[i]), "_uuid");
+        if (!uuid_array || uuid_array->type != JSON_ARRAY) {
+            return ovsdb_syntax_error(fetch_reply, NULL,
+                    "Fetch reply for table %s does not include "
+                    "the UUID of the row", table->class->name);
+        }
+
+        array = json_array(uuid_array);
+        if (array->n != 2 || array->elems[1]->type != JSON_STRING
+                || !uuid_from_string(&uuid, array->elems[1]->u.string)) {
+            return ovsdb_syntax_error(fetch_reply, NULL,
+                    "Fetch reply for table %s contains bad UUID", table->class->name);
+        }
+
+        row = CONST_CAST(struct ovsdb_idl_row *,
+                ovsdb_idl_get_row_for_uuid(idl, fetch_node->table->class,
+                    &uuid));
+
+        SHASH_FOR_EACH(shash_node, &fetch_node->columns) {
+            column = shash_node->data;
+            /* Read the fetched value */
+            column_value = shash_find_data(json_object(rows_array->elems[i]),
+                    column->name);
+            if (!column_value) {
+                return ovsdb_syntax_error(fetch_reply, NULL,
+                        "Fetch reply for table %s does not include "
+                        "the requested table value", table->class->name);
+            }
+
+            if (ovsdb_datum_from_json(&column_data, &column->type,
+                        column_value, NULL) != NULL) {
+                return ovsdb_syntax_error(fetch_reply, NULL,
+                        "Fetch reply for column %s contains bad column value",
+                        column->name);
+            }
+
+            /* Update the row */
+            unsigned int column_idx = column - table->class->columns;
+            struct ovsdb_datum *old = &row->old[column_idx];
+
+            if (!ovsdb_datum_equals(old, &column_data, &column->type)) {
+                column->parse(row, &column_data);
+                ovsdb_datum_swap(old, &column_data);
+            }
+
+            ovsdb_datum_destroy(&column_data, &column->type);
+            if (fetch_node->fetch_type == OVSDB_IDL_ROW_FETCH) {
+                row->pending_fetches--;
+            }
+        }
+    }
+
+    if (fetch_node->fetch_type == OVSDB_IDL_COLUMN_FETCH) {
+        shash_find_and_delete(&table->column_pending_fetches, column->name);
+    }
+
+
+    if (fetch_node->fetch_type == OVSDB_IDL_TABLE_FETCH) {
+        table->pending_fetch = false;
     }
 
     return NULL;
@@ -1231,6 +1421,257 @@ ovsdb_idl_get(const struct ovsdb_idl_row *row,
 
     return ovsdb_idl_read(row, column);
 }
+
+/* Return true if any column of 'row' has a pending fetch operation.
+ */
+bool
+ovsdb_idl_is_row_fetch_pending(const struct ovsdb_idl_row *row)
+{
+    return row->pending_fetches > 0;
+}
+
+/* Return true if 'column' has a pending fetch operation
+ */
+bool
+ovsdb_idl_is_column_fetch_pending(struct ovsdb_idl *idl,
+                                  const struct ovsdb_idl_table_class *tc,
+                                  const struct ovsdb_idl_column *column) {
+    struct shash_node *shash_node;
+    struct ovsdb_idl_table *table;
+    shash_node = shash_find(&idl->table_by_name, tc->name);
+    table = shash_node->data;
+
+    return shash_find(&table->column_pending_fetches, column->name) != NULL;
+}
+
+/* Return true if 'table' has a pending fetch operation
+ */
+bool
+ovsdb_idl_is_table_fetch_pending(struct ovsdb_idl *idl,
+                                 const struct ovsdb_idl_table_class *tc) {
+    struct shash_node *shash_node;
+    struct ovsdb_idl_table *table;
+    shash_node = shash_find(&idl->table_by_name, tc->name);
+    table = shash_node->data;
+
+    return table->pending_fetch;
+}
+
+/* This function fetches the value of 'column' for the especified 'row'.
+ *
+ * After calling this function, the IDL requests the required value to the
+ * ovsdb server and updates it in the local replica.
+ *
+ * The function ovsdb_idl_is_row_fetch_pending can be used to verify if the
+ * fetch request has been processed.
+ */
+void
+ovsdb_idl_fetch_row(struct ovsdb_idl *idl,
+                    struct ovsdb_idl_row *row,
+                    const struct ovsdb_idl_column *column)
+{
+    struct json *request;
+    struct json *op;
+    struct json *columns;
+    struct json *fetch_id;
+    int status;
+    struct ovsdb_idl_fetch_node *fetch_node;
+
+    if (!(row->table->modes[column - row->table->class->columns] &
+          OVSDB_IDL_ON_DEMAND)) {
+        VLOG_WARN_RL(&syntax_rl,
+                "Error attempting to fetch a monitored column");
+        return;
+    }
+
+    request = json_array_create_1(
+            json_string_create(idl->class->database));
+    op = json_object_create();
+    json_object_put_string(op, "op", "select");
+    json_object_put_string(op, "table", row->table->class->name);
+    json_object_put(op, "where", where_uuid_equals(&row->uuid));
+    columns = json_array_create_2(json_string_create("_uuid"),
+                                  json_string_create(column->name));
+    json_object_put(op, "columns", columns);
+
+    json_array_add(request, op);
+    status = jsonrpc_session_send(idl->session,
+                jsonrpc_create_request("transact", request, &fetch_id));
+
+    if (status) {
+        VLOG_WARN_RL(&syntax_rl,
+                "Error while sending row fetch request (%d)", status);
+
+        json_destroy(fetch_id);
+        return;
+    }
+
+    fetch_node = xmalloc(sizeof *fetch_node);
+    shash_init(&fetch_node->columns);
+    shash_add_assert(&fetch_node->columns, column->name,
+                     CONST_CAST(struct ovsdb_idl_column *, column));
+
+    fetch_node->table = row->table;
+    fetch_node->fetch_type = OVSDB_IDL_ROW_FETCH;
+
+    hmap_insert(&idl->pending_fetches, &fetch_node->hmap_node,
+                json_hash(fetch_id, 0));
+
+    json_destroy(fetch_id);
+    row->pending_fetches++;
+}
+
+/* This function fetches the value 'column' for all the rows in the table.
+ *
+ * After calling this function, the IDL requests the required values to the
+ * ovsdb server and updates it in the local replica.
+ *
+ * The function ovsdb_idl_is_column_fetch_pending can be used to verify if the
+ * fetch request has been processed.
+ */
+void
+ovsdb_idl_fetch_column(struct ovsdb_idl *idl,
+                       const struct ovsdb_idl_table_class *table_class,
+                       struct ovsdb_idl_column *column)
+{
+    struct json *request;
+    struct json *op;
+    struct json *columns;
+    struct json *fetch_id;
+    int status;
+    struct ovsdb_idl_fetch_node *fetch_node;
+    struct ovsdb_idl_table *table;
+    struct shash_node *shash_node;
+
+    shash_node = shash_find(&idl->table_by_name, table_class->name);
+
+    if (!shash_node) {
+        VLOG_WARN_RL(&syntax_rl, "error attempting to fetch an unknown table");
+        return;
+    }
+
+    table = shash_node->data;
+
+    if (!(table->modes[column - table_class->columns] &
+          OVSDB_IDL_ON_DEMAND)) {
+        VLOG_WARN_RL(&syntax_rl,
+                "error attempting to fetch a monitored column");
+        return;
+    }
+
+    request = json_array_create_1(
+            json_string_create(idl->class->database));
+    op = json_object_create();
+    json_object_put_string(op, "op", "select");
+    json_object_put_string(op, "table", table_class->name);
+    json_object_put(op, "where", json_array_create_empty());
+    columns = json_array_create_2(json_string_create("_uuid"),
+                                  json_string_create(column->name));
+    json_object_put(op, "columns", columns);
+
+    json_array_add(request, op);
+    status = jsonrpc_session_send(idl->session,
+                jsonrpc_create_request("transact", request, &fetch_id));
+
+    if (status) {
+        VLOG_WARN_RL(&syntax_rl,
+                "Error while sending column fetch request (%d)", status);
+
+        json_destroy(fetch_id);
+        return;
+    }
+
+    fetch_node = xmalloc(sizeof *fetch_node);
+    shash_init(&fetch_node->columns);
+    shash_add_assert(&fetch_node->columns, column->name,
+                     CONST_CAST(struct ovsdb_idl_column *, column));
+    fetch_node->table = table;
+    fetch_node->fetch_type = OVSDB_IDL_COLUMN_FETCH;
+
+    hmap_insert(&idl->pending_fetches, &fetch_node->hmap_node,
+                json_hash(fetch_id, 0));
+
+    json_destroy(fetch_id);
+    shash_add(&table->column_pending_fetches, column->name, NULL);
+}
+
+/* This function fetches the value of all the on-demand columns in 'table'
+ *
+ * After calling this function, the IDL requests the required values to the
+ * ovsdb server and updates it in the local replica.
+ *
+ * The function ovsdb_idl_is_table_fetch_pending can be used to verify if the
+ * fetch request has been processed.
+ */
+void
+ovsdb_idl_fetch_table(struct ovsdb_idl *idl,
+                      struct ovsdb_idl_table_class *table_class)
+{
+    struct json *request;
+    struct json *op;
+    struct json *columns;
+    struct json *fetch_id;
+    int status;
+    struct ovsdb_idl_column *column;
+    struct ovsdb_idl_fetch_node *fetch_node;
+    struct ovsdb_idl_table *table;
+    struct shash_node *shash_node;
+
+    shash_node = shash_find(&idl->table_by_name, table_class->name);
+
+    if (!shash_node) {
+        VLOG_WARN_RL(&syntax_rl, "error attempting to fetch an unknown table");
+        return;
+    }
+
+    table = shash_node->data;
+
+    /* Create the fetch node and store the columns*/
+    fetch_node = xmalloc(sizeof *fetch_node);
+    shash_init(&fetch_node->columns);
+    fetch_node->table = table;
+    fetch_node->fetch_type = OVSDB_IDL_TABLE_FETCH;
+
+
+    request = json_array_create_1(json_string_create(idl->class->database));
+
+    op = json_object_create();
+    json_object_put_string(op, "op", "select");
+    json_object_put_string(op, "table", table->class->name);
+    json_object_put(op, "where", json_array_create_empty());
+
+    columns = json_array_create_1(json_string_create("_uuid"));
+
+    /* Add the on-demand columns to the request */
+    SHASH_FOR_EACH(shash_node, &table->columns) {
+        column = (struct ovsdb_idl_column*)shash_node->data;
+        if ((table->modes[column - table->class->columns] &
+                    OVSDB_IDL_ON_DEMAND)) {
+            json_array_add(columns, json_string_create(column->name));
+            shash_add(&fetch_node->columns, column->name, column);
+        }
+    }
+
+    json_object_put(op, "columns", columns);
+
+    json_array_add(request, op);
+    status = jsonrpc_session_send(idl->session,
+                 jsonrpc_create_request("transact", request, &fetch_id));
+
+    if (status) {
+        VLOG_WARN_RL(&syntax_rl,
+                     "Error while sending column fetch request (%d)", status);
+        json_destroy(fetch_id);
+        return;
+    }
+
+    hmap_insert(&idl->pending_fetches, &fetch_node->hmap_node,
+                json_hash(fetch_id, 0));
+
+    json_destroy(fetch_id);
+    table->pending_fetch = true;
+}
+
 
 /* Returns true if the field represented by 'column' in 'row' may be modified,
  * false if it is immutable.
@@ -1937,8 +2378,9 @@ ovsdb_idl_txn_write__(const struct ovsdb_idl_row *row_,
 
     ovs_assert(row->new != NULL);
     ovs_assert(column_idx < class->n_columns);
-    ovs_assert(row->old == NULL ||
-               row->table->modes[column_idx] & OVSDB_IDL_MONITOR);
+    ovs_assert(row->old == NULL
+               || row->table->modes[column_idx] & OVSDB_IDL_MONITOR
+               || row->table->modes[column_idx] & OVSDB_IDL_ON_DEMAND);
 
     if (row->table->idl->verify_write_only && !write_only) {
         VLOG_ERR("Bug: Attempt to write to a read/write column (%s:%s) when"
