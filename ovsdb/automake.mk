@@ -20,6 +20,9 @@ MAN_ROOTS += ovsdb/ovsdb-client.1.in
 sbin_PROGRAMS += ovsdb/ovsdb-server
 ovsdb_ovsdb_server_SOURCES = ovsdb/ovsdb-server.c
 ovsdb_ovsdb_server_LDADD = lib/libovscommon.la ovsdb/libovsdb.la
+if USE_JEMALLOC
+ovsdb_ovsdb_server_LDADD += -ljemalloc
+endif
 # ovsdb-server.1
 man_MANS += ovsdb/ovsdb-server.1
 DISTCLEANFILES += ovsdb/ovsdb-server.1
