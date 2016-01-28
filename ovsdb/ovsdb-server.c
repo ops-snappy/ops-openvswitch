@@ -1,4 +1,5 @@
 /* Copyright (c) 2009, 2010, 2011, 2012, 2013, 2014 Nicira, Inc.
+ * Copyright (C) 2015, 2016 Hewlett-Packard Development Company, L.P.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -53,6 +54,7 @@
 #include "trigger.h"
 #include "util.h"
 #include "unixctl.h"
+#include "perf-counter.h"
 #include "openvswitch/vlog.h"
 
 VLOG_DEFINE_THIS_MODULE(ovsdb_server);
@@ -76,6 +78,8 @@ static bool bootstrap_ca_cert;
 static unixctl_cb_func ovsdb_server_exit;
 static unixctl_cb_func ovsdb_server_compact;
 static unixctl_cb_func ovsdb_server_reconnect;
+static unixctl_cb_func ovsdb_server_perf_counters_clear;
+static unixctl_cb_func ovsdb_server_perf_counters_show;
 
 struct server_config {
     struct sset *remotes;
@@ -211,13 +215,14 @@ main(int argc, char *argv[])
     char *error;
     int i;
 
-    proctitle_init(argc, argv);
+    ovs_cmdl_proctitle_init(argc, argv);
     set_program_name(argv[0]);
     service_start(&argc, &argv);
     fatal_ignore_sigpipe();
     process_init();
 
     parse_options(&argc, &argv, &remotes, &unixctl_path, &run_command);
+    daemon_become_new_user(false);
 
     /* Create and initialize 'config_tmpfile' as a temporary file to hold
      * ovsdb-server's most basic configuration, and then save our initial
@@ -245,7 +250,11 @@ main(int argc, char *argv[])
 
     save_config__(config_tmpfile, &remotes, &db_filenames);
 
+#ifdef OPS
     daemonize_start();
+#else
+    daemonize_start(false);
+#endif
 
     /* Load the saved config. */
     load_config(config_tmpfile, &remotes, &db_filenames);
@@ -254,6 +263,9 @@ main(int argc, char *argv[])
     shash_init(&all_dbs);
     server_config.all_dbs = &all_dbs;
     server_config.jsonrpc = jsonrpc;
+
+    perf_counters_init();
+
     SSET_FOR_EACH (db_filename, &db_filenames) {
         error = open_db(&server_config, db_filename);
         if (error) {
@@ -318,6 +330,10 @@ main(int argc, char *argv[])
                              ovsdb_server_remove_database, &server_config);
     unixctl_command_register("ovsdb-server/list-dbs", "", 0, 0,
                              ovsdb_server_list_databases, &all_dbs);
+    unixctl_command_register("ovsdb-server/perf-counters-show", "", 0, 0,
+                             ovsdb_server_perf_counters_show, NULL);
+    unixctl_command_register("ovsdb-server/perf-counters-clear", "", 0, 0,
+                             ovsdb_server_perf_counters_clear, NULL);
 
     main_loop(jsonrpc, &all_dbs, unixctl, &remotes, run_process, &exiting);
 
@@ -327,6 +343,7 @@ main(int argc, char *argv[])
         close_db(db);
         shash_delete(&all_dbs, node);
     }
+    shash_destroy(&all_dbs);
     sset_destroy(&remotes);
     sset_destroy(&db_filenames);
     unixctl_server_destroy(unixctl);
@@ -338,7 +355,7 @@ main(int argc, char *argv[])
                       run_command, process_status_msg(status));
         }
     }
-
+    perf_counters_destroy();
     service_stop();
     return 0;
 }
@@ -1022,6 +1039,26 @@ ovsdb_server_exit(struct unixctl_conn *conn, int argc OVS_UNUSED,
 }
 
 static void
+ovsdb_server_perf_counters_show(struct unixctl_conn *conn, int argc OVS_UNUSED,
+                                const char *argv[] OVS_UNUSED,
+                                void *arg_ OVS_UNUSED)
+{
+    char *s = perf_counters_to_string();
+
+    unixctl_command_reply(conn, s);
+    free(s);
+}
+
+static void
+ovsdb_server_perf_counters_clear(struct unixctl_conn *conn, int argc OVS_UNUSED,
+                                 const char *argv[] OVS_UNUSED,
+                                 void *arg_ OVS_UNUSED)
+{
+    perf_counters_clear();
+    unixctl_command_reply(conn, NULL);
+}
+
+static void
 ovsdb_server_compact(struct unixctl_conn *conn, int argc,
                      const char *argv[], void *dbs_)
 {
@@ -1223,6 +1260,7 @@ parse_options(int *argcp, char **argvp[],
         OPT_UNIXCTL,
         OPT_RUN,
         OPT_BOOTSTRAP_CA_CERT,
+        OPT_PEER_CA_CERT,
         VLOG_OPTION_ENUMS,
         DAEMON_OPTION_ENUMS
     };
@@ -1237,12 +1275,13 @@ parse_options(int *argcp, char **argvp[],
         DAEMON_LONG_OPTIONS,
         VLOG_LONG_OPTIONS,
         {"bootstrap-ca-cert", required_argument, NULL, OPT_BOOTSTRAP_CA_CERT},
+        {"peer-ca-cert", required_argument, NULL, OPT_PEER_CA_CERT},
         {"private-key", required_argument, NULL, 'p'},
         {"certificate", required_argument, NULL, 'c'},
         {"ca-cert",     required_argument, NULL, 'C'},
         {NULL, 0, NULL, 0},
     };
-    char *short_options = long_options_to_short_options(long_options);
+    char *short_options = ovs_cmdl_long_options_to_short_options(long_options);
     int argc = *argcp;
     char **argv = *argvp;
 
@@ -1294,6 +1333,10 @@ parse_options(int *argcp, char **argvp[],
         case OPT_BOOTSTRAP_CA_CERT:
             ca_cert_file = optarg;
             bootstrap_ca_cert = true;
+            break;
+
+        case OPT_PEER_CA_CERT:
+            stream_ssl_set_peer_ca_cert_file(optarg);
             break;
 
         case '?':
