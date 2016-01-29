@@ -8,7 +8,8 @@ if OPS
 ovspluginslibincludedir = $(includedir)/ovs
 ovspluginslibinclude_HEADERS = \
 	plugins/plugins.h \
-	plugins/plugin-extensions.h
+	plugins/plugin-extensions.h \
+	plugins/reconfigure-blocks.h
 endif
 
 lib_LTLIBRARIES += plugins/libplugins.la
@@ -25,7 +26,9 @@ plugins_libplugins_la_SOURCES = \
 	plugins/plugins_yaml.c \
 	plugins/plugins_yaml.h \
 	plugins/plugin-extensions.c \
-	plugins/plugin-extensions.h
+	plugins/plugin-extensions.h \
+	plugins/reconfigure-blocks.c \
+	plugins/reconfigure-blocks.h
 
 plugins_libplugins_la_CFLAGS = -DYAML_PATH=$(sysconfdir)/openswitch/platform
 
