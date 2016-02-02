@@ -264,7 +264,7 @@ ovsdb_idl_destroy(struct ovsdb_idl *idl)
             struct ovsdb_idl_table *table = &idl->tables[i];
             shash_destroy(&table->columns);
             hmap_destroy(&table->rows);
-            shash_destroy(&table->outstanding_col_fetcth_reqs);
+            shash_destroy(&table->outstanding_col_fetch_reqs);
             free(table->modes);
         }
         shash_destroy(&idl->table_by_name);
@@ -867,13 +867,13 @@ ovsdb_idl_parse_fetch_reply__(struct ovsdb_idl *idl,
 
             ovsdb_datum_destroy(&column_data, &column->type);
             if (fetch_node->fetch_type == OVSDB_IDL_ROW_FETCH) {
-                row->outstanding_fetcth_reqs--;
+                row->outstanding_fetch_reqs--;
             }
         }
     }
 
     if (fetch_node->fetch_type == OVSDB_IDL_COLUMN_FETCH) {
-        shash_find_and_delete(&table->outstanding_col_fetcth_reqs, column->name);
+        shash_find_and_delete(&table->outstanding_col_fetch_reqs, column->name);
     }
 
 
@@ -1429,7 +1429,7 @@ ovsdb_idl_get(const struct ovsdb_idl_row *row,
 bool
 ovsdb_idl_is_row_fetch_pending(const struct ovsdb_idl_row *row)
 {
-    return row->outstanding_fetcth_reqs > 0;
+    return row->outstanding_fetch_reqs > 0;
 }
 
 /* Return true if 'column' has a pending fetch operation
@@ -1443,7 +1443,7 @@ ovsdb_idl_is_column_fetch_pending(struct ovsdb_idl *idl,
     shash_node = shash_find(&idl->table_by_name, tc->name);
     table = shash_node->data;
 
-    return shash_find(&table->outstanding_col_fetcth_reqs,
+    return shash_find(&table->outstanding_col_fetch_reqs,
                       column->name) != NULL;
 }
 
@@ -1521,7 +1521,7 @@ ovsdb_idl_fetch_row(struct ovsdb_idl *idl,
                 json_hash(fetch_id, 0));
 
     json_destroy(fetch_id);
-    row->outstanding_fetcth_reqs++;
+    row->outstanding_fetch_reqs++;
 }
 
 /* This function fetches the value 'column' for all the rows in the table.
@@ -1595,7 +1595,7 @@ ovsdb_idl_fetch_column(struct ovsdb_idl *idl,
                 json_hash(fetch_id, 0));
 
     json_destroy(fetch_id);
-    shash_add(&table->outstanding_col_fetcth_reqs, column->name, NULL);
+    shash_add(&table->outstanding_col_fetch_reqs, column->name, NULL);
 }
 
 /* This function fetches the value of all the on-demand columns in 'table'

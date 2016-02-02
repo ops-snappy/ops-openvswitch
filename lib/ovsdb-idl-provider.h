@@ -42,7 +42,7 @@ struct ovsdb_idl_row {
     unsigned int modify_seqno;
 #endif
 
-    size_t outstanding_fetcth_reqs; /* Number of on-demand columns in this row
+    size_t outstanding_fetch_reqs; /* Number of on-demand columns in this row
                                        with on-going fetch operations */
 };
 
@@ -80,7 +80,7 @@ struct ovsdb_idl_table {
 #endif
     bool has_pending_fetch;  /* Indicates if the table has a pending fetch
                                 operation */
-    struct shash outstanding_col_fetcth_reqs; /* Contains the name of the
+    struct shash outstanding_col_fetch_reqs; /* Contains the name of the
                                                  columns with on-demand fetch
                                                  request pending. It does not
                                                  keep anything as data, just
