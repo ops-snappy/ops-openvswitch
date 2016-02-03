@@ -81,18 +81,15 @@ static void reset(SFLReceiver *receiver)
 static void initSocket(SFLReceiver *receiver)
 {
     if (receiver->sFlowRcvrAddress.type == 0) {
-        sfl_agent_error(receiver->agent, "receiver", "receiver addr not set.");
         return;
     }
 
     if(receiver->sFlowRcvrAddress.type == SFLADDRESSTYPE_IP_V6) {
-        sfl_agent_error(receiver->agent, "receiver", "Init in6_addr of new reciever");
         struct sockaddr_in6 *sa6 = &receiver->receiver6;
         sa6->sin6_port = htons((u_int16_t)receiver->sFlowRcvrPort);
         sa6->sin6_family = AF_INET6;
         memcpy(sa6->sin6_addr.s6_addr, receiver->sFlowRcvrAddress.address.ip_v6.addr, 16);
     } else {
-        sfl_agent_error(receiver->agent, "receiver", "Init in_addr of new reciever");
         struct sockaddr_in *sa4 = &receiver->receiver4;
         sa4->sin_port = htons((u_int16_t)receiver->sFlowRcvrPort);
         sa4->sin_family = AF_INET;
@@ -108,7 +105,6 @@ static void initSocket(SFLReceiver *receiver)
 static void openSocket(SFLReceiver *receiver)
 {
     if (receiver->sFlowRcvrAddress.type == 0) {
-        sfl_agent_error(receiver->agent, "receiver", "receiver addr not set.");
         return;
     }
 
@@ -548,7 +544,6 @@ int sfl_receiver_writeFlowSample(SFLReceiver *receiver, SFL_FLOW_SAMPLE_TYPE *fs
     // if the sample pkt is full enough so that this sample might put
     // it over the limit, then we should send it now before going on.
     if((receiver->sampleCollector.pktlen + packedSize) >= receiver->sFlowRcvrMaximumDatagramSize) {
-        sfl_agent_error(receiver->agent, "receiver", "Buffer full. Send data to Collector.");
         sendSample(receiver);
     }
 

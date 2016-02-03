@@ -59,7 +59,6 @@ static void reset(SFLSampler *sampler)
 u_int32_t sfl_sampler_get_sFlowFsReceiver(SFLSampler *sampler) {
     return sampler->sFlowFsReceiver;
 }
-
 void sfl_sampler_set_sFlowFsReceiver(SFLSampler *sampler, u_int32_t sFlowFsReceiver)
 {
     sampler->sFlowFsReceiver = sFlowFsReceiver;
@@ -67,11 +66,8 @@ void sfl_sampler_set_sFlowFsReceiver(SFLSampler *sampler, u_int32_t sFlowFsRecei
     else {
 	/* retrieve and cache a direct pointer to my receiver */
 	sampler->myReceiver = sfl_agent_getReceiver(sampler->agent, sampler->sFlowFsReceiver);
-    if (sampler->myReceiver) sfl_agent_error(sampler->agent, "sampler", "myReceiver set");
-    else  sfl_agent_error(sampler->agent, "sampler", "myReceiver NULL");
     }
 }
-
 u_int32_t sfl_sampler_get_sFlowFsPacketSamplingRate(SFLSampler *sampler) {
     return sampler->sFlowFsPacketSamplingRate;
 }
