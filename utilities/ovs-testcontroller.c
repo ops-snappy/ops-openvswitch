@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008, 2009, 2010, 2011, 2012, 2013 Nicira, Inc.
+ * Copyright (c) 2008, 2009, 2010, 2011, 2012, 2013, 2015 Nicira, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -103,10 +103,12 @@ main(int argc, char *argv[])
     int retval;
     int i;
 
-    proctitle_init(argc, argv);
+    ovs_cmdl_proctitle_init(argc, argv);
     set_program_name(argv[0]);
     parse_options(argc, argv);
     fatal_ignore_sigpipe();
+
+    daemon_become_new_user(false);
 
     if (argc - optind < 1) {
         ovs_fatal(0, "at least one vconn argument required; "
@@ -145,7 +147,7 @@ main(int argc, char *argv[])
         ovs_fatal(0, "no active or passive switch connections");
     }
 
-    daemonize_start();
+    daemonize_start(false);
 
     retval = unixctl_server_create(unixctl_path, &unixctl);
     if (retval) {
@@ -277,7 +279,7 @@ parse_options(int argc, char *argv[])
         {"peer-ca-cert", required_argument, NULL, OPT_PEER_CA_CERT},
         {NULL, 0, NULL, 0},
     };
-    char *short_options = long_options_to_short_options(long_options);
+    char *short_options = ovs_cmdl_long_options_to_short_options(long_options);
 
     for (;;) {
         int indexptr;

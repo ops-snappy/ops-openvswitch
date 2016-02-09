@@ -745,11 +745,11 @@ rconn_send__(struct rconn *rc, struct ofpbuf *b,
         copy_to_monitor(rc, b);
 
         if (counter) {
-            rconn_packet_counter_inc(counter, ofpbuf_size(b));
+            rconn_packet_counter_inc(counter, b->size);
         }
 
         /* Reuse 'frame' as a private pointer while 'b' is in txq. */
-        ofpbuf_set_frame(b, counter);
+        b->header = counter;
 
         list_push_back(&rc->txq, &b->list_node);
 
@@ -1113,19 +1113,19 @@ try_send(struct rconn *rc)
     OVS_REQUIRES(rc->mutex)
 {
     struct ofpbuf *msg = ofpbuf_from_list(rc->txq.next);
-    unsigned int n_bytes = ofpbuf_size(msg);
-    struct rconn_packet_counter *counter = msg->frame;
+    unsigned int n_bytes = msg->size;
+    struct rconn_packet_counter *counter = msg->header;
     int retval;
 
     /* Eagerly remove 'msg' from the txq.  We can't remove it from the list
      * after sending, if sending is successful, because it is then owned by the
      * vconn, which might have freed it already. */
     list_remove(&msg->list_node);
-    ofpbuf_set_frame(msg, NULL);
+    msg->header = NULL;
 
     retval = vconn_send(rc->vconn, msg);
     if (retval) {
-        ofpbuf_set_frame(msg, counter);
+        msg->header = counter;
         list_push_front(&rc->txq, &msg->list_node);
         if (retval != EAGAIN) {
             report_error(rc, retval);
@@ -1226,9 +1226,9 @@ flush_queue(struct rconn *rc)
     }
     while (!list_is_empty(&rc->txq)) {
         struct ofpbuf *b = ofpbuf_from_list(list_pop_front(&rc->txq));
-        struct rconn_packet_counter *counter = b->frame;
+        struct rconn_packet_counter *counter = b->header;
         if (counter) {
-            rconn_packet_counter_dec(counter, ofpbuf_size(b));
+            rconn_packet_counter_dec(counter, b->size);
         }
         COVERAGE_INC(rconn_discarded);
         ofpbuf_delete(b);
@@ -1267,7 +1267,7 @@ static void
 state_transition(struct rconn *rc, enum state state)
     OVS_REQUIRES(rc->mutex)
 {
-    rc->seqno += (rc->state == S_ACTIVE) != (state == S_ACTIVE);
+    rc->seqno += is_connected_state(rc->state) != is_connected_state(state);
     if (is_connected_state(state) && !is_connected_state(rc->state)) {
         rc->probably_admitted = false;
     }
@@ -1338,7 +1338,7 @@ is_admitted_msg(const struct ofpbuf *b)
     enum ofptype type;
     enum ofperr error;
 
-    error = ofptype_decode(&type, ofpbuf_data(b));
+    error = ofptype_decode(&type, b->data);
     if (error) {
         return false;
     }
@@ -1365,6 +1365,8 @@ is_admitted_msg(const struct ofpbuf *b)
     case OFPTYPE_GROUP_FEATURES_STATS_REPLY:
     case OFPTYPE_TABLE_FEATURES_STATS_REQUEST:
     case OFPTYPE_TABLE_FEATURES_STATS_REPLY:
+    case OFPTYPE_TABLE_DESC_REQUEST:
+    case OFPTYPE_TABLE_DESC_REPLY:
         return false;
 
     case OFPTYPE_PACKET_IN:
@@ -1401,6 +1403,7 @@ is_admitted_msg(const struct ofpbuf *b)
     case OFPTYPE_ROLE_REQUEST:
     case OFPTYPE_ROLE_REPLY:
     case OFPTYPE_ROLE_STATUS:
+    case OFPTYPE_REQUESTFORWARD:
     case OFPTYPE_SET_FLOW_FORMAT:
     case OFPTYPE_FLOW_MOD_TABLE_ID:
     case OFPTYPE_SET_PACKET_IN_FORMAT:
@@ -1414,6 +1417,9 @@ is_admitted_msg(const struct ofpbuf *b)
     case OFPTYPE_FLOW_MONITOR_RESUMED:
     case OFPTYPE_BUNDLE_CONTROL:
     case OFPTYPE_BUNDLE_ADD_MESSAGE:
+    case OFPTYPE_NXT_TLV_TABLE_MOD:
+    case OFPTYPE_NXT_TLV_TABLE_REQUEST:
+    case OFPTYPE_NXT_TLV_TABLE_REPLY:
     default:
         return true;
     }

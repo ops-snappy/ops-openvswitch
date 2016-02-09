@@ -42,6 +42,8 @@ ovsdb/ovsdb-server.1: \
 	lib/service.man \
 	lib/ssl-bootstrap-syn.man \
 	lib/ssl-bootstrap.man \
+	lib/ssl-peer-ca-cert-syn.man \
+	lib/ssl-peer-ca-cert.man \
 	lib/ssl-syn.man \
 	lib/ssl.man \
 	lib/unixctl-syn.man \
@@ -62,6 +64,8 @@ lib/service-syn.man:
 lib/service.man:
 lib/ssl-bootstrap-syn.man:
 lib/ssl-bootstrap.man:
+lib/ssl-peer-ca-cert-syn.man:
+lib/ssl-peer-ca-cert.man:
 lib/ssl-syn.man:
 lib/ssl.man:
 lib/unixctl-syn.man:
@@ -213,6 +217,7 @@ utilities/ovs-vlan-bugs.man:
 utilities/ovs-vsctl.8: \
 	utilities/ovs-vsctl.8.in \
 	lib/common.man \
+	lib/db-ctl-base.man \
 	lib/ssl-bootstrap.man \
 	lib/ssl-peer-ca-cert.man \
 	lib/ssl.man \
@@ -226,6 +231,7 @@ utilities/ovs-vsctl.8: \
 	ovsdb/remote-passive.man
 utilities/ovs-vsctl.8.in:
 lib/common.man:
+lib/db-ctl-base.man:
 lib/ssl-bootstrap.man:
 lib/ssl-peer-ca-cert.man:
 lib/ssl.man:
@@ -272,28 +278,4 @@ ofproto/ofproto-dpif-unixctl.man:
 ofproto/ofproto-tnl-unixctl.man:
 ofproto/ofproto-unixctl.man:
 ovsdb/remote-active.man:
-ovsdb/remote-passive.man:
-
-vtep/vtep-ctl.8: \
-	vtep/vtep-ctl.8.in \
-	lib/common.man \
-	lib/ssl-bootstrap.man \
-	lib/ssl-peer-ca-cert.man \
-	lib/ssl.man \
-	lib/table.man \
-	lib/vlog.man \
-	ovsdb/remote-active.man \
-	ovsdb/remote-active.man \
-	ovsdb/remote-passive.man \
-	ovsdb/remote-passive.man
-vtep/vtep-ctl.8.in:
-lib/common.man:
-lib/ssl-bootstrap.man:
-lib/ssl-peer-ca-cert.man:
-lib/ssl.man:
-lib/table.man:
-lib/vlog.man:
-ovsdb/remote-active.man:
-ovsdb/remote-active.man:
-ovsdb/remote-passive.man:
 ovsdb/remote-passive.man:

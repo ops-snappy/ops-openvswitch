@@ -565,6 +565,8 @@ enum ovsrec_port_config_admin_e {
 #define SYSTEM_MGMT_INTF_MAP_DNS_SERVER_2         "dns_server_2"
 #define SYSTEM_MGMT_INTF_MAP_HOSTNAME             "hostname"
 #define SYSTEM_MGMT_INTF_MAP_DHCP_HOSTNAME        "dhcp_hostname"
+#define SYSTEM_MGMT_INTF_MAP_DOMAIN_NAME          "domain_name"
+#define SYSTEM_MGMT_INTF_MAP_DHCP_DOMAIN_NAME     "dhcp_domain_name"
 
 /* buffer monitoring statistics config table (bufmon)*/
 #define BUFMON_CONFIG_MAP_ENABLED                               "enabled"
@@ -584,4 +586,145 @@ enum ovsrec_port_config_admin_e {
 #define SYSTEM_ECMP_CONFIG_HASH_DST_PORT                  "hash_dstport_enabled"
 #define SYSTEM_ECMP_CONFIG_ENABLE_DEFAULT                 "true"
 
+/************************************************************************/
+/*  OSPF Related declarations */
+/************************************************************************/
+
+enum ospf_spf_key_types_e {
+    OSPF_SPF_DELAY,
+    OSPF_SPF_HOLD_TIME,
+    OSPF_SPF_MAX_WAIT,
+    OSPF_SPF_MAX
+};
+
+enum ospf_lsa_timer_config_types_e {
+    OSPF_LSA_ARRIVAL_INTERVAL,
+    OSPF_LSA_GROUP_PACING,
+    OSPF_LSA_MAX
+};
+
+
+#define OSPF_ROUTER_DISTANCE_MAX \
+                OSPF_ROUTER_DISTANCE_INTRA_AREA + 1
+
+enum ospf_area_statistics_e {
+    OSPF_AREA_STATISTICS_SPF_CALC,
+    OSPF_AREA_STATISTICS_ABR_COUNT,
+    OSPF_AREA_STATISTICS_ASBR_COUNT,
+    OSPF_AREA_STATISTICS_MAX
+};
+
+enum ovs_ospf_area_type_e {
+    OVS_OSPF_AREA_TYPE_DEFAULT,
+    OVS_OSPF_AREA_TYPE_STUB,
+    OVS_OSPF_AREA_TYPE_NSSA,
+    OVS_OSPF_AREA_TYPE_MAX
+};
+
+enum ospf_if_intervals_e {
+    OSPF_INTERVAL_TRANSMIT_DELAY,
+    OSPF_INTERVAL_RETRANSMIT_INTERVAL,
+    OSPF_INTERVAL_HELLO_INTERVAL,
+    OSPF_INTERVAL_DEAD_INTERVAL,
+    OSPF_INTERVAL_MAX
+};
+
+enum ospf_nbr_statistics_e {
+   OSPF_NEIGHBOR_DB_SUMMARY_COUNT,
+   OSPF_NEIGHBOR_LS_REQUEST_COUNT,
+   OSPF_NEIGHBOR_LS_RETRANSMIT_COUNT,
+   OSPF_NEIGHBOR_STATE_CHANGE_COUNT,
+   OSPF_NEIGHBOR_STATISTICS_MAX
+};
+
+#define OSPF_INTERFACE_ACTIVE               1
+#define OSPF_INTERFACE_NO_ACTIVE            0
+
+#define OSPF_NUM_SPF_KEYS                   OSPF_SPF_MAX
+#define OSPF_NUM_LSA_TIMER_KEYS             OSPF_LSA_MAX
+#define OSPF_NUM_AREA_KEYS                  1
+
+#define OSPF_KEY_ROUTER_ID_VAL              "router_id_val"
+
+/* OSPF interface config */
+#define OSPF_KEY_TRANSMIT_DELAY             "transmit_delay"
+#define OSPF_KEY_RETRANSMIT_INTERVAL        "retransmit_interval"
+#define OSPF_KEY_HELLO_INTERVAL             "hello_interval"
+#define OSPF_KEY_DEAD_INTERVAL              "dead_interval"
+#define OSPF_KEY_PRIORITY                   "priority"
+#define OSPF_KEY_MTU_IGNORE                 "mtu_ignore"
+#define OSPF_KEY_AUTH_CONF_TYPE             "auth_type"
+#define OSPF_KEY_AUTH_CONF_KEY              "auth_key"
+#define OSPF_KEY_INTERFACE_TYPE             "intf_type"
+#define OSPF_KEY_INTERFACE_OUT_COST         "if_out_cost"
+#define OSPF_KEY_HELLO_DUE                  "hello_due_at"
+
+#define OSPF_KEY_DISTANCE_ALL               "all"
+#define OSPF_KEY_DISTANCE_EXTERNAL          "external"
+#define OSPF_KEY_DISTANCE_INTRA_AREA        "intra_area"
+#define OSPF_KEY_DISTANCE_INTER_AREA        "inter_area"
+
+#define OSPF_KEY_ROUTER_ID_STATIC           "router_id_static"
+#define OSPF_KEY_ROUTER_ID_VAL              "router_id_val"
+#define OSPF_KEY_DEFAULT_INFO_ORIG          "default_info_originate"
+#define OSPF_KEY_ALWAYS                     "always"
+
+/* SPF config */
+#define OSPF_KEY_SPF_DELAY                  "spf_delay"
+#define OSPF_KEY_SPF_HOLD_TIME              "spf_holdtime"
+#define OSPF_KEY_SPF_MAX_WAIT               "spf_max_wait"
+
+#define OSPF_KEY_SPF_HOLD_MULTIPLIER        "spf_hold_multiplier"
+#define OSPF_KEY_CAPABILITY_OPAQUE          "capability_opaque"
+
+
+#define OSPF_KEY_ROUTER_DEFAULT_METRIC      "default_metric"
+#define OSPF_KEY_AUTO_COST_REF_BW           "auto_cost_ref_bw"
+#define OSPF_KEY_DEFAULT_METRIC             "default_metric"
+#define OSPF_KEY_LOG_ADJACENCY_CHGS         "log_adjacency_changes"
+#define OSPF_KEY_LOG_ADJACENCY_DETAIL       "log_adjacency_details"
+#define OSPF_KEY_RFC1583_COMPATIBLE         "ospf_rfc1583_compatible"
+#define OSPF_KEY_ENABLE_OPAQUE_LSA          "enable_ospf_opaque_lsa"
+#define OSPF_KEY_ENABLE_STUB_ROUTER_SUPPORT "stub_router_support"
+#define OSPF_KEY_ENABLE_STUB_ROUTER_ACTIVE  "stub_router_state_active"
+#define OSPF_KEY_ROUTER_STATUS_ABR          "abr"
+#define OSPF_KEY_ROUTER_STATUS_ASBR         "asbr"
+#define OSPF_KEY_OPAQUE_ORIGIN_BLOCKED      "opaque_origination_blocked"
+#define OSPF_KEY_ROUTER_EXT_CHKSUM          "as_ext_lsas_sum_cksum"
+#define OSPF_KEY_ROUTER_OPAQUE_CHKSUM       "opaque_as_lsas_sum_cksum"
+
+/* Stub router config keys */
+#define OSPF_KEY_ROUTER_STUB_ADMIN          "admin_set"
+#define OSPF_KEY_ROUTER_STUB_STARTUP        "startup"
+
+#define OSPF_KEY_ARRIVAL_INTERVAL           "lsa_arrival_interval"
+#define OSPF_KEY_LSA_GROUP_PACING           "lsa_group_pacing"
+
+#define OSPF_KEY_AREA_NO_SUMMARY            "no_summary"
+#define OSPF_KEY_AREA_STUB_DEFAULT_COST     "stub_default_cost"
+#define OSPF_KEY_AREA_NSSA_TRANSLATOR_ROLE  "NSSA_translator_role"
+
+/* Area status */
+#define OSPF_KEY_AREA_ACTIVE_INTERFACE      "active_interfaces"
+#define OSPF_KEY_AREA_FULL_NEIGHBORS        "full_nbrs"
+#define OSPF_KEY_AREA_SPF_LAST_RUN          "spf_last_run_timestamp"
+#define OSPF_KEY_AREA_ROUTER_CHKSUM         "router_lsas_sum_cksum"
+#define OSPF_KEY_AREA_NETWORK_CHKSUM        "network_lsas_sum_cksum"
+#define OSPF_KEY_AREA_ABR_SUMMARY_CHKSUM    "abr_summary_lsas_sum_cksum"
+#define OSPF_KEY_AREA_ASBR_SUMMARY_CHKSUM   "asbr_summary_lsas_sum_cksum"
+#define OSPF_KEY_AREA_NSSA_CHKSUM           "as_nssa_lsas_sum_cksum"
+#define OSPF_KEY_AREA_OPAQUE_AREA_CHKSUM    "opaque_area_lsas_sum_cksum"
+#define OSPF_KEY_AREA_OPAQUE_LINK_CHKSUM    "opaque_link_lsas_sum_cksum"
+#define OSPF_KEY_AREA_STATS_SPF_EXEC        "spf_calc"
+#define OSPF_KEY_INTERFACE_ACTIVE           "active"
+
+/* Neighbors */
+#define OSPF_KEY_NEIGHBOR_DEAD_TIMER_DUE      "dead_timer_due"
+#define OSPF_KEY_NEIGHBOR_DB_SUMMARY_CNT      "db_summary_count"
+#define OSPF_KEY_NEIGHBOR_LS_REQUEST_CNT      "ls_request_count"
+#define OSPF_KEY_NEIGHBOR_LS_RE_TRANSMIT_CNT  "ls_retransmit_count"
+#define OSPF_KEY_NEIGHBOR_STATE_CHG_CNT       "state_changes_count"
+#define OSPF_KEY_NEIGHBOR_LAST_UP_TIMESTAMP   "last_up_timestamp"
+
+#define OSPF_KEY_ROUTER_STUB_ADV_STARTUP      "startup"
 #endif /* OPENSWITCH_IDL_HEADER */

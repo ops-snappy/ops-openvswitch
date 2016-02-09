@@ -91,7 +91,7 @@ parse_options(int argc, char *argv[])
         VLOG_LONG_OPTIONS,
         {NULL, 0, NULL, 0},
     };
-    char *short_options = long_options_to_short_options(long_options);
+    char *short_options = ovs_cmdl_long_options_to_short_options(long_options);
 
     for (;;) {
         unsigned long int timeout;
@@ -133,7 +133,7 @@ parse_options(int argc, char *argv[])
             usage(NULL);
 
         case 'o':
-            print_options(long_options);
+            ovs_cmdl_print_options(long_options);
             exit(EXIT_SUCCESS);
 
         case 'V':
@@ -171,6 +171,8 @@ usage(void *userdata OVS_UNUSED)
            "  get-flow [DP] ufid:UFID    fetch flow corresponding to UFID\n"
            "  del-flow [DP] FLOW         delete FLOW from DP\n"
            "  del-flows [DP]             delete all flows from DP\n"
+           "  dump-conntrack [DP]        display conntrack entries\n"
+           "  flush-conntrack [DP]       delete all conntrack entries\n"
            "Each IFACE on add-dp, add-if, and set-if may be followed by\n"
            "comma-separated options.  See ovs-dpctl(8) for syntax, or the\n"
            "Interface table in ovs-vswitchd.conf.db(5) for an options list.\n"
