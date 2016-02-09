@@ -28,13 +28,25 @@ scripts_SCRIPTS += \
 	utilities/ovs-save
 scripts_DATA += utilities/ovs-lib
 
+completion_SCRIPTS += \
+	utilities/ovs-appctl-bashcomp.bash \
+	utilities/ovs-vsctl-bashcomp.bash
+
+check_SCRIPTS += \
+	utilities/ovs-appctl-bashcomp.bash \
+	utilities/ovs-vsctl-bashcomp.bash
+
+EXTRA_DIST += utilities/ovs-sim.in utilities/ovs-sim.1.xml
+noinst_man_MANS += utilities/ovs-sim.1
+noinst_SCRIPTS += utilities/ovs-sim
+
 utilities/ovs-lib: $(top_builddir)/config.status
 
-docs += utilities/ovs-command-compgen.INSTALL.md
+docs += utilities/ovs-command-bashcomp.INSTALL.md
 EXTRA_DIST += \
+	utilities/ovs-appctl-bashcomp.bash \
 	utilities/ovs-check-dead-ifs.in \
-	utilities/ovs-command-compgen.bash \
-	utilities/ovs-command-compgen-test.bash \
+	utilities/ovs-command-bashcomp.INSTALL.md \
 	utilities/ovs-ctl.in \
 	utilities/ovs-dev.py \
 	utilities/ovs-docker \
@@ -43,11 +55,14 @@ EXTRA_DIST += \
 	utilities/ovs-lib.in \
 	utilities/ovs-parse-backtrace.in \
 	utilities/ovs-pcap.in \
+	utilities/ovs-pipegen.py \
 	utilities/ovs-pki.in \
 	utilities/ovs-save \
 	utilities/ovs-tcpundump.in \
 	utilities/ovs-test.in \
-	utilities/ovs-vlan-test.in
+	utilities/ovs-vlan-test.in \
+	utilities/ovs-vsctl-bashcomp.bash \
+	utilities/qemu-wrap.py
 MAN_ROOTS += \
 	utilities/ovs-appctl.8.in \
 	utilities/ovs-benchmark.1.in \
@@ -84,6 +99,8 @@ DISTCLEANFILES += \
 	utilities/ovs-pcap.1 \
 	utilities/ovs-pki \
 	utilities/ovs-pki.8 \
+	utilities/ovs-sim \
+	utilities/ovs-sim.1 \
 	utilities/ovs-tcpundump \
 	utilities/ovs-tcpundump.1 \
 	utilities/ovs-test \
@@ -145,5 +162,9 @@ endif
 bin_PROGRAMS += utilities/ovs-benchmark
 utilities_ovs_benchmark_SOURCES = utilities/ovs-benchmark.c
 utilities_ovs_benchmark_LDADD = lib/libovscommon.la ovsdb/libovsdb.la
+
+if !OPS
+FLAKE8_PYFILES += utilities/ovs-pcap.in
+endif
 
 include utilities/bugtool/automake.mk

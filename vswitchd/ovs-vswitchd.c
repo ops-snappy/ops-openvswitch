@@ -1,5 +1,5 @@
 /* Copyright (c) 2008, 2009, 2010, 2011, 2012, 2013, 2014 Nicira, Inc.
- * Copyright (C) 2015 Hewlett-Packard Development Company, L.P.
+ * Copyright (C) 2015, 2016 Hewlett-Packard Development Company, L.P.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -83,7 +83,7 @@ main(int argc, char *argv[])
     argc -= retval;
     argv += retval;
 
-    proctitle_init(argc, argv);
+    ovs_cmdl_proctitle_init(argc, argv);
     service_start(&argc, &argv);
     remote = parse_options(argc, argv, &unixctl_path, &plugins_path);
 
@@ -201,7 +201,7 @@ parse_options(int argc, char *argv[], char **unixctl_pathp, char **plugins_pathp
         {"dpdk", required_argument, NULL, OPT_DPDK},
         {NULL, 0, NULL, 0},
     };
-    char *short_options = long_options_to_short_options(long_options);
+    char *short_options = ovs_cmdl_long_options_to_short_options(long_options);
 
     for (;;) {
         int c;
@@ -244,7 +244,7 @@ parse_options(int argc, char *argv[], char **unixctl_pathp, char **plugins_pathp
             break;
 
         case OPT_ENABLE_DUMMY:
-            dummy_enable(optarg && !strcmp(optarg, "override"));
+            dummy_enable(optarg);
             break;
 
         case OPT_DISABLE_SYSTEM:

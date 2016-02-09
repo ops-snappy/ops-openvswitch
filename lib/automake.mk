@@ -8,83 +8,168 @@
 if OPS
 ovslibincludedir = $(includedir)/ovs
 ovslibinclude_HEADERS = \
+	lib/aes128.h \
+	lib/async-append.h \
+	lib/backtrace.h \
 	lib/bfd.h \
-        lib/bitmap.h \
+	lib/bitmap.h \
 	lib/bundle.h \
-        lib/byte-order.h \
+	lib/byte-order.h \
+	lib/byteq.h \
 	lib/cfm.h \
 	lib/classifier.h \
-        lib/cmap.h \
+	lib/cmap.h \
 	lib/command-line.h \
 	lib/compiler.h \
-        lib/connectivity.h \
+	lib/connectivity.h \
 	lib/coverage.h \
+	lib/crc32c.h \
+	lib/csum.h \
+	lib/ct-dpif.h \
 	lib/daemon.h \
+	lib/db-ctl-base.h \
+	lib/dhcp.h \
+	lib/dhparams.h \
 	lib/dirs.h \
-	lib/dynamic-string.h \
+	lib/dpctl.h \
+	lib/dpif.h \
+	lib/dpif-netdev.h \
+	lib/dpif-netlink.h \
+	lib/dpif-provider.h \
+	lib/dp-packet.h \
 	lib/dummy.h \
+	lib/dynamic-string.h \
+	lib/entropy.h \
 	lib/fatal-signal.h \
+	lib/fat-rwlock.h \
 	lib/flow.h \
-        lib/guarded-list.h \
+	lib/geneve.h \
+	lib/guarded-list.h \
 	lib/hash.h \
-        lib/heap.h \
-        lib/hindex.h \
+	lib/heap.h \
+	lib/hindex.h \
 	lib/hmap.h \
-        lib/hmapx.h \
+	lib/hmapx.h \
+	lib/id-pool.h \
+	lib/if-notifier.h \
+	lib/jhash.h \
 	lib/json.h \
 	lib/jsonrpc.h \
 	lib/lacp.h \
-        lib/latch.h \
+	lib/latch.h \
+	lib/learn.h \
+	lib/learning-switch.h \
 	lib/list.h \
+	lib/lockfile.h \
+	lib/mac-learning.h \
 	lib/match.h \
+	lib/mcast-snooping.h \
+	lib/memory.h \
 	lib/meta-flow.h \
+	lib/multipath.h \
+	lib/netdev-dpdk.h \
 	lib/netdev.h \
+	lib/netdev-linux.h \
 	lib/netdev-provider.h \
+	lib/netdev-vport.h \
 	lib/netflow.h \
+	lib/netlink-conntrack.h \
+	lib/netlink.h \
+	lib/netlink-notifier.h \
+	lib/netlink-protocol.h \
+	lib/netlink-socket.h \
+	lib/nx-match.h \
+	lib/odp-execute.h \
+	lib/odp-util.h \
 	lib/ofp-actions.h \
+	lib/ofpbuf.h \
 	lib/ofp-errors.h \
+	lib/ofp-msgs.h \
+	lib/ofp-parse.h \
+	lib/ofp-print.h \
 	lib/ofp-util.h \
+	lib/ofp-version-opt.h \
 	lib/openswitch-dflt.h \
 	lib/openswitch-idl.h \
-	lib/ovs-atomic.h \
-	lib/ovs-atomic-gcc4.7+.h \
-	lib/ovs-atomic-flag-gcc4.7+.h \
 	lib/ovs-atomic-c11.h \
+	lib/ovs-atomic-clang.h \
+	lib/ovs-atomic-flag-gcc4.7+.h \
+	lib/ovs-atomic-gcc4.7+.h \
+	lib/ovs-atomic-gcc4+.h \
+	lib/ovs-atomic.h \
+	lib/ovs-atomic-i586.h \
+	lib/ovs-atomic-locked.h \
+	lib/ovs-atomic-msvc.h \
+	lib/ovs-atomic-pthreads.h \
+	lib/ovs-atomic-x86_64.h \
 	lib/ovsdb-data.h \
+	lib/ovsdb-error.h \
 	lib/ovsdb-idl.h \
 	lib/ovsdb-idl-provider.h \
+	lib/ovsdb-parser.h \
 	lib/ovsdb-types.h \
+	lib/ovs-lldp.h \
 	lib/ovs-numa.h \
-        lib/ovs-rcu.h \
+	lib/ovs-rcu.h \
+	lib/ovs-router.h \
 	lib/ovs-thread.h \
 	lib/packets.h \
+	lib/pcap-file.h \
+	lib/perf-counter.h \
+	lib/plugins.h \
 	lib/poll-loop.h \
+	lib/process.h \
 	lib/pvector.h \
-        lib/random.h \
+	lib/random.h \
+	lib/rconn.h \
 	lib/rculist.h \
+	lib/reconnect.h \
+	lib/route-table.h \
+	lib/rstp-common.h \
 	lib/rstp.h \
-        lib/seq.h \
-	lib/simap.h \
+	lib/rstp-state-machines.h \
+	lib/rtbsd.h \
+	lib/rtnetlink.h \
+	lib/sat-math.h \
+	lib/seq.h \
+	lib/sflow_api.h \
+	lib/sflow.h \
+	lib/sha1.h \
 	lib/shash.h \
+	lib/signals.h \
+	lib/simap.h \
 	lib/smap.h \
 	lib/socket-util.h \
-        lib/sset.h \
+	lib/sort.h \
+	lib/sset.h \
 	lib/stp.h \
-	lib/stream-ssl.h \
+	lib/stream-fd.h \
 	lib/stream.h \
+	lib/stream-provider.h \
+	lib/stream-ssl.h \
 	lib/svec.h \
-        lib/timer.h \
+	lib/syslog-direct.h \
+	lib/syslog-libc.h \
+	lib/syslog-provider.h \
+	lib/table.h \
+	lib/timer.h \
 	lib/timeval.h \
+	lib/tnl-neigh-cache.h \
+	lib/tnl-ports.h \
+	lib/tun-metadata.h \
 	lib/type-props.h \
-	lib/vswitch-idl.h \
-        lib/unaligned.h \
+	lib/unaligned.h \
+	lib/unicode.h \
 	lib/unixctl.h \
 	lib/util.h \
 	lib/uuid.h \
-	lib/plugins.h \
+	lib/valgrind.h \
+	lib/vconn-provider.h \
 	lib/vlan-bitmap.h \
-	libltdl/ltdl.h \
-	vswitchd/bufmon-provider.h
+	lib/vlandev.h \
+	lib/vswitch-idl.h \
+        vswitchd/bufmon-provider.h \
+        include/odp-netlink.h
 endif
 
 lib_LTLIBRARIES += lib/libovscommon.la
@@ -127,10 +212,14 @@ lib_libovscommon_la_SOURCES = \
         lib/daemon.c \
         lib/daemon.h \
         lib/daemon-private.h \
+	lib/db-ctl-base.c \
+	lib/db-ctl-base.h \
         lib/dhcp.h \
         lib/dummy.h \
         lib/dhparams.h \
         lib/dirs.h \
+	lib/dp-packet.h \
+	lib/dp-packet.c \
         lib/heap.c \
         lib/heap.h \
         lib/dynamic-string.c \
@@ -167,14 +256,19 @@ lib_libovscommon_la_SOURCES = \
         lib/ovs-atomic-flag-gcc4.7+.h \
         lib/ovs-atomic-gcc4+.h \
         lib/ovs-atomic-gcc4.7+.h \
+	lib/ovs-atomic-i586.h \
         lib/ovs-atomic-locked.c \
         lib/ovs-atomic-locked.h \
+	lib/ovs-atomic-msvc.h \
         lib/ovs-atomic-pthreads.h \
+	lib/ovs-atomic-x86_64.h \
         lib/ovs-atomic.h \
         lib/ovs-rcu.c \
         lib/ovs-rcu.h \
         lib/ovs-thread.c \
         lib/ovs-thread.h \
+	lib/packets.c \
+	lib/packets.h \
         lib/plugins.c \
         lib/poll-loop.c \
         lib/poll-loop.h \
@@ -203,7 +297,6 @@ lib_libovscommon_la_SOURCES = \
         lib/sset.h \
         lib/stream-fd.h \
         lib/stream-fd.c \
-        lib/stream-fd.h \
         lib/stream-provider.h \
         lib/stream-ssl.h \
         lib/stream-tcp.c \
@@ -213,8 +306,11 @@ lib_libovscommon_la_SOURCES = \
         lib/string.c \
         lib/svec.c \
         lib/svec.h \
-        lib/tag.c \
-        lib/tag.h \
+	lib/syslog-direct.c \
+	lib/syslog-direct.h \
+	lib/syslog-libc.c \
+	lib/syslog-libc.h \
+	lib/syslog-provider.h \
         lib/timer.c \
         lib/timer.h \
         lib/timeval.c \
@@ -240,8 +336,19 @@ lib_libovscommon_la_SOURCES = \
 	lib/vlan-bitmap.h \
         lib/vlog.c \
         lib/vlog.h \
-        lib/ipc_packets.c \
-        lib/ipc_packets.h
+        lib/ovsdb-idl.c \
+        lib/ovsdb-idl.h \
+        lib/ovsdb-parser.c \
+        lib/ovsdb-parser.h \
+        lib/ovsdb-data.c \
+        lib/ovsdb-data.h \
+        lib/ovsdb-error.c \
+        lib/ovsdb-error.h \
+        lib/ovsdb-idl-provider.h \
+        lib/ovsdb-types.c \
+        lib/ovsdb-types.h \
+        lib/table.c \
+        lib/table.h
 
 # libovsdb
 lib_LTLIBRARIES += ovsdb/libovsdb.la
@@ -252,17 +359,6 @@ ovsdb_libovsdb_la_LDFLAGS = \
 
 ovsdb_libovsdb_la_LIBADD = lib/libovscommon.la
 ovsdb_libovsdb_la_SOURCES = \
-        lib/ovsdb-data.c \
-        lib/ovsdb-data.h \
-        lib/ovsdb-error.c \
-        lib/ovsdb-error.h \
-        lib/ovsdb-idl-provider.h \
-        lib/ovsdb-idl.c \
-        lib/ovsdb-idl.h \
-        lib/ovsdb-parser.c \
-        lib/ovsdb-parser.h \
-        lib/ovsdb-types.c \
-        lib/ovsdb-types.h \
         ovsdb/column.c \
         ovsdb/column.h \
         ovsdb/condition.c \
@@ -278,6 +374,8 @@ ovsdb_libovsdb_la_SOURCES = \
         ovsdb/mutation.h \
         ovsdb/ovsdb.c \
         ovsdb/ovsdb.h \
+	ovsdb/monitor.c \
+	ovsdb/monitor.h \
         ovsdb/query.c \
         ovsdb/query.h \
         ovsdb/row.c \
@@ -291,9 +389,7 @@ ovsdb_libovsdb_la_SOURCES = \
         ovsdb/transaction.c \
         ovsdb/transaction.h \
         lib/vswitch-idl.c \
-        lib/vswitch-idl.h \
-        lib/table.c \
-        lib/table.h
+        lib/vswitch-idl.h
 
 ovsdb_libovsdb_la_CFLAGS = $(AM_CFLAGS)
 ovsdb_libovsdb_la_CPPFLAGS = $(AM_CPPFLAGS)
@@ -396,17 +492,14 @@ lib_libopenvswitch_la_SOURCES = \
 	lib/ofpbuf.h \
 	lib/ovs-router.h \
 	lib/ovs-router.c \
-	lib/packet-dpif.c \
-	lib/packet-dpif.h \
-	lib/packets.c \
-	lib/packets.h \
 	lib/pcap-file.c \
 	lib/pcap-file.h \
+	lib/perf-counter.h \
+	lib/perf-counter.c \
 	lib/pvector.c \
 	lib/pvector.h \
 	lib/rconn.c \
 	lib/rconn.h \
-	lib/rculist.c \
 	lib/rculist.h \
 	lib/rstp.c \
 	lib/rstp.h \
@@ -420,8 +513,6 @@ lib_libopenvswitch_la_SOURCES = \
 	lib/stp.h \
 	lib/stream-provider.h \
 	lib/stream-ssl.h \
-	lib/tnl-arp-cache.c \
-	lib/tnl-arp-cache.h \
 	lib/tnl-ports.c \
 	lib/tnl-ports.h \
 	lib/token-bucket.c \
@@ -431,9 +522,7 @@ lib_libopenvswitch_la_SOURCES = \
 	lib/vconn-stream.c \
 	lib/vconn.c \
 	lib/vlandev.c \
-	lib/vlandev.h \
-	lib/vtep-idl.c \
-	lib/vtep-idl.h
+	lib/vlandev.h
 
 if OPS
 lib_libopenvswitch_la_SOURCES += \
@@ -489,8 +578,11 @@ endif
 
 if LINUX
 lib_libopenvswitch_la_SOURCES += \
+	lib/ct-dpif.c \
+	lib/ct-dpif.h \
 	lib/dpif-netlink.c \
 	lib/dpif-netlink.h \
+	lib/geneve.h \
 	lib/netdev-linux.c \
 	lib/netdev-linux.h \
 	lib/netlink-notifier.c \
@@ -498,12 +590,26 @@ lib_libopenvswitch_la_SOURCES += \
 	lib/netlink-protocol.h \
 	lib/netlink-socket.c \
 	lib/netlink-socket.h \
+	lib/ovs-lldp.c \
+	lib/ovs-lldp.h \
 	lib/ovs-numa.c \
 	lib/ovs-numa.h \
-	lib/rtnetlink-link.c \
-	lib/rtnetlink-link.h \
 	lib/route-table.c \
-	lib/route-table.h
+	lib/route-table.h \
+	lib/rtnetlink.c \
+	lib/rtnetlink.h \
+	lib/tun-metadata.c \
+	lib/tun-metadata.h \
+	lib/tnl-neigh-cache.c \
+	lib/tnl-neigh-cache.h \
+	lib/lldp/aa-structs.h \
+	lib/lldp/lldp.c \
+	lib/lldp/lldp-const.h \
+	lib/lldp/lldp-tlv.h \
+	lib/lldp/lldpd.c \
+	lib/lldp/lldpd.h \
+	lib/lldp/lldpd-structs.c \
+	lib/lldp/lldpd-structs.h
 endif
 
 if DPDK_NETDEV
@@ -598,10 +704,7 @@ MAN_FRAGMENTS += \
 OVSIDL_BUILT += \
 	$(srcdir)/lib/vswitch-idl.c \
 	$(srcdir)/lib/vswitch-idl.h \
-	$(srcdir)/lib/vswitch-idl.ovsidl \
-	$(srcdir)/lib/vtep-idl.c \
-	$(srcdir)/lib/vtep-idl.h \
-	$(srcdir)/lib/vtep-idl.ovsidl
+	$(srcdir)/lib/vswitch-idl.ovsidl
 
 EXTRA_DIST += $(srcdir)/lib/vswitch-idl.ann
 VSWITCH_IDL_FILES = \
@@ -609,14 +712,6 @@ VSWITCH_IDL_FILES = \
 	$(srcdir)/lib/vswitch-idl.ann
 $(srcdir)/lib/vswitch-idl.ovsidl: $(VSWITCH_IDL_FILES)
 	$(AM_V_GEN)$(OVSDB_IDLC) annotate $(VSWITCH_IDL_FILES) > $@.tmp && \
-	mv $@.tmp $@
-
-EXTRA_DIST += $(srcdir)/lib/vtep-idl.ann
-VTEP_IDL_FILES = \
-	$(srcdir)/vtep/vtep.ovsschema \
-	$(srcdir)/lib/vtep-idl.ann
-$(srcdir)/lib/vtep-idl.ovsidl: $(VTEP_IDL_FILES)
-	$(AM_V_GEN)$(OVSDB_IDLC) annotate $(VTEP_IDL_FILES) > $@.tmp && \
 	mv $@.tmp $@
 
 lib/dirs.c: lib/dirs.c.in Makefile

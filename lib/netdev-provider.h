@@ -1,6 +1,6 @@
 /*
  * Copyright (c) 2009, 2010, 2011, 2012, 2013, 2014 Nicira, Inc.
- * Copyright (C) 2015 Hewlett-Packard Development Company, L.P.
+ * Copyright (C) 2015, 2016 Hewlett-Packard Development Company, L.P.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -28,6 +28,7 @@
 #include "seq.h"
 #include "shash.h"
 #include "smap.h"
+#include "ovs-atomic.h"
 
 #ifdef  __cplusplus
 extern "C" {
@@ -64,7 +65,7 @@ struct netdev {
     struct ovs_list saved_flags_list; /* Contains "struct netdev_saved_flags". */
 };
 
-static inline void
+static void
 netdev_change_seq_changed(const struct netdev *netdev_)
 {
     struct netdev *netdev = CONST_CAST(struct netdev *, netdev_);
@@ -181,7 +182,7 @@ struct netdev *netdev_rxq_get_netdev(const struct netdev_rxq *);
  * not yet been uninitialized, so the "destruct" function may refer to it.  The
  * "destruct" function is not allowed to fail.
  *
- * Each "dealloc" function frees raw memory that was allocated by the the
+ * Each "dealloc" function frees raw memory that was allocated by the
  * "alloc" function.  The memory's base and derived members might not have ever
  * been initialized (but if "construct" returned successfully, then it has been
  * "destruct"ed already).  The "dealloc" function is not allowed to fail.
@@ -275,20 +276,19 @@ struct netdev_class {
 
     /* Build Partial Tunnel header.  Ethernet and ip header is already built,
      * build_header() is suppose build protocol specific part of header. */
-    int (*build_header)(const struct netdev *, struct ovs_action_push_tnl *data);
+    int (*build_header)(const struct netdev *, struct ovs_action_push_tnl *data,
+                        const struct flow *tnl_flow);
 
     /* build_header() can not build entire header for all packets for given
      * flow.  Push header is called for packet to build header specific to
      * a packet on actual transmit.  It uses partial header build by
      * build_header() which is passed as data. */
-    int (*push_header)(const struct netdev *netdev,
-                       struct dpif_packet **buffers, int cnt,
-                       const struct ovs_action_push_tnl *data);
+    void (*push_header)(struct dp_packet *packet,
+                        const struct ovs_action_push_tnl *data);
 
     /* Pop tunnel header from packet, build tunnel metadata and resize packet
      * for further processing. */
-    int  (*pop_header)(struct netdev *netdev,
-                       struct dpif_packet **buffers, int cnt);
+    int (*pop_header)(struct dp_packet *packet);
 
     /* Returns the id of the numa node the 'netdev' is on.  If there is no
      * such info, returns NETDEV_NUMA_UNSPEC. */
@@ -296,6 +296,17 @@ struct netdev_class {
 
     /* Configures the number of tx queues and rx queues of 'netdev'.
      * Return 0 if successful, otherwise a positive errno value.
+     *
+     * 'n_rxq' specifies the maximum number of receive queues to create.
+     * The netdev provider might choose to create less (e.g. if the hardware
+     * supports only a smaller number).  The actual number of queues created
+     * is stored in the 'netdev->n_rxq' field.
+     *
+     * 'n_txq' specifies the exact number of transmission queues to create.
+     * The caller will call netdev_send() concurrently from 'n_txq' different
+     * threads (with different qid).  The netdev provider is responsible for
+     * making sure that these concurrent calls do not create a race condition
+     * by using multiple hw queues or locking.
      *
      * On error, the tx queue and rx queue configuration is indeterminant.
      * Caller should make decision on whether to restore the previous or
@@ -327,7 +338,7 @@ struct netdev_class {
      * network device from being usefully used by the netdev-based "userspace
      * datapath".  It will also prevent the OVS implementation of bonding from
      * working properly over 'netdev'.) */
-    int (*send)(struct netdev *netdev, int qid, struct dpif_packet **buffers,
+    int (*send)(struct netdev *netdev, int qid, struct dp_packet **buffers,
                 int cnt, bool may_steal);
 
     /* Registers with the poll loop to wake up from the next call to
@@ -345,15 +356,13 @@ struct netdev_class {
     void (*send_wait)(struct netdev *netdev, int qid);
 
     /* Sets 'netdev''s Ethernet address to 'mac' */
-    int (*set_etheraddr)(struct netdev *netdev,
-                         const uint8_t mac[ETH_ADDR_LEN]);
+    int (*set_etheraddr)(struct netdev *netdev, const struct eth_addr mac);
 
     /* Retrieves 'netdev''s Ethernet address into 'mac'.
      *
      * This address will be advertised as 'netdev''s MAC address through the
      * OpenFlow protocol, among other uses. */
-    int (*get_etheraddr)(const struct netdev *netdev,
-                         uint8_t mac[ETH_ADDR_LEN]);
+    int (*get_etheraddr)(const struct netdev *netdev, struct eth_addr *mac);
 
     /* Retrieves 'netdev''s MTU into '*mtup'.
      *
@@ -402,7 +411,7 @@ struct netdev_class {
 
     /* Forces ->get_carrier() to poll 'netdev''s MII registers for link status
      * instead of checking 'netdev''s carrier.  'netdev''s MII registers will
-     * be polled once ever 'interval' milliseconds.  If 'netdev' does not
+     * be polled once every 'interval' milliseconds.  If 'netdev' does not
      * support MII, another method may be used as a fallback.  If 'interval' is
      * less than or equal to zero, reverts ->get_carrier() to its normal
      * behavior.
@@ -618,7 +627,6 @@ struct netdev_class {
                                        void *aux),
                             void *aux);
 
-
     /* If 'netdev' has an assigned IPv4 address, sets '*address' to that
      * address and '*netmask' to the associated netmask.
      *
@@ -692,7 +700,7 @@ struct netdev_class {
      * This function may be set to null if it would always return EOPNOTSUPP
      * anyhow. */
     int (*arp_lookup)(const struct netdev *netdev, ovs_be32 ip,
-                      uint8_t mac[ETH_ADDR_LEN]);
+                      struct eth_addr *mac);
 
     /* Retrieves the current set of flags on 'netdev' into '*old_flags'.  Then,
      * turns off the flags that are set to 1 in 'off' and turns on the flags
@@ -729,7 +737,7 @@ struct netdev_class {
      * Caller is expected to pass array of size MAX_RX_BATCH.
      * This function may be set to null if it would always return EOPNOTSUPP
      * anyhow. */
-    int (*rxq_recv)(struct netdev_rxq *rx, struct dpif_packet **pkts,
+    int (*rxq_recv)(struct netdev_rxq *rx, struct dp_packet **pkts,
                     int *cnt);
 
     /* Registers with the poll loop to wake up from the next call to
