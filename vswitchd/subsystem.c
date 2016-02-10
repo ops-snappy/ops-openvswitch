@@ -534,7 +534,7 @@ iface_refresh_netdev_status(struct iface *iface)
     enum netdev_features pause_staus;
     enum netdev_flags flags;
     const char *link_state;
-    uint8_t mac[ETH_ADDR_LEN];
+    struct eth_addr mac;
     int64_t bps = 0, mtu_64, link_resets = 0;
     int mtu, error;
 
@@ -613,7 +613,7 @@ iface_refresh_netdev_status(struct iface *iface)
     }
 
     /* MAC addr in use */
-    error = netdev_get_etheraddr(iface->netdev, mac);
+    error = netdev_get_etheraddr(iface->netdev, &mac);
     if (!error) {
         char mac_string[32];
 
@@ -666,6 +666,6 @@ iface_refresh_stats(struct iface *iface)
 #undef IFACE_STAT
     ovs_assert(n <= N_IFACE_STATS);
 
-    ovsrec_interface_set_statistics(iface->cfg, keys, values, n);
+    ovsrec_interface_set_statistics(iface->cfg, (const char **)keys, values, n);
 #undef IFACE_STATS
 }

@@ -1,5 +1,5 @@
 /* Copyright (c) 2009, 2010, 2011, 2012 Nicira, Inc.
- * Copyright (C) 2015 Hewlett-Packard Development Company, L.P.
+ * Copyright (C) 2015, 2016 Hewlett-Packard Development Company, L.P.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -42,6 +42,9 @@ struct ovsdb_idl_row {
     unsigned int modify_seqno;
 #endif
 
+    unsigned int change_seqno[OVSDB_IDL_CHANGE_MAX];
+
+    struct ovs_list track_node;
     size_t outstanding_fetch_reqs; /* Number of on-demand columns in this row
                                        with on-going fetch operations */
 };
@@ -69,7 +72,8 @@ struct ovsdb_idl_table_class {
 struct ovsdb_idl_table {
     const struct ovsdb_idl_table_class *class;
     unsigned char *modes;    /* OVSDB_IDL_* bitmasks, indexed by column. */
-    bool need_table;         /* Monitor table even if no columns? */
+    bool need_table;         /* Monitor table even if no columns are selected
+                              * for replication. */
     struct shash columns;    /* Contains "const struct ovsdb_idl_column *"s. */
     struct hmap rows;        /* Contains "struct ovsdb_idl_row"s. */
     struct ovsdb_idl *idl;   /* Containing idl. */
@@ -78,13 +82,16 @@ struct ovsdb_idl_table {
     unsigned int modify_seqno;
     unsigned int delete_seqno;
 #endif
+    unsigned int change_seqno[OVSDB_IDL_CHANGE_MAX];
+    struct ovs_list track_list; /* Tracked rows (ovsdb_idl_row.track_node). */
+
     bool has_pending_fetch;  /* Indicates if the table has a pending fetch
                                 operation */
     struct shash outstanding_col_fetch_reqs; /* Contains the name of the
-                                                 columns with on-demand fetch
-                                                 request pending. It does not
-                                                 keep anything as data, just
-                                                 the column names. */
+                                                columns with on-demand fetch
+                                                request pending. It does not
+                                                keep anything as data, just
+                                                the column names. */
 };
 
 struct ovsdb_idl_class {

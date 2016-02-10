@@ -7,12 +7,12 @@
 if OPS
 ovsofprotolibincludedir = $(includedir)/ovs/ofproto
 ovsofprotolibinclude_HEADERS = \
-	ofproto/bond.h \
-	ofproto/fail-open.h \
-	ofproto/netflow.h \
-	ofproto/ofproto.h \
-	ofproto/ofproto-provider.h \
-	ofproto/tunnel.h
+       ofproto/bond.h \
+       ofproto/fail-open.h \
+       ofproto/netflow.h \
+       ofproto/ofproto.h \
+       ofproto/ofproto-provider.h \
+       ofproto/tunnel.h
 endif
 
 lib_LTLIBRARIES += ofproto/libofproto.la

@@ -1,6 +1,6 @@
 /*
  * Copyright (c) 2008, 2009, 2010, 2011, 2012, 2013, 2014 Nicira, Inc.
- * Copyright (C) 2015 Hewlett-Packard Development Company, L.P.
+ * Copyright (C) 2015, 2016 Hewlett-Packard Development Company, L.P.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -42,6 +42,7 @@ VLOG_DEFINE_THIS_MODULE(poll_loop);
 COVERAGE_DEFINE(poll_create_node);
 COVERAGE_DEFINE(poll_zero_timeout);
 
+
 #ifndef OPS
 struct poll_node {
     struct hmap_node hmap_node;
@@ -65,16 +66,20 @@ struct poll_loop {
 static struct poll_loop *poll_loop(void);
 #endif
 
-/* Look up the node with same fd and wevent. */
+/* Look up the node with same fd or wevent. */
 static struct poll_node *
 find_poll_node(struct poll_loop *loop, int fd, HANDLE wevent)
 {
     struct poll_node *node;
 
+    /* Both 'fd' and 'wevent' cannot be set. */
+    ovs_assert(!fd != !wevent);
+
     HMAP_FOR_EACH_WITH_HASH (node, hmap_node,
                              hash_2words(fd, (uint32_t)wevent),
                              &loop->poll_nodes) {
-        if (node->pollfd.fd == fd && node->wevent == wevent) {
+        if ((fd && node->pollfd.fd == fd)
+            || (wevent && node->wevent == wevent)) {
             return node;
         }
     }
@@ -257,7 +262,9 @@ log_wakeup(const char *where, const struct pollfd *pollfd, int timeout)
     cpu_usage = get_cpu_usage();
     if (VLOG_IS_DBG_ENABLED()) {
         level = VLL_DBG;
-    } else if (cpu_usage > 50 && !VLOG_DROP_INFO(&rl)) {
+    } else if (cpu_usage > 50
+               && !thread_is_pmd()
+               && !VLOG_DROP_INFO(&rl)) {
         level = VLL_INFO;
     } else {
         return;
