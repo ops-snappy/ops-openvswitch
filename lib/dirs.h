@@ -23,6 +23,5 @@ const char *ovs_rundir(void);     /* /usr/local/var/run/openvswitch */
 const char *ovs_logdir(void);     /* /usr/local/var/log/openvswitch */
 const char *ovs_dbdir(void);      /* /usr/local/etc/openvswitch */
 const char *ovs_bindir(void);     /* /usr/local/bin */
-const char *ovs_pluginsdir(void); /* /usr/local/lib/openvswitch/plugins */
 
 #endif /* dirs.h */

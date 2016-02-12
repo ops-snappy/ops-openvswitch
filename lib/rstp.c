@@ -40,6 +40,7 @@
 #include "connectivity.h"
 #include "ofpbuf.h"
 #include "ofproto/ofproto.h"
+#include "dp-packet.h"
 #include "packets.h"
 #include "seq.h"
 #include "unixctl.h"
@@ -184,6 +185,7 @@ rstp_unref(struct rstp *rstp)
 
         list_remove(&rstp->node);
         ovs_mutex_unlock(&rstp_mutex);
+        hmap_destroy(&rstp->ports);
         free(rstp->name);
         free(rstp);
     }
@@ -243,7 +245,7 @@ rstp_init(void)
 /* Creates and returns a new RSTP instance that initially has no ports. */
 struct rstp *
 rstp_create(const char *name, rstp_identifier bridge_address,
-            void (*send_bpdu)(struct ofpbuf *bpdu, void *port_aux,
+            void (*send_bpdu)(struct dp_packet *bpdu, void *port_aux,
                               void *rstp_aux),
             void *aux)
     OVS_EXCLUDED(rstp_mutex)
@@ -279,6 +281,8 @@ rstp_create(const char *name, rstp_identifier bridge_address,
     rstp->aux = aux;
     rstp->changes = false;
     rstp->begin = true;
+    rstp->old_root_aux = NULL;
+    rstp->new_root_aux = NULL;
 
     ovs_refcount_init(&rstp->ref_cnt);
 
