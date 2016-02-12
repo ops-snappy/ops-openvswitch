@@ -584,6 +584,7 @@ enum ovsrec_port_config_admin_e {
 #define SYSTEM_ECMP_CONFIG_HASH_SRC_PORT                  "hash_srcport_enabled"
 #define SYSTEM_ECMP_CONFIG_HASH_DST_IP                    "hash_dstip_enabled"
 #define SYSTEM_ECMP_CONFIG_HASH_DST_PORT                  "hash_dstport_enabled"
+#define SYSTEM_ECMP_CONFIG_HASH_RESILIENT                 "resilient_hash_enabled"
 #define SYSTEM_ECMP_CONFIG_ENABLE_DEFAULT                 "true"
 
 /************************************************************************/
