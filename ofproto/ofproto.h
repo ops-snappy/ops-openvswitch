@@ -455,6 +455,9 @@ enum port_option_args {
     /* hw_config driven mostly by l3portd */
     PORT_HW_CONFIG,
 
+    /* Includes other port configurations */
+    PORT_OTHER_CONFIG,
+
     /* Array size */
     PORT_OPT_MAX
 };

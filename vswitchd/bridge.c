@@ -1567,6 +1567,7 @@ port_configure(struct port *port)
     s.port_options[PORT_OPT_VLAN] = &cfg->vlan_options;
     s.port_options[PORT_OPT_BOND] = &cfg->bond_options;
     s.port_options[PORT_HW_CONFIG] = &cfg->hw_config;
+    s.port_options[PORT_OTHER_CONFIG] = &cfg->other_config;
 #endif
 
 #ifdef OPS
