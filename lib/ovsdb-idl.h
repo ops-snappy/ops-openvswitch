@@ -117,6 +117,7 @@ enum ovsdb_idl_fetch_type {
 
 void ovsdb_idl_add_column(struct ovsdb_idl *, const struct ovsdb_idl_column *);
 void ovsdb_idl_add_on_demand_column(struct ovsdb_idl *,
+                                    struct ovsdb_idl_table_class *,
                                     const struct ovsdb_idl_column *);
 void ovsdb_idl_add_table(struct ovsdb_idl *,
                          const struct ovsdb_idl_table_class *);

@@ -579,13 +579,18 @@ add_ref_table(struct ovsdb_idl *idl, const struct ovsdb_base_type *base)
  * are not synchronized automatically.
  *
  * In order to get its value from the database, it is necessary to explicitly
- * ask them from the server by calling one of this functions: ovsdb_idl_fetch_row,
- * ovsdb_idl_fetch_column, ovsdb_idl_fetch_table.
+ * ask them from the server by calling one of this functions:
+ * ovsdb_idl_fetch_row, ovsdb_idl_fetch_column, or ovsdb_idl_fetch_table.
+ *
+ * This function adds the table with table class 'tc' to the replica (see
+ * ovsdb_idl_add_table() for more information)
  */
 void
 ovsdb_idl_add_on_demand_column(struct ovsdb_idl *idl,
-                                  const struct ovsdb_idl_column *column)
+                               struct ovsdb_idl_table_class *tc,
+                               const struct ovsdb_idl_column *column)
 {
+    ovsdb_idl_add_table(idl, tc);
     *ovsdb_idl_get_mode(idl, column) = OVSDB_IDL_ON_DEMAND;
 }
 
