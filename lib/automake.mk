@@ -346,6 +346,8 @@ lib_libovscommon_la_SOURCES = \
         lib/ovsdb-error.c \
         lib/ovsdb-error.h \
         lib/ovsdb-idl-provider.h \
+        lib/ovsdb-map-op.c \
+        lib/ovsdb-map-op.h \
         lib/ovsdb-types.c \
         lib/ovsdb-types.h \
         lib/table.c \
@@ -389,8 +391,6 @@ ovsdb_libovsdb_la_SOURCES = \
         ovsdb/trigger.h \
         ovsdb/transaction.c \
         ovsdb/transaction.h \
-        lib/ovsdb-map-op.c \
-        lib/ovsdb-map-op.h \
         lib/vswitch-idl.c \
         lib/vswitch-idl.h
 
