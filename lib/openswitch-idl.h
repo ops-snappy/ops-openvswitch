@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2015 Hewlett-Packard Development Company, L.P.
+ * Copyright (C) 2015-2016 Hewlett-Packard Development Company, L.P.
  * All Rights Reserved.
  *
  *    Licensed under the Apache License, Version 2.0 (the "License"); you may
@@ -785,6 +785,32 @@ enum ospf_nbr_statistics_e {
 #define OSPF_KEY_NEIGHBOR_LAST_UP_TIMESTAMP   "last_up_timestamp"
 
 #define OSPF_KEY_ROUTER_STUB_ADV_STARTUP      "startup"
+
+#define OSPF_KEY_STUB_ROUTER_STATE_ACTIVE     "stub_router_state_active"
+#define OSPF_KEY_ROUTE_AREA_ID                "area_id"
+#define OSPF_KEY_ROUTE_TYPE_ABR               "area_type_abr"
+#define OSPF_KEY_ROUTE_TYPE_ASBR              "area_type_asbr"
+#define OSPF_KEY_ROUTE_EXT_TYPE               "ext_type"
+#define OSPF_KEY_ROUTE_EXT_TAG                "ext_tag"
+#define OSPF_KEY_ROUTE_TYPE2_COST             "type2_cost"
+
+#define OSPF_KEY_ROUTE_COST                   "cost"
+
+/* Neighbor options */
+#define OSPF_NBR_OPTION_STRING_T              "type_of_service"
+#define OSPF_NBR_OPTION_STRING_E              "external_routing"
+#define OSPF_NBR_OPTION_STRING_MC             "multicast"
+#define OSPF_NBR_OPTION_STRING_NP             "type_7_lsa"
+#define OSPF_NBR_OPTION_STRING_EA             "external_attributes_lsa"
+#define OSPF_NBR_OPTION_STRING_DC             "demand_circuits"
+#define OSPF_NBR_OPTION_STRING_O              "opaque_lsa"
+
+#define OSPF_PATH_TYPE_STRING_INTER_AREA      "inter_area"
+#define OSPF_PATH_TYPE_STRING_INTRA_AREA      "intra_area"
+#define OSPF_PATH_TYPE_STRING_EXTERNAL        "external"
+
+#define OSPF_EXT_TYPE_STRING_TYPE1            "ext_type_1"
+#define OSPF_EXT_TYPE_STRING_TYPE2            "ext_type_2"
 
 /******************************** NTP START **********************************/
 /****************************** NTP_KEY TABLE ********************************/

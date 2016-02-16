@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2015 Hewlett-Packard Development Company, L.P.
+ * Copyright (C) 2015-2016 Hewlett-Packard Development Company, L.P.
  * All Rights Reserved.
  *
  *    Licensed under the Apache License, Version 2.0 (the "License"); you may
@@ -117,5 +117,12 @@
 #define OSPF_AREA_TYPE_STUB                  "stub"
 #define OSPF_AREA_TYPE_NSSA_NO_SUMMARY       "nssa"
 #define OSPF_AREA_TYPE_STUB_NO_SUMMARY       "stub"
+
+#define OSPF_HELLO_INTERVAL_DEFAULT          10
+#define OSPF_DEAD_INTERVAL_DEFAULT           (4 * OSPF_HELLO_INTERVAL_DEFAULT)
+#define OSPF_TRANSMIT_DELAY_DEFAULT          1
+#define OSPF_RETRANSMIT_INTERVAL_DEFAULT     5
+#define OSPF_ROUTE_TYPE2_COST_DEFAULT        16777215
+#define OSPF_DEFAULT_COST                    10
 
 #endif /* OPENSWITCH_DFLT_HEADER */
