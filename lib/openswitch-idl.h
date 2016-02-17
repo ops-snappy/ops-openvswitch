@@ -393,6 +393,10 @@ enum ovsrec_interface_hw_bond_config_enabled_e {
 #define PORT_OTHER_CONFIG_MAP_LACP_SYSTEM_PRIORITY      "lacp-system-priority"
 #define PORT_OTHER_CONFIG_MAP_LACP_SYSTEM_ID            "lacp-system-id"
 
+#define PORT_OTHER_CONFIG_SFLOW_PER_INTERFACE_KEY_STR       "sflow-enabled"
+#define PORT_OTHER_CONFIG_SFLOW_PER_INTERFACE_VALUE_TRUE    "true"
+#define PORT_OTHER_CONFIG_SFLOW_PER_INTERFACE_VALUE_FALSE   "false"
+
 #define PORT_LACP_STATUS_MAP_BOND_SPEED                 "bond_speed"
 #define PORT_LACP_STATUS_MAP_BOND_STATUS                "bond_status"
 #define PORT_LACP_STATUS_MAP_BOND_STATUS_REASON         "bond_status_reason"
