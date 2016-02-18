@@ -2252,8 +2252,7 @@ sflow_agent_address(struct ofproto_sflow_options *oso, const char *intf_name, co
     /* Agent interface name not configured. Pick an L3 interface with IPv4
      * configured. */
     if (intf_name == NULL) {
-        OVSREC_PORT_FOR_EACH(port, idl)
-        {
+        OVSREC_PORT_FOR_EACH(port, idl) {
             if (port->ip4_address && (inet_pton(AF_INET, port->ip4_address, &ip) != -1)) {
                 /* First interface with a valid IPv4 address */
                 oso->agent_ip = port->ip4_address;
@@ -2277,8 +2276,7 @@ sflow_agent_address(struct ofproto_sflow_options *oso, const char *intf_name, co
     }
 
     /* An interface name provided as input. Get it's IPv4 address. */
-    OVSREC_PORT_FOR_EACH(port, idl)
-    {
+    OVSREC_PORT_FOR_EACH(port, idl) {
       if (strcmp(port->name, intf_name) == 0) {
         break;  /* record found */
       }
@@ -2364,6 +2362,7 @@ bridge_configure_sflow(struct bridge *br, int *sflow_bridge_number)
     }
 
     oso.sub_id = (*sflow_bridge_number)++;
+    oso.agent_device = cfg->agent;
 
 #ifdef OPS
     sflow_agent_address(&oso, cfg->agent, cfg->agent_addr_family);
