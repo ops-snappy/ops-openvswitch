@@ -64,7 +64,9 @@ struct ofproto_sflow_options {
     uint32_t header_len;
     uint32_t sub_id;
     char *agent_device; /* interface name */
-    char *agent_ip;     /* ip (v4 or v6) of interface */
+#ifdef OPS
+    char agent_ip[INET6_ADDRSTRLEN];     /* ip (v4 or v6) of interface */
+#endif
     char *control_ip;
 };
 
