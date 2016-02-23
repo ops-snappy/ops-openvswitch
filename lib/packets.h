@@ -32,6 +32,10 @@
 #include "unaligned.h"
 #include "util.h"
 
+#if defined (OPS) && defined (arp_op)
+#undef arp_op
+#endif
+
 struct dp_packet;
 struct ds;
 
@@ -1028,7 +1032,7 @@ void packet_set_nd(struct dp_packet *, const ovs_be32 target[4],
 
 void packet_format_tcp_flags(struct ds *, uint16_t);
 const char *packet_tcp_flag_to_string(uint32_t flag);
-void compose_arp(struct dp_packet *, uint16_t ovs_arp_op,
+void compose_arp(struct dp_packet *, uint16_t arp_op,
                  const struct eth_addr arp_sha,
                  const struct eth_addr arp_tha, bool broadcast,
                  ovs_be32 arp_spa, ovs_be32 arp_tpa);
