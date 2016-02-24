@@ -78,22 +78,19 @@ typedef struct _NETLINK_CMD {
 /* A netlink family is a group of commands. */
 typedef struct _NETLINK_FAMILY {
     CHAR *name;
-    UINT32 id;
+    UINT16 id;
     UINT8 version;
-    UINT8 pad;
+    UINT8 pad1;
     UINT16 maxAttr;
+    UINT16 pad2;
     NETLINK_CMD *cmds;          /* Array of netlink commands and handlers. */
     UINT16 opsCount;
 } NETLINK_FAMILY, *PNETLINK_FAMILY;
 
 /* Handlers for the various netlink commands. */
-static NetlinkCmdHandler OvsGetPidCmdHandler,
-                         OvsPendEventCmdHandler,
-                         OvsPendPacketCmdHandler,
+static NetlinkCmdHandler OvsPendEventCmdHandler,
                          OvsSubscribeEventCmdHandler,
-                         OvsSubscribePacketCmdHandler,
                          OvsReadEventCmdHandler,
-                         OvsReadPacketCmdHandler,
                          OvsNewDpCmdHandler,
                          OvsGetDpCmdHandler,
                          OvsSetDpCmdHandler;
@@ -102,7 +99,10 @@ NetlinkCmdHandler        OvsGetNetdevCmdHandler,
                          OvsGetVportCmdHandler,
                          OvsSetVportCmdHandler,
                          OvsNewVportCmdHandler,
-                         OvsDeleteVportCmdHandler;
+                         OvsDeleteVportCmdHandler,
+                         OvsPendPacketCmdHandler,
+                         OvsSubscribePacketCmdHandler,
+                         OvsReadPacketCmdHandler;
 
 static NTSTATUS HandleGetDpTransaction(POVS_USER_PARAMS_CONTEXT usrParamsCtx,
                                        UINT32 *replyLen);
@@ -110,6 +110,8 @@ static NTSTATUS HandleGetDpDump(POVS_USER_PARAMS_CONTEXT usrParamsCtx,
                                 UINT32 *replyLen);
 static NTSTATUS HandleDpTransactionCommon(
                     POVS_USER_PARAMS_CONTEXT usrParamsCtx, UINT32 *replyLen);
+static NTSTATUS OvsGetPidHandler(POVS_USER_PARAMS_CONTEXT usrParamsCtx,
+                                    UINT32 *replyLen);
 
 /*
  * The various netlink families, along with the supported commands. Most of
@@ -120,11 +122,6 @@ static NTSTATUS HandleDpTransactionCommon(
 
 /* Netlink control family: this is a Windows specific family. */
 NETLINK_CMD nlControlFamilyCmdOps[] = {
-    { .cmd             = OVS_CTRL_CMD_WIN_GET_PID,
-      .handler         = OvsGetPidCmdHandler,
-      .supportedDevOp  = OVS_TRANSACTION_DEV_OP,
-      .validateDpIndex = FALSE,
-    },
     { .cmd = OVS_CTRL_CMD_WIN_PEND_REQ,
       .handler = OvsPendEventCmdHandler,
       .supportedDevOp = OVS_WRITE_DEV_OP,
@@ -147,12 +144,12 @@ NETLINK_CMD nlControlFamilyCmdOps[] = {
     },
     { .cmd = OVS_CTRL_CMD_EVENT_NOTIFY,
       .handler = OvsReadEventCmdHandler,
-      .supportedDevOp = OVS_READ_EVENT_DEV_OP,
+      .supportedDevOp = OVS_READ_DEV_OP,
       .validateDpIndex = FALSE,
     },
     { .cmd = OVS_CTRL_CMD_READ_NOTIFY,
       .handler = OvsReadPacketCmdHandler,
-      .supportedDevOp = OVS_READ_PACKET_DEV_OP,
+      .supportedDevOp = OVS_READ_DEV_OP,
       .validateDpIndex = FALSE,
     }
 };
@@ -349,39 +346,54 @@ extern POVS_SWITCH_CONTEXT gOvsSwitchContext;
 NDIS_SPIN_LOCK ovsCtrlLockObj;
 PNDIS_SPIN_LOCK gOvsCtrlLock;
 
+NTSTATUS
+InitUserDumpState(POVS_OPEN_INSTANCE instance,
+                  POVS_MESSAGE ovsMsg)
+{
+    /* Clear the dumpState from a previous dump sequence. */
+    ASSERT(instance->dumpState.ovsMsg == NULL);
+    ASSERT(ovsMsg);
+
+    instance->dumpState.ovsMsg =
+        (POVS_MESSAGE)OvsAllocateMemoryWithTag(sizeof(OVS_MESSAGE),
+                                               OVS_DATAPATH_POOL_TAG);
+    if (instance->dumpState.ovsMsg == NULL) {
+        return STATUS_NO_MEMORY;
+    }
+    RtlCopyMemory(instance->dumpState.ovsMsg, ovsMsg,
+                  sizeof *instance->dumpState.ovsMsg);
+    RtlZeroMemory(instance->dumpState.index,
+                  sizeof instance->dumpState.index);
+
+    return STATUS_SUCCESS;
+}
+
+VOID
+FreeUserDumpState(POVS_OPEN_INSTANCE instance)
+{
+    if (instance->dumpState.ovsMsg != NULL) {
+        OvsFreeMemoryWithTag(instance->dumpState.ovsMsg,
+                             OVS_DATAPATH_POOL_TAG);
+        RtlZeroMemory(&instance->dumpState, sizeof instance->dumpState);
+    }
+}
 
 VOID
 OvsInit()
 {
-    HANDLE handle = NULL;
-
     gOvsCtrlLock = &ovsCtrlLockObj;
     NdisAllocateSpinLock(gOvsCtrlLock);
     OvsInitEventQueue();
-
-    OvsTunnelEngineOpen(&handle);
-    if (handle) {
-        OvsTunnelAddSystemProvider(handle);
-    }
-    OvsTunnelEngineClose(&handle);
 }
 
 VOID
 OvsCleanup()
 {
-    HANDLE handle = NULL;
-
     OvsCleanupEventQueue();
     if (gOvsCtrlLock) {
         NdisFreeSpinLock(gOvsCtrlLock);
         gOvsCtrlLock = NULL;
     }
-
-    OvsTunnelEngineOpen(&handle);
-    if (handle) {
-        OvsTunnelRemoveSystemProvider(handle);
-    }
-    OvsTunnelEngineClose(&handle);
 }
 
 VOID
@@ -449,9 +461,9 @@ OvsCreateDeviceObject(NDIS_HANDLE ovsExtDriverHandle)
             ovsExt->numberOpenInstance = 0;
         }
     } else {
-        /* Initialize the associated data structures. */
-        OvsInit();
+        OvsRegisterSystemProvider((PVOID)gOvsDeviceObject);
     }
+
     OVS_LOG_TRACE("DeviceObject: %p", gOvsDeviceObject);
     return status;
 }
@@ -473,8 +485,9 @@ OvsDeleteDeviceObject()
         NdisDeregisterDeviceEx(gOvsDeviceHandle);
         gOvsDeviceHandle = NULL;
         gOvsDeviceObject = NULL;
+
+        OvsUnregisterSystemProvider();
     }
-    OvsCleanup();
 }
 
 POVS_OPEN_INSTANCE
@@ -512,7 +525,8 @@ OvsAddOpenInstance(POVS_DEVICE_EXTENSION ovsExt,
                    PFILE_OBJECT fileObject)
 {
     POVS_OPEN_INSTANCE instance =
-        (POVS_OPEN_INSTANCE) OvsAllocateMemory(sizeof (OVS_OPEN_INSTANCE));
+        (POVS_OPEN_INSTANCE)OvsAllocateMemoryWithTag(sizeof(OVS_OPEN_INSTANCE),
+                                                     OVS_DATAPATH_POOL_TAG);
     UINT32 i;
 
     if (instance == NULL) {
@@ -523,7 +537,7 @@ OvsAddOpenInstance(POVS_DEVICE_EXTENSION ovsExt,
 
     if (ovsNumberOfOpenInstances >= OVS_MAX_OPEN_INSTANCES) {
         OvsReleaseCtrlLock();
-        OvsFreeMemory(instance);
+        OvsFreeMemoryWithTag(instance, OVS_DATAPATH_POOL_TAG);
         return STATUS_INSUFFICIENT_RESOURCES;
     }
     RtlZeroMemory(instance, sizeof (OVS_OPEN_INSTANCE));
@@ -574,7 +588,8 @@ OvsRemoveOpenInstance(PFILE_OBJECT fileObject)
     OvsReleaseCtrlLock();
     ASSERT(instance->eventQueue == NULL);
     ASSERT (instance->packetQueue == NULL);
-    OvsFreeMemory(instance);
+    FreeUserDumpState(instance);
+    OvsFreeMemoryWithTag(instance, OVS_DATAPATH_POOL_TAG);
 }
 
 NTSTATUS
@@ -656,7 +671,6 @@ OvsCleanupDevice(PDEVICE_OBJECT deviceObject,
     return OvsCompleteIrpRequest(irp, (ULONG_PTR)0, status);
 }
 
-
 /*
  * --------------------------------------------------------------------------
  * IOCTL function handler for the device.
@@ -704,14 +718,13 @@ OvsDeviceControl(PDEVICE_OBJECT deviceObject,
 
     /* Check if the extension is enabled. */
     if (NULL == gOvsSwitchContext) {
-        status = STATUS_DEVICE_NOT_READY;
-        goto done;
+        status = STATUS_NOT_FOUND;
+        goto exit;
     }
 
-    /* Concurrent netlink operations are not supported. */
-    if (InterlockedCompareExchange((LONG volatile *)&instance->inUse, 1, 0)) {
-        status = STATUS_RESOURCE_IN_USE;
-        goto done;
+    if (!OvsAcquireSwitchContext()) {
+        status = STATUS_NOT_FOUND;
+        goto exit;
     }
 
     /*
@@ -719,6 +732,24 @@ OvsDeviceControl(PDEVICE_OBJECT deviceObject,
      * operation.
      */
     switch (code) {
+    case OVS_IOCTL_GET_PID:
+        /* Both input buffer and output buffer use the same location. */
+        outputBuffer = irp->AssociatedIrp.SystemBuffer;
+        if (outputBufferLen != 0) {
+            InitUserParamsCtx(irp, instance, 0, NULL,
+                              inputBuffer, inputBufferLen,
+                              outputBuffer, outputBufferLen,
+                              &usrParamsCtx);
+
+            ASSERT(outputBuffer);
+        } else {
+            status = STATUS_NDIS_INVALID_LENGTH;
+            goto done;
+        }
+
+        status = OvsGetPidHandler(&usrParamsCtx, &replyLen);
+        goto done;
+
     case OVS_IOCTL_TRANSACT:
         /* Both input buffer and output buffer are mandatory. */
         if (outputBufferLen != 0) {
@@ -763,12 +794,17 @@ OvsDeviceControl(PDEVICE_OBJECT deviceObject,
         inputBufferLen = 0;
 
         ovsMsg = &ovsMsgReadOp;
-        ovsMsg->nlMsg.nlmsgType = OVS_WIN_NL_CTRL_FAMILY_ID;
+        RtlZeroMemory(ovsMsg, sizeof *ovsMsg);
+        ovsMsg->nlMsg.nlmsgLen = sizeof *ovsMsg;
+        ovsMsg->nlMsg.nlmsgType = nlControlFamilyOps.id;
         ovsMsg->nlMsg.nlmsgPid = instance->pid;
+
         /* An "artificial" command so we can use NL family function table*/
         ovsMsg->genlMsg.cmd = (code == OVS_IOCTL_READ_EVENT) ?
                               OVS_CTRL_CMD_EVENT_NOTIFY :
                               OVS_CTRL_CMD_READ_NOTIFY;
+        ovsMsg->genlMsg.version = nlControlFamilyOps.version;
+
         devOp = OVS_READ_DEV_OP;
         break;
 
@@ -859,8 +895,8 @@ OvsDeviceControl(PDEVICE_OBJECT deviceObject,
     }
 
     /*
-     * For read operation, the netlink command has already been validated
-     * previously.
+     * For read operation, avoid duplicate validation since 'ovsMsg' is either
+     * "artificial" or was copied from a previously validated 'ovsMsg'.
      */
     if (devOp != OVS_READ_DEV_OP) {
         status = ValidateNetlinkCmd(devOp, instance, ovsMsg, nlFamilyOps);
@@ -877,10 +913,10 @@ OvsDeviceControl(PDEVICE_OBJECT deviceObject,
     status = InvokeNetlinkCmdHandler(&usrParamsCtx, nlFamilyOps, &replyLen);
 
 done:
-    KeMemoryBarrier();
-    instance->inUse = 0;
+    OvsReleaseSwitchContext(gOvsSwitchContext);
 
-    /* Should not complete a pending IRP unless proceesing is completed */
+exit:
+    /* Should not complete a pending IRP unless proceesing is completed. */
     if (status == STATUS_PENDING) {
         return status;
     }
@@ -919,22 +955,17 @@ ValidateNetlinkCmd(UINT32 devOp,
 
             /* Validate the DP for commands that require a DP. */
             if (nlFamilyOps->cmds[i].validateDpIndex == TRUE) {
-                OvsAcquireCtrlLock();
                 if (ovsMsg->ovsHdr.dp_ifindex !=
                                           (INT)gOvsSwitchContext->dpNo) {
                     status = STATUS_INVALID_PARAMETER;
-                    OvsReleaseCtrlLock();
                     goto done;
                 }
-                OvsReleaseCtrlLock();
             }
 
             /* Validate the PID. */
-            if (ovsMsg->genlMsg.cmd != OVS_CTRL_CMD_WIN_GET_PID) {
-                if (ovsMsg->nlMsg.nlmsgPid != instance->pid) {
-                    status = STATUS_INVALID_PARAMETER;
-                    goto done;
-                }
+            if (ovsMsg->nlMsg.nlmsgPid != instance->pid) {
+                status = STATUS_INVALID_PARAMETER;
+                goto done;
             }
 
             status = STATUS_SUCCESS;
@@ -948,7 +979,9 @@ done:
 
 /*
  * --------------------------------------------------------------------------
- * Function to invoke the netlink command handler.
+ * Function to invoke the netlink command handler. The function also stores
+ * the return value of the handler function to construct a 'NL_ERROR' message,
+ * and in turn returns success to the caller.
  * --------------------------------------------------------------------------
  */
 static NTSTATUS
@@ -970,50 +1003,95 @@ InvokeNetlinkCmdHandler(POVS_USER_PARAMS_CONTEXT usrParamsCtx,
         }
     }
 
+    /*
+     * Netlink socket semantics dictate that the return value of the netlink
+     * function should be an error ONLY under fatal conditions. If the message
+     * made it all the way to the handler function, it is not a fatal condition.
+     * Absorb the error returned by the handler function into a 'struct
+     * NL_ERROR' and populate the 'output buffer' to return to userspace.
+     *
+     * This behavior is obviously applicable only to netlink commands that
+     * specify an 'output buffer'. For other commands, we return the error as
+     * is.
+     *
+     * 'STATUS_PENDING' is a special return value and userspace is equipped to
+     * handle it.
+     */
+    if (status != STATUS_SUCCESS && status != STATUS_PENDING) {
+        if (usrParamsCtx->devOp != OVS_WRITE_DEV_OP && *replyLen == 0) {
+            NL_ERROR nlError = NlMapStatusToNlErr(status);
+            OVS_MESSAGE msgInTmp = { 0 };
+            POVS_MESSAGE msgIn = NULL;
+            POVS_MESSAGE_ERROR msgError = (POVS_MESSAGE_ERROR)
+                usrParamsCtx->outputBuffer;
+
+            if (usrParamsCtx->ovsMsg->genlMsg.cmd == OVS_CTRL_CMD_EVENT_NOTIFY ||
+                usrParamsCtx->ovsMsg->genlMsg.cmd == OVS_CTRL_CMD_READ_NOTIFY) {
+                /* There's no input buffer associated with such requests. */
+                NL_BUFFER nlBuffer;
+                msgIn = &msgInTmp;
+                NlBufInit(&nlBuffer, (PCHAR)msgIn, sizeof *msgIn);
+                NlFillNlHdr(&nlBuffer, nlFamilyOps->id, 0, 0,
+                            usrParamsCtx->ovsInstance->pid);
+            } else {
+                msgIn = (POVS_MESSAGE)usrParamsCtx->inputBuffer;
+            }
+
+            ASSERT(msgIn);
+            ASSERT(msgError);
+            NlBuildErrorMsg(msgIn, msgError, nlError);
+            *replyLen = msgError->nlMsg.nlmsgLen;
+        }
+
+        if (*replyLen != 0) {
+            status = STATUS_SUCCESS;
+        }
+    }
+
+#ifdef DBG
+    if (usrParamsCtx->devOp != OVS_WRITE_DEV_OP) {
+        ASSERT(status == STATUS_PENDING || *replyLen != 0 || status == STATUS_SUCCESS);
+    }
+#endif
+
     return status;
 }
 
 /*
  * --------------------------------------------------------------------------
- *  Command Handler for 'OVS_CTRL_CMD_WIN_GET_PID'.
+ *  Handler for 'OVS_IOCTL_GET_PID'.
  *
  *  Each handle on the device is assigned a unique PID when the handle is
- *  created. On platforms that support netlink natively, the PID is available
- *  to userspace when the netlink socket is created. However, without native
- *  netlink support on Windows, OVS datapath generates the PID and lets the
- *  userspace query it.
- *
- *  This function implements the query.
+ *  created. This function passes the PID to userspace using METHOD_BUFFERED
+ *  method.
  * --------------------------------------------------------------------------
  */
 static NTSTATUS
-OvsGetPidCmdHandler(POVS_USER_PARAMS_CONTEXT usrParamsCtx,
-                    UINT32 *replyLen)
+OvsGetPidHandler(POVS_USER_PARAMS_CONTEXT usrParamsCtx,
+                 UINT32 *replyLen)
 {
-    POVS_MESSAGE msgIn = (POVS_MESSAGE)usrParamsCtx->inputBuffer;
-    POVS_MESSAGE msgOut = (POVS_MESSAGE)usrParamsCtx->outputBuffer;
+    NTSTATUS status = STATUS_SUCCESS;
+    PUINT32 msgOut = (PUINT32)usrParamsCtx->outputBuffer;
 
     if (usrParamsCtx->outputLength >= sizeof *msgOut) {
         POVS_OPEN_INSTANCE instance =
             (POVS_OPEN_INSTANCE)usrParamsCtx->ovsInstance;
 
         RtlZeroMemory(msgOut, sizeof *msgOut);
-        msgOut->nlMsg.nlmsgSeq = msgIn->nlMsg.nlmsgSeq;
-        msgOut->nlMsg.nlmsgPid = instance->pid;
+        RtlCopyMemory(msgOut, &instance->pid, sizeof(*msgOut));
         *replyLen = sizeof *msgOut;
-        /* XXX: We might need to return the DP index as well. */
     } else {
-        return STATUS_NDIS_INVALID_LENGTH;
+        *replyLen = sizeof *msgOut;
+        status = STATUS_NDIS_INVALID_LENGTH;
     }
 
-    return STATUS_SUCCESS;
+    return status;
 }
 
 /*
  * --------------------------------------------------------------------------
  * Utility function to fill up information about the datapath in a reply to
  * userspace.
- * Assumes that 'gOvsCtrlLock' lock is acquired.
  * --------------------------------------------------------------------------
  */
 static NTSTATUS
@@ -1112,7 +1190,8 @@ OvsSubscribeEventCmdHandler(POVS_USER_PARAMS_CONTEXT usrParamsCtx,
     POVS_MESSAGE msgIn = (POVS_MESSAGE)usrParamsCtx->inputBuffer;
 
     rc = NlAttrParse(&msgIn->nlMsg, sizeof (*msgIn),
-         NlMsgAttrsLen((PNL_MSG_HDR)msgIn), policy, attrs, ARRAY_SIZE(attrs));
+         NlMsgAttrsLen((PNL_MSG_HDR)msgIn), policy, ARRAY_SIZE(policy),
+                       attrs, ARRAY_SIZE(attrs));
     if (!rc) {
         status = STATUS_INVALID_PARAMETER;
         goto done;
@@ -1213,9 +1292,7 @@ HandleGetDpDump(POVS_USER_PARAMS_CONTEXT usrParamsCtx,
         NlBufInit(&nlBuf, usrParamsCtx->outputBuffer,
                   usrParamsCtx->outputLength);
 
-        OvsAcquireCtrlLock();
         status = OvsDpFillInfo(gOvsSwitchContext, msgIn, &nlBuf);
-        OvsReleaseCtrlLock();
 
         if (status != STATUS_SUCCESS) {
             *replyLen = 0;
@@ -1283,7 +1360,9 @@ HandleDpTransactionCommon(POVS_USER_PARAMS_CONTEXT usrParamsCtx,
         if (!NlAttrParse((PNL_MSG_HDR)msgIn,
                         NLMSG_HDRLEN + GENL_HDRLEN + OVS_HDRLEN,
                         NlMsgAttrsLen((PNL_MSG_HDR)msgIn),
-                        ovsDatapathSetPolicy, dpAttrs, ARRAY_SIZE(dpAttrs))) {
+                        ovsDatapathSetPolicy,
+                        ARRAY_SIZE(ovsDatapathSetPolicy),
+                        dpAttrs, ARRAY_SIZE(dpAttrs))) {
             return STATUS_INVALID_PARAMETER;
         }
 
@@ -1302,11 +1381,9 @@ HandleDpTransactionCommon(POVS_USER_PARAMS_CONTEXT usrParamsCtx,
 
     NlBufInit(&nlBuf, usrParamsCtx->outputBuffer, usrParamsCtx->outputLength);
 
-    OvsAcquireCtrlLock();
     if (dpAttrs[OVS_DP_ATTR_NAME] != NULL) {
         if (!OvsCompareString(NlAttrGet(dpAttrs[OVS_DP_ATTR_NAME]),
                               OVS_SYSTEM_DP_NAME)) {
-            OvsReleaseCtrlLock();
 
             /* Creation of new datapaths is not supported. */
             if (usrParamsCtx->ovsMsg->genlMsg.cmd == OVS_DP_CMD_SET) {
@@ -1318,19 +1395,16 @@ HandleDpTransactionCommon(POVS_USER_PARAMS_CONTEXT usrParamsCtx,
             goto cleanup;
         }
     } else if ((UINT32)msgIn->ovsHdr.dp_ifindex != gOvsSwitchContext->dpNo) {
-        OvsReleaseCtrlLock();
         nlError = NL_ERROR_NODEV;
         goto cleanup;
     }
 
     if (usrParamsCtx->ovsMsg->genlMsg.cmd == OVS_DP_CMD_NEW) {
-        OvsReleaseCtrlLock();
         nlError = NL_ERROR_EXIST;
         goto cleanup;
     }
 
     status = OvsDpFillInfo(gOvsSwitchContext, msgIn, &nlBuf);
-    OvsReleaseCtrlLock();
 
     *replyLen = NlBufSize(&nlBuf);
 
@@ -1412,7 +1486,6 @@ MapIrpOutputBuffer(PIRP irp,
  * --------------------------------------------------------------------------
  * Utility function to fill up information about the state of a port in a reply
  * to* userspace.
- * Assumes that 'gOvsCtrlLock' lock is acquired.
  * --------------------------------------------------------------------------
  */
 static NTSTATUS
@@ -1424,7 +1497,6 @@ OvsPortFillInfo(POVS_USER_PARAMS_CONTEXT usrParamsCtx,
     BOOLEAN ok;
     OVS_MESSAGE msgOutTmp;
     PNL_MSG_HDR nlMsg;
-    POVS_VPORT_ENTRY vport;
 
     ASSERT(NlBufAt(nlBuf, 0, 0) != 0 && nlBuf->bufRemLen >= sizeof msgOutTmp);
 
@@ -1439,9 +1511,9 @@ OvsPortFillInfo(POVS_USER_PARAMS_CONTEXT usrParamsCtx,
     msgOutTmp.genlMsg.reserved = 0;
 
     /* we don't have netdev yet, treat link up/down a adding/removing a port*/
-    if (eventEntry->status & (OVS_EVENT_LINK_UP | OVS_EVENT_CONNECT)) {
+    if (eventEntry->type & (OVS_EVENT_LINK_UP | OVS_EVENT_CONNECT)) {
         msgOutTmp.genlMsg.cmd = OVS_VPORT_CMD_NEW;
-    } else if (eventEntry->status &
+    } else if (eventEntry->type &
              (OVS_EVENT_LINK_DOWN | OVS_EVENT_DISCONNECT)) {
         msgOutTmp.genlMsg.cmd = OVS_VPORT_CMD_DEL;
     } else {
@@ -1456,17 +1528,11 @@ OvsPortFillInfo(POVS_USER_PARAMS_CONTEXT usrParamsCtx,
         goto cleanup;
     }
 
-    vport = OvsFindVportByPortNo(gOvsSwitchContext, eventEntry->portNo);
-    if (!vport) {
-        status = STATUS_DEVICE_DOES_NOT_EXIST;
-        goto cleanup;
-    }
-
     ok = NlMsgPutTailU32(nlBuf, OVS_VPORT_ATTR_PORT_NO, eventEntry->portNo) &&
-         NlMsgPutTailU32(nlBuf, OVS_VPORT_ATTR_TYPE, vport->ovsType) &&
+         NlMsgPutTailU32(nlBuf, OVS_VPORT_ATTR_TYPE, eventEntry->ovsType) &&
          NlMsgPutTailU32(nlBuf, OVS_VPORT_ATTR_UPCALL_PID,
-                         vport->upcallPid) &&
-         NlMsgPutTailString(nlBuf, OVS_VPORT_ATTR_NAME, vport->ovsName);
+                         eventEntry->upcallPid) &&
+         NlMsgPutTailString(nlBuf, OVS_VPORT_ATTR_NAME, eventEntry->ovsName);
     if (!ok) {
         status = STATUS_INVALID_BUFFER_SIZE;
         goto cleanup;
@@ -1516,8 +1582,6 @@ OvsReadEventCmdHandler(POVS_USER_PARAMS_CONTEXT usrParamsCtx,
 
     NlBufInit(&nlBuf, usrParamsCtx->outputBuffer, usrParamsCtx->outputLength);
 
-    OvsAcquireCtrlLock();
-
     /* remove an event entry from the event queue */
     status = OvsRemoveEventEntry(usrParamsCtx->ovsInstance, &eventEntry);
     if (status != STATUS_SUCCESS) {
@@ -1533,113 +1597,5 @@ OvsReadEventCmdHandler(POVS_USER_PARAMS_CONTEXT usrParamsCtx,
     }
 
 cleanup:
-    OvsReleaseCtrlLock();
     return status;
-}
-
-/*
- * --------------------------------------------------------------------------
- * Handler for reading missed pacckets from the driver event queue. This
- * handler is executed when user modes issues a socket receive on a socket
- * --------------------------------------------------------------------------
- */
-static NTSTATUS
-OvsReadPacketCmdHandler(POVS_USER_PARAMS_CONTEXT usrParamsCtx,
-                       UINT32 *replyLen)
-{
-#ifdef DBG
-    POVS_MESSAGE msgOut = (POVS_MESSAGE)usrParamsCtx->outputBuffer;
-#endif
-    POVS_OPEN_INSTANCE instance =
-        (POVS_OPEN_INSTANCE)usrParamsCtx->ovsInstance;
-    NTSTATUS status;
-
-    ASSERT(usrParamsCtx->devOp == OVS_READ_DEV_OP);
-
-    /* Should never read events with a dump socket */
-    ASSERT(instance->dumpState.ovsMsg == NULL);
-
-    /* Must have an packet queue */
-    ASSERT(instance->packetQueue != NULL);
-
-    /* Output buffer has been validated while validating read dev op. */
-    ASSERT(msgOut != NULL && usrParamsCtx->outputLength >= sizeof *msgOut);
-
-    /* Read a packet from the instance queue */
-    status = OvsReadDpIoctl(instance->fileObject, usrParamsCtx->outputBuffer,
-                            usrParamsCtx->outputLength, replyLen);
-    return status;
-}
-
-/*
- * --------------------------------------------------------------------------
- *  Handler for the subscription for a packet queue
- * --------------------------------------------------------------------------
- */
-static NTSTATUS
-OvsSubscribePacketCmdHandler(POVS_USER_PARAMS_CONTEXT usrParamsCtx,
-                            UINT32 *replyLen)
-{
-    NDIS_STATUS status;
-    BOOLEAN rc;
-    UINT8 join;
-    UINT32 pid;
-    const NL_POLICY policy[] =  {
-        [OVS_NL_ATTR_PACKET_PID] = {.type = NL_A_U32 },
-        [OVS_NL_ATTR_PACKET_SUBSCRIBE] = {.type = NL_A_U8 }
-        };
-    PNL_ATTR attrs[ARRAY_SIZE(policy)];
-
-    UNREFERENCED_PARAMETER(replyLen);
-
-    POVS_OPEN_INSTANCE instance =
-        (POVS_OPEN_INSTANCE)usrParamsCtx->ovsInstance;
-    POVS_MESSAGE msgIn = (POVS_MESSAGE)usrParamsCtx->inputBuffer;
-
-    rc = NlAttrParse(&msgIn->nlMsg, sizeof (*msgIn),
-         NlMsgAttrsLen((PNL_MSG_HDR)msgIn), policy, attrs, ARRAY_SIZE(attrs));
-    if (!rc) {
-        status = STATUS_INVALID_PARAMETER;
-        goto done;
-    }
-
-    join = NlAttrGetU8(attrs[OVS_NL_ATTR_PACKET_PID]);
-    pid = NlAttrGetU32(attrs[OVS_NL_ATTR_PACKET_PID]);
-
-    /* The socket subscribed with must be the same socket we perform receive*/
-    ASSERT(pid == instance->pid);
-
-    status = OvsSubscribeDpIoctl(instance, pid, join);
-
-    /*
-     * XXX Need to add this instance to a global data structure
-     * which hold all packet based instances. The data structure (hash)
-     * should be searched through the pid field of the instance for
-     * placing the missed packet into the correct queue
-     */
-done:
-    return status;
-}
-
-/*
- * --------------------------------------------------------------------------
- * Handler for queueing an IRP used for missed packet notification. The IRP is
- * completed when a packet received and mismatched. STATUS_PENDING is returned
- * on success. User mode keep a pending IRP at all times.
- * --------------------------------------------------------------------------
- */
-static NTSTATUS
-OvsPendPacketCmdHandler(POVS_USER_PARAMS_CONTEXT usrParamsCtx,
-                       UINT32 *replyLen)
-{
-    UNREFERENCED_PARAMETER(replyLen);
-
-    POVS_OPEN_INSTANCE instance =
-        (POVS_OPEN_INSTANCE)usrParamsCtx->ovsInstance;
-
-    /*
-     * XXX access to packet queue must be through acquiring a lock as user mode
-     * could unsubscribe and the instnace will be freed.
-     */
-    return OvsWaitDpIoctl(usrParamsCtx->irp, instance->fileObject);
 }

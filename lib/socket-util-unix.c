@@ -1,5 +1,7 @@
 /*
  * Copyright (c) 2014 Nicira, Inc.
+ * Copyright (C) 2015 Hewlett-Packard Development Company, L.P.
+ * Copyright (C) 2016 Hewlett Packard Enterprise Development LP
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -50,9 +52,10 @@ VLOG_DEFINE_THIS_MODULE(socket_util_unix);
 #define MAX_UN_LEN (sizeof(((struct sockaddr_un *) 0)->sun_path) - 1)
 
 #ifdef OPS
-/* Group-ID of "ovsdb_users" group */
-#define OVSDB_USERS_GROUP_ID 1020
+/* Group-ID of "ovsdb-client" group */
+#define OVSDB_GROUP_ID 1020
 #endif /* OPS */
+
 
 void
 xpipe(int fds[2])
@@ -264,10 +267,10 @@ free_sockaddr_un(int dirfd, const char *linkname)
 }
 
 /* Binds Unix domain socket 'fd' to a file with permissions 0700. */
-static int
-bind_unix_socket(int fd, struct sockaddr *sun, socklen_t sun_len)
+static int bind_unix_socket(int fd, struct sockaddr *sun, socklen_t sun_len)
 {
-    const mode_t mode = 0700;
+    const mode_t mode = 0770;    /* Allow both user and group access. */
+
     if (LINUX) {
         /* On Linux, the fd's permissions become the file's permissions.
          * fchmod() does not affect other files, like umask() does. */
@@ -356,7 +359,7 @@ make_unix_socket(int style, bool nonblock,
             {
               VLOG_ERR("\nError while changing mode of socket file - %s.\n", bind_path);
             }
-            if(0 != chown(bind_path, -1, OVSDB_USERS_GROUP_ID))
+            if(0 != chown(bind_path, -1, OVSDB_GROUP_ID))
             {
               VLOG_ERR("\nError while changing group of socket file - %s.\n", bind_path);
             }

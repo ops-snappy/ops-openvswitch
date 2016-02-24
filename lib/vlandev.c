@@ -1,6 +1,5 @@
 /*
  * Copyright (c) 2011, 2013, 2014 Nicira, Inc.
- * Copyright (C) 2015 Hewlett-Packard Development Company, L.P.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -163,7 +162,7 @@ vlandev_get_name(const char *real_dev_name, int vid)
 /* The Linux vlandev implementation. */
 
 #if defined ( __linux__) && ! defined (OPS_TEMP)
-#include "rtnetlink-link.h"
+#include "rtnetlink.h"
 #include <linux/if_vlan.h>
 #include <linux/sockios.h>
 #include "netdev-linux.h"
@@ -172,7 +171,7 @@ static struct nln_notifier *vlan_cache_notifier;
 static bool cache_valid;
 
 static void
-vlan_cache_cb(const struct rtnetlink_link_change *change OVS_UNUSED,
+vlan_cache_cb(const struct rtnetlink_change *change OVS_UNUSED,
               void *aux OVS_UNUSED)
 {
     cache_valid = false;
@@ -186,8 +185,8 @@ vlandev_linux_refresh(void)
     FILE *stream;
 
     if (!vlan_cache_notifier) {
-        vlan_cache_notifier = rtnetlink_link_notifier_create(vlan_cache_cb,
-                                                             NULL);
+        vlan_cache_notifier = rtnetlink_notifier_create(vlan_cache_cb,
+                                                        NULL);
         if (!vlan_cache_notifier) {
             return EINVAL;
         }

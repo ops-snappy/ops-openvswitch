@@ -147,6 +147,7 @@ class IdlSchema(DbSchema):
                          idlPrefix, idlHeader, idlTableAliases)
 
 
+
 def column_set_from_json(json, columns):
     if json is None:
         return tuple(columns)

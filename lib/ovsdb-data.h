@@ -1,7 +1,4 @@
-
 /* Copyright (c) 2009, 2010, 2011, 2012 Nicira, Inc.
- *
- * (c) Copyright 2015 Hewlett Packard Enterprise Development LP.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -192,7 +189,6 @@ bool ovsdb_datum_equals(const struct ovsdb_datum *,
 unsigned int ovsdb_datum_find_key(const struct ovsdb_datum *,
                                   const union ovsdb_atom *key,
                                   enum ovsdb_atomic_type key_type);
-
 /*
  * given a string key, returns the corresponding int64_t value,
  * but ONLY if function return value is 0 (no error).

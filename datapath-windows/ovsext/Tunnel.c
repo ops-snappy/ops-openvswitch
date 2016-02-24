@@ -285,7 +285,9 @@ OvsInjectPacketThroughActions(PNET_BUFFER_LIST pNbl,
 
         SendFlags |= NDIS_SEND_FLAGS_DISPATCH_LEVEL;
 
-        vport = gOvsSwitchContext->vxlanVport;
+        vport = OvsFindTunnelVportByDstPort(gOvsSwitchContext,
+                                            htons(tunnelKey.dst_port),
+                                            OVS_VPORT_TYPE_VXLAN);
 
         if (vport == NULL){
             status = STATUS_UNSUCCESSFUL;
@@ -307,8 +309,8 @@ OvsInjectPacketThroughActions(PNET_BUFFER_LIST pNbl,
             datapath->hits++;
 
             OvsActionsExecute(gOvsSwitchContext, &completionList, pNbl,
-                            portNo, SendFlags, &key, &hash, &layers,
-                            flow->actions, flow->actionsLen);
+                              portNo, SendFlags, &key, &hash, &layers,
+                              flow->actions, flow->actionsLen);
 
             OvsReleaseDatapath(datapath, &dpLockState);
         } else {
@@ -316,8 +318,8 @@ OvsInjectPacketThroughActions(PNET_BUFFER_LIST pNbl,
 
             datapath->misses++;
             elem = OvsCreateQueueNlPacket(NULL, 0, OVS_PACKET_CMD_MISS,
-                                        portNo, &key, pNbl, curNb,
-                                        TRUE, &layers);
+                                          vport, &key, pNbl, curNb,
+                                          TRUE, &layers);
             if (elem) {
                 /* Complete the packet since it was copied to user buffer. */
                 InsertTailList(&missedPackets, &elem->link);
