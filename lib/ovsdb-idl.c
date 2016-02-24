@@ -1779,6 +1779,9 @@ ovsdb_idl_get(const struct ovsdb_idl_row *row,
 }
 
 /* Return true if any column of 'row' has a pending fetch operation.
+ *
+ * This function only considers on-demand requests done explicitly over 'row'
+ * i.e. after calling ovsdb_idl_fetch_row().
  */
 bool
 ovsdb_idl_is_row_fetch_pending(const struct ovsdb_idl_row *row)
@@ -1787,6 +1790,11 @@ ovsdb_idl_is_row_fetch_pending(const struct ovsdb_idl_row *row)
 }
 
 /* Return true if 'column' has a pending fetch operation
+ *
+ * This function only considers on-demand requests done explicitly over
+ * 'column' i.e. after calling ovsdb_idl_fetch_column().
+ *
+ * It does not take into account rows requests.
  */
 bool
 ovsdb_idl_is_column_fetch_pending(struct ovsdb_idl *idl,
@@ -1801,7 +1809,12 @@ ovsdb_idl_is_column_fetch_pending(struct ovsdb_idl *idl,
                       column->name) != NULL;
 }
 
-/* Return true if 'table' has a pending fetch operation
+/* Return true if 'table' has a pending fetch operation.
+ *
+ * This function only considers on-demand requests done explicitly over 'table'
+ * i.e. after calling ovsdb_idl_fetch_table().
+ *
+ * It does not take into account columns nor rows requests.
  */
 bool
 ovsdb_idl_is_table_fetch_pending(struct ovsdb_idl *idl,
