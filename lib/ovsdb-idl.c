@@ -1120,15 +1120,6 @@ ovsdb_idl_parse_fetch_reply__(struct ovsdb_idl *idl,
     unsigned int column_idx;
     struct ovsdb_datum *old;
 
-    shash_node = shash_first(&fetch_node->columns);
-
-    if (!shash_node) {
-        return ovsdb_error(NULL,
-               "Missing column information for processing reply");
-    }
-
-    column = shash_node->data;
-
     if (fetch_reply->type != JSON_OBJECT) {
         return ovsdb_syntax_error(fetch_reply, NULL,
                "<fetch_reply> is not an object");
