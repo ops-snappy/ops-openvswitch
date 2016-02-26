@@ -32,10 +32,6 @@
 #include "unaligned.h"
 #include "util.h"
 
-#if defined (OPS) && defined (arp_op)
-#undef arp_op
-#endif
-
 struct dp_packet;
 struct ds;
 
