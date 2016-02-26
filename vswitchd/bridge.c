@@ -567,6 +567,11 @@ bridge_init(const char *remote)
     ovsdb_idl_omit(idl, &ovsrec_bridge_col_external_ids);
 
     ovsdb_idl_omit_alert(idl, &ovsrec_port_col_status);
+#ifdef OPS
+    ovsdb_idl_omit_alert(idl, &ovsrec_port_col_qos_status);
+    ovsdb_idl_omit_alert(idl, &ovsrec_system_col_qos_status);
+    ovsdb_idl_omit_alert(idl, &ovsrec_system_col_status);
+#endif
 #ifndef OPS_TEMP
     ovsdb_idl_omit_alert(idl, &ovsrec_port_col_rstp_status);
     ovsdb_idl_omit_alert(idl, &ovsrec_port_col_rstp_statistics);
