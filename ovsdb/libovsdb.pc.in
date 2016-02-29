@@ -3,7 +3,7 @@ exec_prefix=@exec_prefix@
 libdir=@libdir@
 includedir=@includedir@
 
-Name: libovsdb
+Name: libofproto
 Description: OVSDB library of Open vSwitch
 Version: @VERSION@
 Libs: -L${libdir} -lovsdb

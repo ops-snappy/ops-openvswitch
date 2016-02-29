@@ -1,6 +1,6 @@
 #!/usr/bin/python
 
-# (c) Copyright 2015 Hewlett Packard Enterprise Development LP
+# (c) Copyright 2015-2016 Hewlett Packard Enterprise Development LP
 # All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License"); you may
@@ -45,7 +45,7 @@ class socketFilePermissionTests(OpsVsiTest):
         lines = output.split('\n')
         for line in lines:
             if 'srwxrw' in line:
-                if 'ovsdb_users' not in line:
+                if 'ovsdb-client' not in line:
                     info("Test failed!")
                     return
 

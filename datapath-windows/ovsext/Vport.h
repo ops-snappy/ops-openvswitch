@@ -17,7 +17,10 @@
 #ifndef __VPORT_H_
 #define __VPORT_H_ 1
 
+#include "Gre.h"
+#include "Stt.h"
 #include "Switch.h"
+#include "VxLan.h"
 
 #define OVS_MAX_DPPORTS             MAXUINT16
 #define OVS_DPPORT_NUMBER_INVALID   OVS_MAX_DPPORTS
@@ -31,11 +34,6 @@
  * requests the internal port.
  */
 #define OVS_DPPORT_NUMBER_LOCAL    0
-
-#define OVS_DPPORT_INTERNAL_NAME_A  "internal"
-#define OVS_DPPORT_INTERNAL_NAME_W  L"internal"
-#define OVS_DPPORT_EXTERNAL_NAME_A   "external"
-#define OVS_DPPORT_EXTERNAL_NAME_W  L"external"
 
 /*
  * A Vport, or Virtual Port, is a port on the OVS. It can be one of the
@@ -78,12 +76,13 @@ typedef struct _OVS_VPORT_FULL_STATS {
 /*
  * Each internal, external adapter or vritual adapter has
  * one vport entry. In addition, we have one vport for each
- * tunnel type, such as vxlan, gre, gre64
+ * tunnel type, such as vxlan, gre
  */
 typedef struct _OVS_VPORT_ENTRY {
     LIST_ENTRY             ovsNameLink;
     LIST_ENTRY             portIdLink;
     LIST_ENTRY             portNoLink;
+    LIST_ENTRY             tunnelVportLink;
 
     OVS_VPORT_STATE        ovsState;
     OVS_VPORT_TYPE         ovsType;
@@ -97,6 +96,7 @@ typedef struct _OVS_VPORT_ENTRY {
     PVOID                  priv;
     NDIS_SWITCH_PORT_ID    portId;
     NDIS_SWITCH_NIC_INDEX  nicIndex;
+    NDIS_SWITCH_NIC_TYPE   nicType;
     UINT16                 numaNodeId;
     NDIS_SWITCH_PORT_STATE portState;
     NDIS_SWITCH_NIC_STATE  nicState;
@@ -129,16 +129,14 @@ typedef struct _OVS_VPORT_ENTRY {
     BOOLEAN                isExternal;
     UINT32                 upcallPid; /* netlink upcall port id */
     PNL_ATTR               portOptions;
-    BOOLEAN                isPresentOnHv; /* Is this port present on the
+    BOOLEAN                isAbsentOnHv; /* Is this port present on the
                                              Hyper-V switch? */
 } OVS_VPORT_ENTRY, *POVS_VPORT_ENTRY;
 
 struct _OVS_SWITCH_CONTEXT;
 
-POVS_VPORT_ENTRY
-OvsFindVportByPortNo(struct _OVS_SWITCH_CONTEXT *switchContext,
-                     UINT32 portNo);
-
+POVS_VPORT_ENTRY OvsFindVportByPortNo(POVS_SWITCH_CONTEXT switchContext,
+                                      UINT32 portNo);
 /* "name" is null-terminated */
 POVS_VPORT_ENTRY OvsFindVportByOvsName(POVS_SWITCH_CONTEXT switchContext,
                                        PSTR name);
@@ -147,6 +145,11 @@ POVS_VPORT_ENTRY OvsFindVportByHvNameA(POVS_SWITCH_CONTEXT switchContext,
 POVS_VPORT_ENTRY OvsFindVportByPortIdAndNicIndex(POVS_SWITCH_CONTEXT switchContext,
                                                  NDIS_SWITCH_PORT_ID portId,
                                                  NDIS_SWITCH_NIC_INDEX index);
+POVS_VPORT_ENTRY OvsFindTunnelVportByDstPort(POVS_SWITCH_CONTEXT switchContext,
+                                             UINT16 dstPort,
+                                             OVS_VPORT_TYPE ovsVportType);
+POVS_VPORT_ENTRY OvsFindTunnelVportByPortType(POVS_SWITCH_CONTEXT switchContext,
+                                              OVS_VPORT_TYPE ovsPortType);
 
 NDIS_STATUS OvsAddConfiguredSwitchPorts(struct _OVS_SWITCH_CONTEXT *switchContext);
 NDIS_STATUS OvsInitConfiguredSwitchNics(struct _OVS_SWITCH_CONTEXT *switchContext);
@@ -156,7 +159,8 @@ VOID OvsClearAllSwitchVports(struct _OVS_SWITCH_CONTEXT *switchContext);
 NDIS_STATUS HvCreateNic(POVS_SWITCH_CONTEXT switchContext,
                         PNDIS_SWITCH_NIC_PARAMETERS nicParam);
 NDIS_STATUS HvCreatePort(POVS_SWITCH_CONTEXT switchContext,
-                         PNDIS_SWITCH_PORT_PARAMETERS portParam);
+                         PNDIS_SWITCH_PORT_PARAMETERS portParam,
+                         NDIS_SWITCH_NIC_INDEX nicIndex);
 NDIS_STATUS HvUpdatePort(POVS_SWITCH_CONTEXT switchContext,
                          PNDIS_SWITCH_PORT_PARAMETERS portParam);
 VOID HvTeardownPort(POVS_SWITCH_CONTEXT switchContext,
@@ -176,20 +180,15 @@ static __inline BOOLEAN
 OvsIsTunnelVportType(OVS_VPORT_TYPE ovsType)
 {
     return ovsType == OVS_VPORT_TYPE_VXLAN ||
-           ovsType == OVS_VPORT_TYPE_GRE ||
-           ovsType == OVS_VPORT_TYPE_GRE64;
+           ovsType == OVS_VPORT_TYPE_STT ||
+           ovsType == OVS_VPORT_TYPE_GRE;
 }
 
-static __inline POVS_VPORT_ENTRY
-OvsGetTunnelVport(POVS_SWITCH_CONTEXT switchContext,
-                  OVS_VPORT_TYPE ovsType)
+
+static __inline PVOID
+GetOvsVportPriv(POVS_VPORT_ENTRY ovsVport)
 {
-    switch(ovsType) {
-    case OVS_VPORT_TYPE_VXLAN:
-        return switchContext->vxlanVport;
-    default:
-        return NULL;
-    }
+    return ovsVport->priv;
 }
 
 static __inline BOOLEAN
@@ -199,23 +198,86 @@ OvsIsInternalVportType(OVS_VPORT_TYPE ovsType)
 }
 
 static __inline BOOLEAN
+OvsIsVirtualExternalVport(POVS_VPORT_ENTRY vport)
+{
+    return vport->nicType == NdisSwitchNicTypeExternal &&
+           vport->nicIndex == 0;
+}
+
+static __inline BOOLEAN
+OvsIsRealExternalVport(POVS_VPORT_ENTRY vport)
+{
+    return vport->nicType == NdisSwitchNicTypeExternal &&
+           vport->nicIndex != 0;
+}
+
+static __inline BOOLEAN
 OvsIsBridgeInternalVport(POVS_VPORT_ENTRY vport)
 {
-    if (vport->isBridgeInternal) {
-       ASSERT(vport->ovsType == OVS_VPORT_TYPE_INTERNAL);
-    }
+    ASSERT(vport->isBridgeInternal != TRUE ||
+           vport->ovsType == OVS_VPORT_TYPE_INTERNAL);
     return vport->isBridgeInternal == TRUE;
 }
 
-VOID OvsRemoveAndDeleteVport(POVS_SWITCH_CONTEXT switchContext,
-                             POVS_VPORT_ENTRY vport,
-                             BOOLEAN hvDelete, BOOLEAN ovsDelete,
-                             BOOLEAN *vportDeallocated);
+static __inline BOOLEAN
+OvsIsInternalNIC(NDIS_SWITCH_NIC_TYPE   nicType)
+{
+    return nicType == NdisSwitchNicTypeInternal;
+}
+
+static __inline BOOLEAN
+OvsIsRealExternalNIC(NDIS_SWITCH_NIC_TYPE   nicType,
+                     NDIS_SWITCH_NIC_INDEX  nicIndex)
+{
+    return nicType == NdisSwitchNicTypeExternal &&
+           nicIndex != 0;
+}
+
+NTSTATUS OvsRemoveAndDeleteVport(PVOID usrParamsCtx,
+                                 POVS_SWITCH_CONTEXT switchContext,
+                                 POVS_VPORT_ENTRY vport,
+                                 BOOLEAN hvDelete, BOOLEAN ovsDelete);
+static __inline POVS_VPORT_ENTRY
+OvsGetExternalVport(POVS_SWITCH_CONTEXT switchContext)
+{
+    return switchContext->virtualExternalVport;
+}
+
+static __inline UINT32
+OvsGetExternalMtu(POVS_SWITCH_CONTEXT switchContext)
+{
+    ASSERT(OvsGetExternalVport(switchContext));
+    return ((POVS_VPORT_ENTRY) OvsGetExternalVport(switchContext))->mtu;
+}
+
+static __inline UINT16
+GetPortFromPriv(POVS_VPORT_ENTRY vport)
+{
+    UINT16 dstPort = 0;
+    PVOID vportPriv = GetOvsVportPriv(vport);
+
+    /* XXX would better to have a commom tunnel "parent" structure */
+    ASSERT(vportPriv);
+    switch(vport->ovsType) {
+    case OVS_VPORT_TYPE_GRE:
+        break;
+    case OVS_VPORT_TYPE_STT:
+        dstPort = ((POVS_STT_VPORT)vportPriv)->dstPort;
+        break;
+    case OVS_VPORT_TYPE_VXLAN:
+        dstPort = ((POVS_VXLAN_VPORT)vportPriv)->dstPort;
+        break;
+    default:
+        ASSERT(! "Port is not a tunnel port");
+    }
+    ASSERT(dstPort || vport->ovsType == OVS_VPORT_TYPE_GRE);
+    return dstPort;
+}
 
 NDIS_STATUS InitOvsVportCommon(POVS_SWITCH_CONTEXT switchContext,
                                POVS_VPORT_ENTRY vport);
-NTSTATUS OvsInitTunnelVport(POVS_VPORT_ENTRY vport, OVS_VPORT_TYPE ovsType,
-                            UINT16 dstport);
+NTSTATUS OvsInitTunnelVport(PVOID usrParamsCtx, POVS_VPORT_ENTRY vport,
+                            OVS_VPORT_TYPE ovsType, UINT16 dstport);
 NTSTATUS OvsInitBridgeInternalVport(POVS_VPORT_ENTRY vport);
 
 POVS_VPORT_ENTRY OvsAllocateVport(VOID);
