@@ -52,6 +52,43 @@ static inline struct sk_buff *rpl_vlan_insert_tag_set_proto(struct sk_buff *skb,
 }
 #endif
 
+#ifndef HAVE_VLAN_HWACCEL_PUSH_INSIDE
+
+/*
+ * __vlan_hwaccel_push_inside - pushes vlan tag to the payload
+ * @skb: skbuff to tag
+ *
+ * Pushes the VLAN tag from @skb->vlan_tci inside to the payload.
+ *
+ * Following the skb_unshare() example, in case of error, the calling function
+ * doesn't have to worry about freeing the original skb.
+ */
+static inline struct sk_buff *__vlan_hwaccel_push_inside(struct sk_buff *skb)
+{
+	skb = vlan_insert_tag_set_proto(skb, skb->vlan_proto,
+					vlan_tx_tag_get(skb));
+	if (likely(skb))
+		skb->vlan_tci = 0;
+	return skb;
+}
+/*
+ * vlan_hwaccel_push_inside - pushes vlan tag to the payload
+ * @skb: skbuff to tag
+ *
+ * Checks is tag is present in @skb->vlan_tci and if it is, it pushes the
+ * VLAN tag from @skb->vlan_tci inside to the payload.
+ *
+ * Following the skb_unshare() example, in case of error, the calling function
+ * doesn't have to worry about freeing the original skb.
+ */
+static inline struct sk_buff *vlan_hwaccel_push_inside(struct sk_buff *skb)
+{
+	if (vlan_tx_tag_present(skb))
+		skb = __vlan_hwaccel_push_inside(skb);
+	return skb;
+}
+#endif
+
 #if LINUX_VERSION_CODE < KERNEL_VERSION(3,10,0)
 static inline struct sk_buff *rpl___vlan_hwaccel_put_tag(struct sk_buff *skb,
 						     __be16 vlan_proto,
@@ -135,4 +172,61 @@ static inline int rpl_vlan_insert_tag(struct sk_buff *skb, u16 vlan_tci)
 }
 #endif
 
+#ifndef skb_vlan_tag_present
+#define skb_vlan_tag_present(skb) vlan_tx_tag_present(skb)
+#define skb_vlan_tag_get(skb) vlan_tx_tag_get(skb)
+#endif
+
+#ifndef HAVE_VLAN_GET_PROTOCOL
+
+static inline __be16 __vlan_get_protocol(struct sk_buff *skb, __be16 type,
+					 int *depth)
+{
+	unsigned int vlan_depth = skb->mac_len;
+
+	/* if type is 802.1Q/AD then the header should already be
+	 * present at mac_len - VLAN_HLEN (if mac_len > 0), or at
+	 * ETH_HLEN otherwise
+	 */
+	if (type == htons(ETH_P_8021Q) || type == htons(ETH_P_8021AD)) {
+		if (vlan_depth) {
+			if (WARN_ON(vlan_depth < VLAN_HLEN))
+				return 0;
+			vlan_depth -= VLAN_HLEN;
+		} else {
+			vlan_depth = ETH_HLEN;
+		}
+		do {
+			struct vlan_hdr *vh;
+
+			if (unlikely(!pskb_may_pull(skb,
+						    vlan_depth + VLAN_HLEN)))
+				return 0;
+
+			vh = (struct vlan_hdr *)(skb->data + vlan_depth);
+			type = vh->h_vlan_encapsulated_proto;
+			vlan_depth += VLAN_HLEN;
+		} while (type == htons(ETH_P_8021Q) ||
+			 type == htons(ETH_P_8021AD));
+	}
+
+	if (depth)
+		*depth = vlan_depth;
+
+	return type;
+}
+
+/**
+ * vlan_get_protocol - get protocol EtherType.
+ * @skb: skbuff to query
+ *
+ * Returns the EtherType of the packet, regardless of whether it is
+ * vlan encapsulated (normal or hardware accelerated) or not.
+ */
+static inline __be16 vlan_get_protocol(struct sk_buff *skb)
+{
+	return __vlan_get_protocol(skb, skb->protocol, NULL);
+}
+
+#endif
 #endif	/* linux/if_vlan.h wrapper */

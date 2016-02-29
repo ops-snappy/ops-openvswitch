@@ -11,8 +11,8 @@
 
 #if LINUX_VERSION_CODE < KERNEL_VERSION(3,3,0)
 #define ipv6_skip_exthdr rpl_ipv6_skip_exthdr
-extern int ipv6_skip_exthdr(const struct sk_buff *skb, int start,
-			    u8 *nexthdrp, __be16 *frag_offp);
+extern int rpl_ipv6_skip_exthdr(const struct sk_buff *skb, int start,
+			        u8 *nexthdrp, __be16 *frag_offp);
 #endif
 
 #ifndef HAVE_IP6_FH_F_SKIP_RH
@@ -28,8 +28,8 @@ enum {
  * IP6_FH_F_SKIP_RH.
  */
 #define ipv6_find_hdr rpl_ipv6_find_hdr
-extern int ipv6_find_hdr(const struct sk_buff *skb, unsigned int *offset,
-			 int target, unsigned short *fragoff, int *fragflg);
+extern int rpl_ipv6_find_hdr(const struct sk_buff *skb, unsigned int *offset,
+			     int target, unsigned short *fragoff, int *fragflg);
 #endif
 
 #if LINUX_VERSION_CODE < KERNEL_VERSION(3,6,0)
@@ -44,6 +44,13 @@ static inline u32 ipv6_addr_hash(const struct in6_addr *a)
 	return (__force u32)(a->s6_addr32[0] ^ a->s6_addr32[1] ^
 			     a->s6_addr32[2] ^ a->s6_addr32[3]);
 #endif
+}
+#endif
+
+#if defined(OVS_FRAGMENT_BACKPORT) && !defined(HAVE___IPV6_ADDR_JHASH)
+static inline u32 __ipv6_addr_jhash(const struct in6_addr *a, const u32 unused)
+{
+       return ipv6_addr_jhash(a);
 }
 #endif
 
