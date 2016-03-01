@@ -45,10 +45,9 @@ class socketFilePermissionTests(OpsVsiTest):
         lines = output.split('\n')
         for line in lines:
             if 'srwxrw' in line:
-                if 'ovsdb_users' not in line:
-                    if 'ovsdb-client' not in line:
-                        info("Test failed!")
-                        return
+                if 'ovsdb-client' not in line:
+                    info("Test failed!")
+                    return
 
         info("########## File permissions and group are valid "
              "for socket files ##########\n")

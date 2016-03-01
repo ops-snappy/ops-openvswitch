@@ -1115,12 +1115,12 @@ packet_format_tcp_flags(struct ds *s, uint16_t tcp_flags)
                           ARP_ETH_HEADER_LEN)
 
 /* Clears 'b' and replaces its contents by an ARP frame with the specified
- * 'ovs_arp_op', 'arp_sha', 'arp_tha', 'arp_spa', and 'arp_tpa'.  The outer
+ * 'arp_op', 'arp_sha', 'arp_tha', 'arp_spa', and 'arp_tpa'.  The outer
  * Ethernet frame is initialized with Ethernet source 'arp_sha' and destination
  * 'arp_tha', except that destination ff:ff:ff:ff:ff:ff is used instead if
  * 'broadcast' is true. */
 void
-compose_arp(struct dp_packet *b, uint16_t ovs_arp_op,
+compose_arp(struct dp_packet *b, uint16_t arp_op,
             const struct eth_addr arp_sha, const struct eth_addr arp_tha,
             bool broadcast, ovs_be32 arp_spa, ovs_be32 arp_tpa)
 {
@@ -1141,7 +1141,7 @@ compose_arp(struct dp_packet *b, uint16_t ovs_arp_op,
     arp->ar_pro = htons(ARP_PRO_IP);
     arp->ar_hln = sizeof arp->ar_sha;
     arp->ar_pln = sizeof arp->ar_spa;
-    arp->ar_op = htons(ovs_arp_op);
+    arp->ar_op = htons(arp_op);
     arp->ar_sha = arp_sha;
     arp->ar_tha = arp_tha;
 

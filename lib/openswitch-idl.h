@@ -517,6 +517,12 @@ enum ovsrec_port_config_admin_e {
 #define OVSDB_BGP_ROUTE_PATH_ATTRIBUTES_INTERNAL       "BGP_internal"
 #define OVSDB_BGP_ROUTE_PATH_ATTRIBUTES_IBGP           "BGP_iBGP"
 #define OVSDB_BGP_ROUTE_PATH_ATTRIBUTES_UPTIME         "BGP_uptime"
+#define OVSDB_BGP_ROUTE_PATH_ATTRIBUTES_WEIGHT           "BGP_weight"
+#define OVSDB_BGP_ROUTE_PATH_ATTRIBUTES_AGGREGATOR_ID    "BGP_aggregator_id"
+#define OVSDB_BGP_ROUTE_PATH_ATTRIBUTES_AGGREGATOR_ADDR  "BGP_aggregator_addr"
+#define OVSDB_BGP_ROUTE_PATH_ATTRIBUTES_COMMUNITY        "BGP_community"
+#define OVSDB_BGP_ROUTE_PATH_ATTRIBUTES_ECOMMUNITY       "BGP_ecommunity"
+#define OVSDB_BGP_ROUTE_PATH_ATTRIBUTES_ATOMIC_AGGREGATE "BGP_atomic_aggregate"
 
 /* BGP Neighbor state, goes into "status" column */
 #define BGP_PEER_STATE                          "bgp_peer_state"
