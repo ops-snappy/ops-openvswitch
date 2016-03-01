@@ -2555,7 +2555,7 @@ format_odp_key_attr(const struct nlattr *a, const struct nlattr *ma,
 
         format_ipv4(ds, "sip", key->arp_sip, MASK(mask, arp_sip), verbose);
         format_ipv4(ds, "tip", key->arp_tip, MASK(mask, arp_tip), verbose);
-        format_be16(ds, "op", key->ovs_arp_op, MASK(mask, ovs_arp_op), verbose);
+        format_be16(ds, "op", key->arp_op, MASK(mask, arp_op), verbose);
         format_eth(ds, "sha", key->arp_sha, MASK(mask, arp_sha), verbose);
         format_eth(ds, "tha", key->arp_tha, MASK(mask, arp_tha), verbose);
         ds_chomp(ds, ',');
@@ -3722,7 +3722,7 @@ parse_odp_key_mask_attr(const char *s, const struct simap *port_names,
     SCAN_BEGIN("arp(", struct ovs_key_arp) {
         SCAN_FIELD("sip=", ipv4, arp_sip);
         SCAN_FIELD("tip=", ipv4, arp_tip);
-        SCAN_FIELD("op=", be16, ovs_arp_op);
+        SCAN_FIELD("op=", be16, arp_op);
         SCAN_FIELD("sha=", eth, arp_sha);
         SCAN_FIELD("tha=", eth, arp_tha);
     } SCAN_END(OVS_KEY_ATTR_ARP);
@@ -4447,9 +4447,9 @@ parse_l2_5_onward(const struct nlattr *attrs[OVS_KEY_ATTR_MAX + 1],
             const struct ovs_key_arp *arp_key;
 
             arp_key = nl_attr_get(attrs[OVS_KEY_ATTR_ARP]);
-            if (!is_mask && (arp_key->ovs_arp_op & htons(0xff00))) {
+            if (!is_mask && (arp_key->arp_op & htons(0xff00))) {
                 VLOG_ERR_RL(&rl, "unsupported ARP opcode %"PRIu16" in flow "
-                            "key", ntohs(arp_key->ovs_arp_op));
+                            "key", ntohs(arp_key->arp_op));
                 return ODP_FIT_ERROR;
             }
             put_arp_key(arp_key, flow);
@@ -5278,7 +5278,7 @@ get_arp_key(const struct flow *flow, struct ovs_key_arp *arp)
 
     arp->arp_sip = flow->nw_src;
     arp->arp_tip = flow->nw_dst;
-    arp->ovs_arp_op = htons(flow->nw_proto);
+    arp->arp_op = htons(flow->nw_proto);
     arp->arp_sha = flow->arp_sha;
     arp->arp_tha = flow->arp_tha;
 }
@@ -5288,7 +5288,7 @@ put_arp_key(const struct ovs_key_arp *arp, struct flow *flow)
 {
     flow->nw_src = arp->arp_sip;
     flow->nw_dst = arp->arp_tip;
-    flow->nw_proto = ntohs(arp->ovs_arp_op);
+    flow->nw_proto = ntohs(arp->arp_op);
     flow->arp_sha = arp->arp_sha;
     flow->arp_tha = arp->arp_tha;
 }

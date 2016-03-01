@@ -162,7 +162,7 @@ set_arp(struct dp_packet *packet, const struct ovs_key_arp *key,
     struct arp_eth_header *arp = dp_packet_l3(packet);
 
     if (!mask) {
-        arp->ar_op = key->ovs_arp_op;
+        arp->ar_op = key->arp_op;
         arp->ar_sha = key->arp_sha;
         put_16aligned_be32(&arp->ar_spa, key->arp_sip);
         arp->ar_tha = key->arp_tha;
@@ -171,7 +171,7 @@ set_arp(struct dp_packet *packet, const struct ovs_key_arp *key,
         ovs_be32 ar_spa = get_16aligned_be32(&arp->ar_spa);
         ovs_be32 ar_tpa = get_16aligned_be32(&arp->ar_tpa);
 
-        arp->ar_op = key->ovs_arp_op | (arp->ar_op & ~mask->ovs_arp_op);
+        arp->ar_op = key->arp_op | (arp->ar_op & ~mask->arp_op);
         ether_addr_copy_masked(&arp->ar_sha, key->arp_sha, mask->arp_sha);
         put_16aligned_be32(&arp->ar_spa,
                            key->arp_sip | (ar_spa & ~mask->arp_sip));

@@ -144,6 +144,7 @@ AC_CONFIG_FILES([
     lib/string.h
     ovsdb/libovsdb.sym
     ofproto/libofproto.sym
+    plugins/libplugins.sym
     lib/libsflow.sym
     lib/libopenvswitch.sym
     lib/libovscommon.sym])
@@ -180,6 +181,10 @@ OVS_CHECK_PRAGMA_MESSAGE
 AC_SUBST([OVS_CFLAGS])
 AC_SUBST([OVS_LDFLAGS])
 
+PKG_CHECK_MODULES([YAML], [yaml-0.1])
+AC_SUBST([YAML_CFLAGS])
+AC_SUBST([YAML_LDFLAGS])
+
 AC_CONFIG_FILES(Makefile)
 AC_CONFIG_FILES(datapath/Makefile)
 AC_CONFIG_FILES(datapath/linux/Kbuild)
@@ -189,6 +194,7 @@ AC_CONFIG_FILES(tests/atlocal)
 AC_CONFIG_FILES(lib/libovscommon.pc)
 AC_CONFIG_FILES(lib/libopenvswitch.pc)
 AC_CONFIG_FILES(lib/libsflow.pc)
+AC_CONFIG_FILES(plugins/libplugins.pc)
 AC_CONFIG_FILES(ofproto/libofproto.pc)
 AC_CONFIG_FILES(ovsdb/libovsdb.pc)
 AC_CONFIG_FILES(include/openvswitch/version.h)

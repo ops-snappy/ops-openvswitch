@@ -393,6 +393,9 @@ enum ovsrec_interface_hw_bond_config_enabled_e {
 #define PORT_OTHER_CONFIG_MAP_LACP_SYSTEM_PRIORITY      "lacp-system-priority"
 #define PORT_OTHER_CONFIG_MAP_LACP_SYSTEM_ID            "lacp-system-id"
 
+#define PORT_OTHER_CONFIG_MAP_PROXY_ARP_ENABLED         "proxy_arp_enabled"
+#define PORT_OTHER_CONFIG_MAP_PROXY_ARP_ENABLED_TRUE    "true"
+
 #define PORT_LACP_STATUS_MAP_BOND_SPEED                 "bond_speed"
 #define PORT_LACP_STATUS_MAP_BOND_STATUS                "bond_status"
 #define PORT_LACP_STATUS_MAP_BOND_STATUS_REASON         "bond_status_reason"
@@ -514,6 +517,12 @@ enum ovsrec_port_config_admin_e {
 #define OVSDB_BGP_ROUTE_PATH_ATTRIBUTES_INTERNAL       "BGP_internal"
 #define OVSDB_BGP_ROUTE_PATH_ATTRIBUTES_IBGP           "BGP_iBGP"
 #define OVSDB_BGP_ROUTE_PATH_ATTRIBUTES_UPTIME         "BGP_uptime"
+#define OVSDB_BGP_ROUTE_PATH_ATTRIBUTES_WEIGHT           "BGP_weight"
+#define OVSDB_BGP_ROUTE_PATH_ATTRIBUTES_AGGREGATOR_ID    "BGP_aggregator_id"
+#define OVSDB_BGP_ROUTE_PATH_ATTRIBUTES_AGGREGATOR_ADDR  "BGP_aggregator_addr"
+#define OVSDB_BGP_ROUTE_PATH_ATTRIBUTES_COMMUNITY        "BGP_community"
+#define OVSDB_BGP_ROUTE_PATH_ATTRIBUTES_ECOMMUNITY       "BGP_ecommunity"
+#define OVSDB_BGP_ROUTE_PATH_ATTRIBUTES_ATOMIC_AGGREGATE "BGP_atomic_aggregate"
 
 /* BGP Neighbor state, goes into "status" column */
 #define BGP_PEER_STATE                          "bgp_peer_state"
@@ -584,6 +593,7 @@ enum ovsrec_port_config_admin_e {
 #define SYSTEM_ECMP_CONFIG_HASH_SRC_PORT                  "hash_srcport_enabled"
 #define SYSTEM_ECMP_CONFIG_HASH_DST_IP                    "hash_dstip_enabled"
 #define SYSTEM_ECMP_CONFIG_HASH_DST_PORT                  "hash_dstport_enabled"
+#define SYSTEM_ECMP_CONFIG_HASH_RESILIENT                 "resilient_hash_enabled"
 #define SYSTEM_ECMP_CONFIG_ENABLE_DEFAULT                 "true"
 
 /************************************************************************/
@@ -727,4 +737,86 @@ enum ospf_nbr_statistics_e {
 #define OSPF_KEY_NEIGHBOR_LAST_UP_TIMESTAMP   "last_up_timestamp"
 
 #define OSPF_KEY_ROUTER_STUB_ADV_STARTUP      "startup"
+
+/******************************** NTP START **********************************/
+/****************************** NTP_KEY TABLE ********************************/
+#define NTP_KEY_KEY_PASSWORD_LEN_MIN                    8
+#define NTP_KEY_KEY_PASSWORD_LEN_MAX                    16
+
+#define NTP_KEY_KEY_ID_MIN                              1
+#define NTP_KEY_KEY_ID_MAX                              65534
+
+/************************** NTP_ASSOCIATION TABLE ****************************/
+
+#define NTP_ASSOC_SERVER_NAME_LEN                       57
+#define NTP_ASSOC_MAX_SERVERS                           8
+
+/* NTP Association attributes (association_attributes) */
+#define NTP_ASSOC_ATTRIB_REF_CLOCK_ID                   "ref_clock_id"
+
+#define NTP_ASSOC_ATTRIB_PREFER                         "prefer"
+#define NTP_ASSOC_ATTRIB_PREFER_DEFAULT                 "false"
+#define NTP_ASSOC_ATTRIB_PREFER_DEFAULT_VAL             false
+
+#define NTP_ASSOC_ATTRIB_VERSION                        "version"
+#define NTP_ASSOC_ATTRIB_VERSION_3                      "3"
+#define NTP_ASSOC_ATTRIB_VERSION_4                      "4"
+#define NTP_ASSOC_ATTRIB_VERSION_DEFAULT                NTP_ASSOC_ATTRIB_VERSION_3
+
+#define NTP_ASSOC_STATUS_REMOTE_PEER_ADDRESS            "remote_peer_address"
+#define NTP_ASSOC_STATUS_REMOTE_PEER_REF_ID             "remote_peer_ref_id"
+
+#define NTP_ASSOC_STATUS_STRATUM                        "stratum"
+#define NTP_ASSOC_STATUS_STRATUM_MIN                    1
+#define NTP_ASSOC_STATUS_STRATUM_MAX                    16
+
+#define NTP_ASSOC_STATUS_PEER_TYPE                      "peer_type"
+#define NTP_ASSOC_STATUS_PEER_TYPE_UNI_MANY_CAST        "uni_or_many_cast"
+#define NTP_ASSOC_STATUS_PEER_TYPE_B_M_CAST             "bcast_or_mcast_client"
+#define NTP_ASSOC_STATUS_PEER_TYPE_LOCAL_REF_CLOCK      "local_ref_clock"
+#define NTP_ASSOC_STATUS_PEER_TYPE_SYMM_PEER            "symm_peer"
+#define NTP_ASSOC_STATUS_PEER_TYPE_MANYCAST             "manycast_server"
+#define NTP_ASSOC_STATUS_PEER_TYPE_BROADCAST            "bcast_server"
+#define NTP_ASSOC_STATUS_PEER_TYPE_MULTICAST            "mcast_server"
+
+#define NTP_ASSOC_STATUS_LAST_POLLED                    "last_polled"
+#define NTP_ASSOC_STATUS_POLLING_INTERVAL               "polling_interval"
+#define NTP_ASSOC_STATUS_REACHABILITY_REGISTER          "reachability_register"
+#define NTP_ASSOC_STATUS_NETWORK_DELAY                  "network_delay"
+#define NTP_ASSOC_STATUS_TIME_OFFSET                    "time_offset"
+#define NTP_ASSOC_STATUS_JITTER                         "jitter"
+#define NTP_ASSOC_STATUS_ROOT_DISPERSION                "root_dispersion"
+#define NTP_ASSOC_STATUS_REFERENCE_TIME                 "reference_time"
+#define NTP_ASSOC_STATUS_ASSOCID                        "associd"
+
+#define NTP_ASSOC_STATUS_PEER_STATUS_WORD               "peer_status_word"
+#define NTP_ASSOC_STATUS_PEER_STATUS_WORD_REJECT        "reject"
+#define NTP_ASSOC_STATUS_PEER_STATUS_WORD_FALSETICK     "falsetick"
+#define NTP_ASSOC_STATUS_PEER_STATUS_WORD_EXCESS        "excess"
+#define NTP_ASSOC_STATUS_PEER_STATUS_WORD_OUTLIER       "outlier"
+#define NTP_ASSOC_STATUS_PEER_STATUS_WORD_PPSPEER       "pps_peer"
+#define NTP_ASSOC_STATUS_PEER_STATUS_WORD_CANDIDATE     "candidate"
+#define NTP_ASSOC_STATUS_PEER_STATUS_WORD_BACKUP        "backup"
+#define NTP_ASSOC_STATUS_PEER_STATUS_WORD_SYSTEMPEER    "system_peer"
+
+/********************** NTP Global config from System Table ***************************/
+#define SYSTEM_NTP_CONFIG_AUTHENTICATION_ENABLE         "authentication_enable"
+#define SYSTEM_NTP_CONFIG_AUTHENTICATION_ENABLED        "enabled"
+#define SYSTEM_NTP_CONFIG_AUTHENTICATION_DISABLED       "disabled"
+#define SYSTEM_NTP_CONFIG_AUTHENTICATION_DEFAULT        false
+
+#define SYSTEM_NTP_STATS_PKTS_RCVD                      "ntp_pkts_received"
+#define SYSTEM_NTP_STATS_PKTS_CUR_VER                   "ntp_pkts_with_current_version"
+#define SYSTEM_NTP_STATS_PKTS_OLD_VER                   "ntp_pkts_with_older_version"
+#define SYSTEM_NTP_STATS_PKTS_BAD_LEN_OR_FORMAT         "ntp_pkts_with_bad_length_or_format"
+#define SYSTEM_NTP_STATS_PKTS_AUTH_FAILED               "ntp_pkts_with_auth_failed"
+#define SYSTEM_NTP_STATS_PKTS_DECLINED                  "ntp_pkts_declined"
+#define SYSTEM_NTP_STATS_PKTS_RESTRICTED                "ntp_pkts_restricted"
+#define SYSTEM_NTP_STATS_PKTS_RATE_LIMITED              "ntp_pkts_rate_limited"
+#define SYSTEM_NTP_STATS_PKTS_KOD_RESPONSES             "ntp_pkts_kod_responses"
+
+#define SYSTEM_NTP_STATUS_UPTIME                        "uptime"
+
+/************************************* NTP END ****************************************/
+
 #endif /* OPENSWITCH_IDL_HEADER */

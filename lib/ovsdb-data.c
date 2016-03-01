@@ -1642,6 +1642,7 @@ ovsdb_datum_find_key(const struct ovsdb_datum *datum,
     return UINT_MAX;
 }
 
+#ifdef OPS
 /*
  * very specific data extraction function.  Given a "string" key,
  * return the int64_t value.  It is assumed that the types of
@@ -1669,6 +1670,7 @@ ovsdb_datum_get_int64_value_given_string_key (const struct ovsdb_datum *datum,
     *value_extracted = datum->values[idx].integer;
     return 0;
 }
+#endif
 
 /* If 'key' and 'value' is one of the key-value pairs in 'datum', returns its
  * index within 'datum', otherwise UINT_MAX.  'key.type' must be the type of

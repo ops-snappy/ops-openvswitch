@@ -464,7 +464,7 @@ static void
                 if valueVar:
                     # Special case for boolean types (see above).
                     if type.value.type == ovs.db.types.BooleanType:
-                        sizeof = " * sizeof_bool"
+                        sizeof = "sizeof_bool"
                     else:
                         sizeof = "sizeof *%s" % valueVar
                     print "%s    %s = xmalloc(%s * %s);" % (indent, valueVar,

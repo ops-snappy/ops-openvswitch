@@ -20,17 +20,22 @@
 #include <errno.h>
 #include <ltdl.h>
 #include <unistd.h>
+#include <stdio.h>
+#include "list.h"
+#include "hash.h"
+#include "shash.h"
 #include "plugins.h"
 #include "coverage.h"
 #include "dynamic-string.h"
 #include "openvswitch/vlog.h"
+#include "plugins_yaml.h"
 #include "lib/dirs.h"
 
 VLOG_DEFINE_THIS_MODULE(plugins);
 
 typedef void(*plugin_func)(void);
 struct plugin_class {
-    plugin_func init;
+    void(* init)(int phase_id);
     plugin_func run;
     plugin_func wait;
     plugin_func destroy;
@@ -39,6 +44,7 @@ struct plugin_class {
     plugin_func bufmon_register;
 };
 
+static struct shash sh_plugins;
 static lt_dlinterface_id interface_id;
 
 static int
@@ -46,6 +52,8 @@ plugins_open_plugin(const char *filename, void *data)
 {
     struct plugin_class *plcl;
     lt_dlhandle handle;
+    struct hash_node *node;
+    const lt_dlinfo *info;
 
     if (!(handle = lt_dlopenadvise(filename, *(lt_dladvise *)data))) {
         VLOG_ERR("Failed loading %s: %s", filename, lt_dlerror());
@@ -83,7 +91,24 @@ plugins_open_plugin(const char *filename, void *data)
         goto err_set_data;
     }
 
-    plcl->init();
+    /* Instead of running init here, add handler to hash for later ordered
+     * execution, after sorting all plugins according to yaml config file */
+
+    if (!(info = lt_dlgetinfo(handle))) {
+        VLOG_ERR("Couldn't get handle information");
+        goto err_set_data;
+    }
+
+    node = (struct hash_node *) shash_find_data(&sh_plugins, info->name);
+    if (!node) {
+        node = (struct hash_node *) xmalloc(sizeof(struct hash_node));
+        node->phase_id = 0;
+        node->handle = handle;
+        if (!shash_add_once(&sh_plugins, info->name, node)) {
+            VLOG_ERR("Error adding plugin %s to hash", info->name);
+            goto err_set_data;
+        }
+    }
 
     VLOG_INFO("Loaded plugin library %s", filename);
     return 0;
@@ -100,12 +125,70 @@ err_plugin_class:
     return 0;
 }
 
+static void
+plugins_initializaton(void)
+{
+    struct ovs_list *plugins_list;
+    struct list_node *l_node;
+    struct hash_node *h_node;
+    struct shash_node *sh_node;
+    struct plugin_class *plcl;
+    const lt_dlinfo *info;
+
+    plugins_list = get_yaml_plugins();
+
+    /* First initialize plugins in the order specified by the yaml
+     * configuration file*/
+    if (plugins_list) {
+        LIST_FOR_EACH(l_node, node, plugins_list) {
+            h_node = shash_find_data(&sh_plugins, l_node->name);
+            if (h_node) {
+                plcl = (struct plugin_class *)lt_dlcaller_get_data(interface_id,
+                                                                   h_node->handle);
+                if (plcl && plcl->init) {
+                    info = lt_dlgetinfo(h_node->handle);
+                    if (info) {
+                        VLOG_DBG("Initializing plugin %s with phase_id %d.",
+                                 info->name, h_node->phase_id);
+                    }
+                    plcl->init(h_node->phase_id);
+                    h_node->phase_id++;
+                } else {
+                    VLOG_ERR("No init found for plugin %s.", l_node->name);
+                }
+            } else {
+                VLOG_DBG("Plugin %s not loaded in filesystem", l_node->name);
+            }
+        }
+        free_yaml_plugins(plugins_list);
+    }
+
+    /* Now initialize any plugin not found in the yaml configuration file,
+     * no ordering is specified for this initialization */
+    SHASH_FOR_EACH(sh_node, &sh_plugins) {
+        h_node = (struct hash_node *) sh_node->data;
+        if (h_node->phase_id == 0) {
+            plcl = (struct plugin_class *)lt_dlcaller_get_data(interface_id,
+                                       h_node->handle);
+            if (plcl && plcl->init) {
+                info = lt_dlgetinfo(h_node->handle);
+                if (info) {
+                    VLOG_DBG("Initializing plugin %s", info->name);
+                }
+                plcl->init(0);
+                h_node->phase_id++;
+            }
+        }
+    }
+}
+
 void
 plugins_init(const char *path)
 {
     char *plugins_path;
     lt_dladvise advise;
 
+    shash_init(&sh_plugins);
     if (path && !strcmp(path, "none")) {
         return;
     }
@@ -127,12 +210,14 @@ plugins_init(const char *path)
         goto err_interface_register;
     }
 
-    if (lt_dladvise_global(&advise) || lt_dladvise_ext (&advise) ||
+    if (lt_dladvise_local(&advise) || lt_dladvise_ext (&advise) ||
         lt_dlforeachfile(lt_dlgetsearchpath(), &plugins_open_plugin, &advise)) {
         VLOG_ERR("ltdl setting advise: %s", lt_dlerror());
         goto err_set_advise;
     }
 
+    /* Sort and initialize plugins */
+    plugins_initializaton();
     VLOG_INFO("Successfully initialized all plugins");
     return;
 
