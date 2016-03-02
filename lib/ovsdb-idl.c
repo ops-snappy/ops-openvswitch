@@ -256,6 +256,7 @@ ovsdb_idl_create(const char *remote, const struct ovsdb_idl_class *class,
         }
         hmap_init(&table->rows);
         list_init(&table->track_list);
+        shash_init(&table->outstanding_col_fetch_reqs);
         table->change_seqno[OVSDB_IDL_CHANGE_INSERT]
             = table->change_seqno[OVSDB_IDL_CHANGE_MODIFY]
             = table->change_seqno[OVSDB_IDL_CHANGE_DELETE] = 0;
@@ -1114,7 +1115,7 @@ ovsdb_idl_parse_fetch_reply__(struct ovsdb_idl *idl,
     const struct json *column_value;
     struct ovsdb_datum column_data;
     struct ovsdb_idl_row *row;
-    struct ovsdb_idl_column *column;
+    struct ovsdb_idl_column *column = NULL;
     struct shash_node *shash_node;
     struct ovsdb_idl_table *table = fetch_node->table;
     unsigned int column_idx;
@@ -1183,12 +1184,12 @@ ovsdb_idl_parse_fetch_reply__(struct ovsdb_idl *idl,
         }
     }
 
-    if (fetch_node->fetch_type == OVSDB_IDL_COLUMN_FETCH) {
+    if (fetch_node->fetch_type == OVSDB_IDL_COLUMN_FETCH && column) {
         shash_find_and_delete(&table->outstanding_col_fetch_reqs, column->name);
     }
 
 
-    if (fetch_node->fetch_type == OVSDB_IDL_TABLE_FETCH) {
+    if (fetch_node->fetch_type == OVSDB_IDL_TABLE_FETCH && table) {
         table->has_pending_fetch = false;
     }
 
@@ -1483,6 +1484,7 @@ ovsdb_idl_row_create__(const struct ovsdb_idl_table_class *class)
     list_init(&row->dst_arcs);
     hmap_node_nullify(&row->txn_node);
     list_init(&row->track_node);
+    row->outstanding_fetch_reqs = 0;
     return row;
 }
 
