@@ -394,3 +394,4 @@ include vswitchd/automake.mk
 endif
 include ovsdb/automake.mk
 include python/automake.mk
+include vtep/automake.mk

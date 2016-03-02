@@ -147,7 +147,8 @@ AC_CONFIG_FILES([
     plugins/libplugins.sym
     lib/libsflow.sym
     lib/libopenvswitch.sym
-    lib/libovscommon.sym])
+    lib/libovscommon.sym
+    vtep/libvtep.sym])
 
 OVS_ENABLE_OPTION([-Wall])
 OVS_ENABLE_OPTION([-Wextra])
