@@ -54,6 +54,9 @@
 
 #define OVSREC_PORT_ERROR_ADMIN_DOWN                    "port_admin_down"
 
+/************************** UDP BROADCAST SERVER TABLE***********************/
+#define SYSTEM_OTHER_CONFIG_MAP_UDP_BCAST_FWD_ENABLED   "udp_bcast_forwarder_enabled"
+
 enum ovsrec_interface_error_e {
     INTERFACE_ERROR_UNINITIALIZED,
     INTERFACE_ERROR_ADMIN_DOWN,
