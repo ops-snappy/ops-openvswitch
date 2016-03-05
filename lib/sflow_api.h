@@ -159,6 +159,9 @@ typedef struct _SFLPoller {
     /* private fields */
     SFLReceiver *myReceiver;
     time_t countersCountdown;
+#ifdef OPS
+    time_t lastPolled;      /* time this poller was last polled */
+#endif
     u_int32_t countersSampleSeqNo;
 } SFLPoller;
 
