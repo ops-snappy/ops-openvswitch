@@ -393,6 +393,8 @@ enum ovsrec_interface_hw_bond_config_enabled_e {
 #define PORT_OTHER_CONFIG_MAP_LACP_SYSTEM_PRIORITY      "lacp-system-priority"
 #define PORT_OTHER_CONFIG_MAP_LACP_SYSTEM_ID            "lacp-system-id"
 
+#define PORT_OTHER_CONFIG_MAP_BOND_MODE                 "bond_mode"
+
 #define PORT_OTHER_CONFIG_MAP_PROXY_ARP_ENABLED         "proxy_arp_enabled"
 #define PORT_OTHER_CONFIG_MAP_PROXY_ARP_ENABLED_TRUE    "true"
 
@@ -484,6 +486,9 @@ enum ovsrec_port_config_admin_e {
 /*Source interface selection parameters */
 #define SYSTEM_OTHER_CONFIG_MAP_TFTP_SOURCE          "tftp_source"
 #define SYSTEM_OTHER_CONFIG_MAP_PROTOCOLS_SOURCE     "protocols_source"
+
+/*DHCP-Relay global configuration key */
+#define SYSTEM_OTHER_CONFIG_MAP_DHCP_RELAY_DISABLED    "dhcp_relay_disabled"
 
 /* lacp global configuration parameters */
 #define SYSTEM_LACP_CONFIG_MAP_LACP_SYSTEM_ID        "lacp-system-id"

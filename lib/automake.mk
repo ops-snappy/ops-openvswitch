@@ -167,7 +167,6 @@ ovslibinclude_HEADERS = \
 	lib/vlan-bitmap.h \
 	lib/vlandev.h \
 	lib/vswitch-idl.h \
-	vswitchd/bufmon-provider.h \
 	include/odp-netlink.h
 
 endif
@@ -522,11 +521,6 @@ lib_libopenvswitch_la_SOURCES = \
 	lib/vconn.c \
 	lib/vlandev.c \
 	lib/vlandev.h
-
-if OPS
-lib_libopenvswitch_la_SOURCES += \
-	vswitchd/bufmon-provider.c
-endif
 
 if WIN32
 lib_libovscommon_la_SOURCES += \
