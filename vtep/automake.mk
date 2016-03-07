@@ -1,4 +1,10 @@
 # vtep IDL
+if OPS
+ovslibincludedir = $(includedir)/ovs
+ovslibinclude_HEADERS += \
+	vtep/vtep-idl.h
+endif
+
 OVSIDL_BUILT += \
 	vtep/vtep-idl.c \
 	vtep/vtep-idl.h \
