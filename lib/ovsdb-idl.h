@@ -61,7 +61,7 @@ bool ovsdb_idl_has_lock(const struct ovsdb_idl *);
 bool ovsdb_idl_is_lock_contended(const struct ovsdb_idl *);
 
 unsigned int ovsdb_idl_get_seqno(const struct ovsdb_idl *);
-unsigned int ovsdb_idl_get_last_monitor_request_seqno(const struct ovsdb_idl *);
+unsigned int ovsdb_idl_get_state_seqno(const struct ovsdb_idl *);
 bool ovsdb_idl_has_ever_connected(const struct ovsdb_idl *);
 void ovsdb_idl_enable_reconnect(struct ovsdb_idl *);
 void ovsdb_idl_force_reconnect(struct ovsdb_idl *);

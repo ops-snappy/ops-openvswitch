@@ -554,7 +554,7 @@ bridge_init(const char *remote)
     /* Set flag to indicate that the next reconfigure() call is special */
     switchd_restarted = true;
 
-    idl_monitor_seqno = ovsdb_idl_get_last_monitor_request_seqno(idl);
+    idl_monitor_seqno = ovsdb_idl_get_state_seqno(idl);
 #endif
 
     ovsdb_idl_set_lock(idl, "ovs_vswitchd");
@@ -3831,13 +3831,10 @@ bridge_run(void)
         idl_seqno = ovsdb_idl_get_seqno(idl);
 #endif
 
-// Must find new source of checking for reconnection after OVS upgrade
-#ifdef TODO_OVSDB_RECONNECTED
 #ifdef OPS
         /* check if we've reconnected to ovsdb since the last time
            we called bridge_reconfigure */
-        unsigned int monitor_seqno =
-            ovsdb_idl_get_last_monitor_request_seqno(idl);
+        unsigned int monitor_seqno = ovsdb_idl_get_state_seqno(idl);
         if (idl_monitor_seqno != monitor_seqno) {
             idl_monitor_seqno = monitor_seqno;
 
@@ -3848,7 +3845,6 @@ bridge_run(void)
         /* assert that if switchd_restarted then ovsdb_reconnected */
         ovs_assert(!switchd_restarted || ovsdb_reconnected);
 #endif
-#endif // TODO_OVSDB_RECONNECTED
         txn = ovsdb_idl_txn_create(idl);
 
         bridge_reconfigure(cfg ? cfg : &null_cfg);

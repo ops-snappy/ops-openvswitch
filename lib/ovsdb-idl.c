@@ -450,13 +450,9 @@ ovsdb_idl_get_seqno(const struct ovsdb_idl *idl)
 }
 
 unsigned int
-ovsdb_idl_get_last_monitor_request_seqno(const struct ovsdb_idl *idl)
+ovsdb_idl_get_state_seqno(const struct ovsdb_idl *idl)
 {
-#ifdef TODO_OVSDB_RECONNECTED
-    return idl->last_monitor_request_seqno;
-#else
-    return 0;
-#endif // TODO_OVSDB_RECONNECTED
+    return idl->state_seqno;
 }
 
 
