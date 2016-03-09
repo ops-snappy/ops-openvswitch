@@ -1127,8 +1127,6 @@ ovsdb_idl_parse_fetch_reply__(struct ovsdb_idl *idl,
     }
 
     /* Parse the json reply and get the UUID and value of the fetched column */
-    array = json_array(shash_find_data(json_object(fetch_reply), "rows"));
-
     struct json_array *rows_array = json_array(shash_find_data(json_object(fetch_reply), "rows"));
     for (int i = 0; i < rows_array->n; ++i) {
         /* Read the uuid of the fetched row */
@@ -1150,36 +1148,47 @@ ovsdb_idl_parse_fetch_reply__(struct ovsdb_idl *idl,
                 ovsdb_idl_get_row_for_uuid(idl, fetch_node->table->class,
                     &uuid));
 
-        SHASH_FOR_EACH(shash_node, &fetch_node->columns) {
-            column = shash_node->data;
-            /* Read the fetched value */
-            column_value = shash_find_data(json_object(rows_array->elems[i]),
-                    column->name);
-            if (!column_value) {
-                return ovsdb_syntax_error(fetch_reply, NULL,
-                        "Fetch reply for table %s does not include "
-                        "the requested table value", table->class->name);
-            }
+        /* If the row was deleted before the fetch reply was received,
+         * then there is no need to process the reply */
+        if (row != NULL) {
+            SHASH_FOR_EACH(shash_node, &fetch_node->columns) {
+                column = shash_node->data;
+                /* Read the fetched value */
+                column_value = shash_find_data(json_object(rows_array->elems[i]),
+                                               column->name);
+                if (!column_value) {
+                    return ovsdb_syntax_error(fetch_reply, NULL,
+                            "Fetch reply for table %s does not include "
+                            "the requested table value", table->class->name);
+                }
 
-            if (ovsdb_datum_from_json(&column_data, &column->type,
-                        column_value, NULL) != NULL) {
-                return ovsdb_syntax_error(fetch_reply, NULL,
-                        "Fetch reply for column %s contains bad column value",
-                        column->name);
-            }
+                if (ovsdb_datum_from_json(&column_data, &column->type,
+                            column_value, NULL) != NULL) {
+                    /* In case this was a column request, remove it from the
+                     * outstanding_col_fetch_reqs */
+                    if (fetch_node->fetch_type == OVSDB_IDL_COLUMN_FETCH) {
+                        shash_find_and_delete(&table->outstanding_col_fetch_reqs,
+                                              column->name);
+                    }
 
-            /* Update the row */
-            column_idx = column - table->class->columns;
-            old = &row->old[column_idx];
+                    return ovsdb_syntax_error(fetch_reply, NULL,
+                            "Fetch reply for column %s contains bad column value",
+                            column->name);
+                }
 
-            if (!ovsdb_datum_equals(old, &column_data, &column->type)) {
-                column->parse(row, &column_data);
-                ovsdb_datum_swap(old, &column_data);
-            }
+                /* Update the row */
+                column_idx = column - table->class->columns;
+                old = &row->old[column_idx];
 
-            ovsdb_datum_destroy(&column_data, &column->type);
-            if (fetch_node->fetch_type == OVSDB_IDL_ROW_FETCH) {
-                row->outstanding_fetch_reqs--;
+                if (!ovsdb_datum_equals(old, &column_data, &column->type)) {
+                    column->parse(row, &column_data);
+                    ovsdb_datum_swap(old, &column_data);
+                }
+
+                ovsdb_datum_destroy(&column_data, &column->type);
+                if (fetch_node->fetch_type == OVSDB_IDL_ROW_FETCH) {
+                    row->outstanding_fetch_reqs--;
+                }
             }
         }
     }
