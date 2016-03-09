@@ -2466,6 +2466,10 @@ bridge_configure_sflow(struct bridge *br, int *sflow_bridge_number)
 
 #ifdef OPS
     sflow_agent_address(cfg->agent, cfg->agent_addr_family, oso.agent_ip);
+    oso.max_datagram = SFL_DEFAULT_DATAGRAM_SIZE;
+    if (cfg->max_datagram) {
+        oso.max_datagram = *cfg->max_datagram;
+    }
 #endif
 
 #ifndef OPS
