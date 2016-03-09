@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2015 Hewlett-Packard Development Company, L.P.
+ * Copyright (c) 2015-2016 Hewlett Packard Enterprise Development LP
  * All Rights Reserved.
  *
  *    Licensed under the Apache License, Version 2.0 (the "License"); you may
@@ -823,5 +823,9 @@ enum ospf_nbr_statistics_e {
 #define SYSTEM_NTP_STATUS_UPTIME                        "uptime"
 
 /************************************* NTP END ****************************************/
+
+/****************************** QOS TABLEs ******************************/
+#define NUM_QUEUES 8
+/************************************* QOS END ****************************************/
 
 #endif /* OPENSWITCH_IDL_HEADER */
