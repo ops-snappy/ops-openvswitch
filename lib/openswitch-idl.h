@@ -532,6 +532,12 @@ enum ovsrec_port_config_admin_e {
 #define OVSDB_BGP_ROUTE_PATH_ATTRIBUTES_ECOMMUNITY       "BGP_ecommunity"
 #define OVSDB_BGP_ROUTE_PATH_ATTRIBUTES_ATOMIC_AGGREGATE "BGP_atomic_aggregate"
 
+/* BGP Neighbor table status keys for clear commands*/
+#define OVSDB_BGP_NEIGHBOR_CLEAR_COUNTERS_SOFT_OUT_PERFORMED   "bgp_num_clear_counters_peer_soft_out_performed"
+#define OVSDB_BGP_NEIGHBOR_CLEAR_COUNTERS_SOFT_OUT_REQUESTED   "bgp_num_clear_counters_peer_soft_out_requested"
+#define OVSDB_BGP_NEIGHBOR_CLEAR_COUNTERS_SOFT_IN_PERFORMED    "bgp_num_clear_counters_peer_soft_in_performed"
+#define OVSDB_BGP_NEIGHBOR_CLEAR_COUNTERS_SOFT_IN_REQUESTED    "bgp_num_clear_counters_peer_soft_in_requested"
+
 /* BGP Neighbor state, goes into "status" column */
 #define BGP_PEER_STATE                          "bgp_peer_state"
 
