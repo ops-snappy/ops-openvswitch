@@ -1,5 +1,4 @@
-/* Copyright (c) 2008, 2009, 2010, 2011, 2012, 2013, 2014 Nicira, Inc.
- * Copyright (C) 2015, 2016 Hewlett-Packard Development Company, L.P.
+/* Copyright (c) 2008, 2009, 2010, 2011, 2012, 2013, 2014, 2015 Nicira, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -38,7 +37,6 @@
 #include "netdev.h"
 #include "openflow/openflow.h"
 #include "ovsdb-idl.h"
-#include "plugins.h"
 #include "poll-loop.h"
 #include "simap.h"
 #include "stream-ssl.h"
@@ -51,10 +49,6 @@
 #include "openvswitch/vlog.h"
 #include "lib/vswitch-idl.h"
 #include "lib/netdev-dpdk.h"
-#ifdef OPS
-#include "subsystem.h"
-#include "bufmon-provider.h"
-#endif
 
 VLOG_DEFINE_THIS_MODULE(vswitchd);
 
@@ -64,8 +58,7 @@ static bool want_mlockall;
 
 static unixctl_cb_func ovs_vswitchd_exit;
 
-static char *parse_options(int argc, char *argv[], char **unixctl_path,
-                           char **plugins_path);
+static char *parse_options(int argc, char *argv[], char **unixctl_path);
 OVS_NO_RETURN static void usage(void);
 
 int
@@ -73,24 +66,26 @@ main(int argc, char *argv[])
 {
     char *unixctl_path = NULL;
     struct unixctl_server *unixctl;
-    char *plugins_path = NULL;
     char *remote;
     bool exiting;
     int retval;
 
     set_program_name(argv[0]);
     retval = dpdk_init(argc,argv);
+    if (retval < 0) {
+        return retval;
+    }
+
     argc -= retval;
     argv += retval;
 
     ovs_cmdl_proctitle_init(argc, argv);
     service_start(&argc, &argv);
-    remote = parse_options(argc, argv, &unixctl_path, &plugins_path);
-
+    remote = parse_options(argc, argv, &unixctl_path);
     fatal_ignore_sigpipe();
     ovsrec_init();
 
-    daemonize_start();
+    daemonize_start(true);
 
     if (want_mlockall) {
 #ifdef HAVE_MLOCKALL
@@ -108,18 +103,7 @@ main(int argc, char *argv[])
     }
     unixctl_command_register("exit", "", 0, 0, ovs_vswitchd_exit, &exiting);
 
-    plugins_init(plugins_path);
-
     bridge_init(remote);
-#ifdef OPS
-    subsystem_init();
-
-    bufmon_init();
-
-    wait_for_config_complete();
-
-#endif
-
     free(remote);
 
     exiting = false;
@@ -134,23 +118,13 @@ main(int argc, char *argv[])
             simap_destroy(&usage);
         }
         bridge_run();
-#ifdef OPS
-        subsystem_run();
-        bufmon_run();
-#endif
         unixctl_server_run(unixctl);
         netdev_run();
-        plugins_run();
 
         memory_wait();
         bridge_wait();
-#ifdef OPS
-        subsystem_wait();
-        bufmon_wait();
-#endif
         unixctl_server_wait(unixctl);
         netdev_wait();
-        plugins_wait();
         if (exiting) {
             poll_immediate_wake();
         }
@@ -160,24 +134,19 @@ main(int argc, char *argv[])
         }
     }
     bridge_exit();
-#ifdef OPS
-    subsystem_exit();
-#endif
     unixctl_server_destroy(unixctl);
-    plugins_destroy();
     service_stop();
 
     return 0;
 }
 
 static char *
-parse_options(int argc, char *argv[], char **unixctl_pathp, char **plugins_pathp)
+parse_options(int argc, char *argv[], char **unixctl_pathp)
 {
     enum {
         OPT_PEER_CA_CERT = UCHAR_MAX + 1,
         OPT_MLOCKALL,
         OPT_UNIXCTL,
-        OPT_PLUGINS,
         VLOG_OPTION_ENUMS,
         OPT_BOOTSTRAP_CA_CERT,
         OPT_ENABLE_DUMMY,
@@ -190,7 +159,6 @@ parse_options(int argc, char *argv[], char **unixctl_pathp, char **plugins_pathp
         {"version",     no_argument, NULL, 'V'},
         {"mlockall",    no_argument, NULL, OPT_MLOCKALL},
         {"unixctl",     required_argument, NULL, OPT_UNIXCTL},
-        {"plugins-path",     required_argument, NULL, OPT_PLUGINS},
         DAEMON_LONG_OPTIONS,
         VLOG_LONG_OPTIONS,
         STREAM_SSL_LONG_OPTIONS,
@@ -216,7 +184,7 @@ parse_options(int argc, char *argv[], char **unixctl_pathp, char **plugins_pathp
             usage();
 
         case 'V':
-            ovs_print_version(OFP10_VERSION, OFP10_VERSION);
+            ovs_print_version(0, 0);
             exit(EXIT_SUCCESS);
 
         case OPT_MLOCKALL:
@@ -225,10 +193,6 @@ parse_options(int argc, char *argv[], char **unixctl_pathp, char **plugins_pathp
 
         case OPT_UNIXCTL:
             *unixctl_pathp = optarg;
-            break;
-
-        case OPT_PLUGINS:
-            *plugins_pathp = optarg;
             break;
 
         VLOG_OPTION_HANDLERS
@@ -292,12 +256,22 @@ usage(void)
     daemon_usage();
     vlog_usage();
     printf("\nDPDK options:\n"
-           "  --dpdk options          Initialize DPDK datapath.\n");
+           "  --dpdk [VHOST] [DPDK]     Initialize DPDK datapath.\n"
+           "  where DPDK are options for initializing DPDK lib and VHOST is\n"
+#ifdef VHOST_CUSE
+           "  option to override default character device name used for\n"
+           "  for use with userspace vHost\n"
+           "    -cuse_dev_name NAME\n"
+#else
+           "  option to override default directory where vhost-user\n"
+           "  sockets are created.\n"
+           "    -vhost_sock_dir DIR\n"
+#endif
+           );
     printf("\nOther options:\n"
-           "  --unixctl=SOCKET        override default control socket name\n"
-           "  --plugins-path=path          override default path to plugins directory\n"
-           "  -h, --help              display this help message\n"
-           "  -V, --version           display version information\n");
+           "  --unixctl=SOCKET          override default control socket name\n"
+           "  -h, --help                display this help message\n"
+           "  -V, --version             display version information\n");
     exit(EXIT_SUCCESS);
 }
 

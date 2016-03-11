@@ -1,4 +1,10 @@
 # vtep IDL
+if OPS
+ovslibincludedir = $(includedir)/ovs
+ovslibinclude_HEADERS += \
+	vtep/vtep-idl.h
+endif
+
 OVSIDL_BUILT += \
 	vtep/vtep-idl.c \
 	vtep/vtep-idl.h \
@@ -33,7 +39,7 @@ DISTCLEANFILES += \
 man_MANS += \
    vtep/vtep-ctl.8
 
-vtep_vtep_ctl_SOURCES = vtep/vtep-ctl.c
+vtep_vtep_ctl_SOURCES = $(srcdir)/vtep/vtep-ctl.c
 vtep_vtep_ctl_LDADD = vtep/libvtep.la lib/libopenvswitch.la
 
 # ovs-vtep

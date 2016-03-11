@@ -85,6 +85,11 @@ size_t smap_count(const struct smap *);
 
 void smap_clone(struct smap *dst, const struct smap *src);
 const struct smap_node **smap_sort(const struct smap *);
+#ifdef OPS
+const struct smap_node **smap_sort_numeric(const struct smap *);
+const struct smap_node **smap_sort_with_compar(const struct smap *,
+                                        int (*)(const void *, const void *));
+#endif /* OPS */
 
 void smap_from_json(struct smap *, const struct json *);
 struct json *smap_to_json(const struct smap *);
