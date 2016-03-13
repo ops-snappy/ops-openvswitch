@@ -1,62 +1,27 @@
-if OPS
-sbin_PROGRAMS += vswitchd/ops-switchd
-else
 sbin_PROGRAMS += vswitchd/ovs-vswitchd
-endif
 man_MANS += vswitchd/ovs-vswitchd.8
 DISTCLEANFILES += \
 	vswitchd/ovs-vswitchd.8
 
-if OPS
-vswitchd_ops_switchd_SOURCES = \
-	vswitchd/bridge.c \
-	vswitchd/bridge.h \
-	vswitchd/ovs-vswitchd.c \
-	vswitchd/subsystem.c \
-	vswitchd/system-stats.c \
-	vswitchd/system-stats.h \
-	vswitchd/xenserver.c \
-	vswitchd/xenserver.h \
-	vswitchd/bufmon.c \
-	vswitchd/vrf.c \
-	vswitchd/vrf.h
-
-vswitchd_ops_switchd_LDADD = \
-	lib/libovscommon.la \
-	ovsdb/libovsdb.la \
-	ofproto/libofproto.la \
-	lib/libsflow.la \
-	lib/libopenvswitch.la \
-	plugins/libplugins.la
-
-vswitchd_ops_switchd_LDFLAGS = $(AM_LDFLAGS) $(DPDK_vswitchd_LDFLAGS)
-else
 vswitchd_ovs_vswitchd_SOURCES = \
 	vswitchd/bridge.c \
 	vswitchd/bridge.h \
 	vswitchd/ovs-vswitchd.c \
-	vswitchd/subsystem.c \
 	vswitchd/system-stats.c \
 	vswitchd/system-stats.h \
 	vswitchd/xenserver.c \
 	vswitchd/xenserver.h
-
 vswitchd_ovs_vswitchd_LDADD = \
-	lib/libovscommon.la \
-	ovsdb/libovsdb.la \
 	ofproto/libofproto.la \
 	lib/libsflow.la \
 	lib/libopenvswitch.la
-
 vswitchd_ovs_vswitchd_LDFLAGS = $(AM_LDFLAGS) $(DPDK_vswitchd_LDFLAGS)
-endif
-
 EXTRA_DIST += vswitchd/INTERNALS
 MAN_ROOTS += vswitchd/ovs-vswitchd.8.in
 
 # vswitch schema and IDL
 EXTRA_DIST += vswitchd/vswitch.ovsschema
-pkgdata_DATA += vswitchd/vswitch.ovsschema vswitchd/configdb.ovsschema vswitchd/dhcp_leases.ovsschema
+pkgdata_DATA += vswitchd/vswitch.ovsschema
 
 # vswitch E-R diagram
 #
@@ -92,15 +57,7 @@ vswitchd/ovs-vswitchd.conf.db.5: \
 # Version checking for vswitch.ovsschema.
 ALL_LOCAL += vswitchd/vswitch.ovsschema.stamp
 vswitchd/vswitch.ovsschema.stamp: vswitchd/vswitch.ovsschema
-	@sum=`sed '/cksum/d' $? | cksum`; \
-	expected=`sed -n 's/.*"cksum": "\(.*\)".*/\1/p' $?`; \
-	if test "X$$sum" = "X$$expected"; then \
-	  touch $@; \
-	else \
-	  ln=`sed -n '/"cksum":/=' $?`; \
-	  echo >&2 "$?:$$ln: checksum \"$$sum\" does not match (you should probably update the version number and fix the checksum)"; \
-	  exit 1; \
-	fi
+	$(srcdir)/build-aux/cksum-schema-check $? $@
 CLEANFILES += vswitchd/vswitch.ovsschema.stamp
 
 # Clean up generated files from older OVS versions.  (This is important so that
