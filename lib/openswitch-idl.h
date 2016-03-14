@@ -435,6 +435,9 @@ enum ovsrec_interface_hw_bond_config_enabled_e {
 #define PORT_OTHER_CONFIG_MAP_PROXY_ARP_ENABLED         "proxy_arp_enabled"
 #define PORT_OTHER_CONFIG_MAP_PROXY_ARP_ENABLED_TRUE    "true"
 
+#define PORT_OTHER_CONFIG_MAP_LOCAL_PROXY_ARP_ENABLED       "local_proxy_arp_enabled"
+#define PORT_OTHER_CONFIG_MAP_LOCAL_PROXY_ARP_ENABLED_TRUE  "true"
+
 #define PORT_LACP_STATUS_MAP_BOND_SPEED                 "bond_speed"
 #define PORT_LACP_STATUS_MAP_BOND_STATUS                "bond_status"
 #define PORT_LACP_STATUS_MAP_BOND_STATUS_REASON         "bond_status_reason"
