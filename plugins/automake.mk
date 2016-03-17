@@ -22,6 +22,11 @@ ovspluginslibinclude_HEADERS = \
     plugins/asic-plugin.h
 
 lib_LTLIBRARIES += plugins/libplugins.la
+# this is required to workaround a libtool bug: because this ltlibrary is in
+# an AM conditional, it's not being installed properly before libopenvswitch
+# which depends on it; this breaks make install when libtool tries relinking
+# libopenvswitch against the (missing) installed libplugins
+install-libLTLIBRARIES: plugins/libplugins.la
 plugins_libplugins_la_LDFLAGS = \
         -version-info $(LT_CURRENT):$(LT_REVISION):$(LT_AGE) \
         -Wl,--version-script=$(top_builddir)/plugins/libplugins.sym \
