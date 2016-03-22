@@ -1,4 +1,0 @@
-libplugins_@LT_CURRENT@ {
-global:
-        *;
-};

@@ -63,7 +63,6 @@
 #include "bundles.h"
 #ifdef OPS
 #include "vlan-bitmap.h"
-#include "plugins.h"
 #endif
 
 VLOG_DEFINE_THIS_MODULE(ofproto);
@@ -372,8 +371,6 @@ ofproto_init(const struct shash *iface_hints)
 #ifndef OPS_TEMP
     ofproto_class_register(&ofproto_dpif_class);
 #endif
-
-    plugins_ofproto_register();
 
     /* Make a local copy, since we don't own 'iface_hints' elements. */
     SHASH_FOR_EACH(node, iface_hints) {

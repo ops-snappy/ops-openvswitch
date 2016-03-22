@@ -166,9 +166,6 @@ netdev_initialize(void)
 #endif
         netdev_dpdk_register();
 #endif
-#ifdef OPS
-        plugins_netdev_register();
-#endif
         ovsthread_once_done(&once);
     }
 }
