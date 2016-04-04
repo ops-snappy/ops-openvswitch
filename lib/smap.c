@@ -27,9 +27,6 @@ static struct smap_node *smap_add__(struct smap *, char *, void *,
 static struct smap_node *smap_find__(const struct smap *, const char *key,
                                      size_t key_len, size_t hash);
 static int compare_nodes_by_key(const void *, const void *);
-#ifdef OPS
-static int compare_nodes_by_key_numeric(const void *, const void *);
-#endif /* OPS */
 
 /* Public Functions. */
 
@@ -267,53 +264,6 @@ smap_clone(struct smap *dst, const struct smap *src)
     }
 }
 
-#ifdef OPS
-/* Performs smap_sort, but allows a different comparison function */
-const struct smap_node **
-smap_sort_with_compar(const struct smap *smap,
-                      int (*compar)(const void *, const void *))
-{
-    if (smap_is_empty(smap)) {
-        return NULL;
-    } else {
-        const struct smap_node **nodes;
-        struct smap_node *node;
-        size_t i, n;
-
-        n = smap_count(smap);
-        nodes = xmalloc(n * sizeof *nodes);
-        i = 0;
-        SMAP_FOR_EACH (node, smap) {
-            nodes[i++] = node;
-        }
-        ovs_assert(i == n);
-
-        qsort(nodes, n, sizeof *nodes, compar);
-
-        return nodes;
-    }
-}
-
-/* Returns an array of nodes sorted on key or NULL if 'smap' is empty.  The
- * caller is responsible for freeing this array. */
-const struct smap_node **
-smap_sort(const struct smap *smap)
-{
-    return smap_sort_with_compar(smap, compare_nodes_by_key);
-}
-
-/* Returns an array of nodes sorted on key or NULL if 'smap' is empty.
- * The caller is responsible for freeing this array.
- *
- * Keys are assumed to be numbers represented as strings such that the strings
- * "10", "20", "100" will be sorted in that order, whereas lexigraphical
- * sorting would result in "10", "100", "20"). */
-const struct smap_node **
-smap_sort_numeric(const struct smap *smap)
-{
-    return smap_sort_with_compar(smap, compare_nodes_by_key_numeric);
-}
-#else /* OPS */
 /* Returns an array of nodes sorted on key or NULL if 'smap' is empty.  The
  * caller is responsible for freeing this array. */
 const struct smap_node **
@@ -339,7 +289,6 @@ smap_sort(const struct smap *smap)
         return nodes;
     }
 }
-#endif /* OPS */
 
 /* Adds each of the key-value pairs from 'json' (which must be a JSON object
  * whose values are strings) to 'smap'.
@@ -430,14 +379,3 @@ compare_nodes_by_key(const void *a_, const void *b_)
     const struct smap_node *const *b = b_;
     return strcmp((*a)->key, (*b)->key);
 }
-
-#ifdef OPS
-static int
-compare_nodes_by_key_numeric(const void *a_, const void *b_)
-{
-    const struct smap_node *const *a = a_;
-    const struct smap_node *const *b = b_;
-    return (strtoul((*a)->key, NULL, 0) > strtoul((*b)->key, NULL, 0)) -
-           (strtoul((*a)->key, NULL, 0) < strtoul((*b)->key, NULL, 0));
-}
-#endif /* OPS */
