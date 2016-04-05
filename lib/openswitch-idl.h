@@ -452,6 +452,24 @@ enum ovsrec_interface_hw_bond_config_enabled_e {
 
 #define PORT_CONFIG_ADMIN_DOWN                          "down"
 
+/* DHCP-Relay statistics */
+#define PORT_DHCP_RELAY_STATISTICS_MAP_VALID_V4CLIENT_REQUESTS \
+                                   "valid_v4client_requests"
+#define PORT_DHCP_RELAY_STATISTICS_MAP_DROPPED_V4CLIENT_REQUESTS \
+                                   "dropped_v4client_requests"
+#define PORT_DHCP_RELAY_STATISTICS_MAP_VALID_V4SERVER_RESPONSES \
+                                   "valid_v4server_responses"
+#define PORT_DHCP_RELAY_STATISTICS_MAP_DROPPED_V4SERVER_RESPONSES \
+                                   "dropped_v4server_responses"
+#define PORT_DHCP_RELAY_STATISTICS_MAP_VALID_V4CLIENT_REQUESTS_WITH_OPTION82 \
+                                   "valid_v4client_requests_with_option82"
+#define PORT_DHCP_RELAY_STATISTICS_MAP_DROPPED_V4CLIENT_REQUESTS_WITH_OPTION82 \
+                                   "dropped_v4client_requests_with_option82"
+#define PORT_DHCP_RELAY_STATISTICS_MAP_VALID_V4SERVER_RESPONSES_WITH_OPTION82 \
+                                   "valid_v4server_responses_with_option82"
+#define PORT_DHCP_RELAY_STATISTICS_MAP_DROPPED_V4SERVER_RESPONSES_WITH_OPTION82 \
+                                   "dropped_v4server_responses_with_option82"
+
 enum ovsrec_port_config_admin_e {
     PORT_ADMIN_CONFIG_DOWN,
     PORT_ADMIN_CONFIG_UP
