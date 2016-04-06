@@ -53,6 +53,7 @@ class socketFilePermissionTests(OpsVsiTest):
              "for socket files ##########\n")
 
 
+@pytest.mark.skipif(True, reason="Disabling old tests")
 class Test_socket_file_permissions:
 
     def setup_class(cls):
