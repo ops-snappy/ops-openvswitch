@@ -423,6 +423,7 @@ enum ovsrec_interface_hw_bond_config_enabled_e {
 #define PORT_OTHER_CONFIG_MAP_LACP_TIME                 "lacp-time"
 
 #define PORT_OTHER_CONFIG_LACP_FALLBACK                 "lacp-fallback-ab"
+#define PORT_OTHER_CONFIG_LACP_FALLBACK_ENABLED         "true"
 
 #define PORT_OTHER_CONFIG_LACP_TIME_SLOW                "slow"
 #define PORT_OTHER_CONFIG_LACP_TIME_FAST                "fast"
