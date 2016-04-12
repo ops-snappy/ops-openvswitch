@@ -932,4 +932,10 @@ enum ospf_nbr_statistics_e {
 
 /************************************* NTP END ****************************************/
 
+/* CoPP Statistics Column */
+#define SYSTEM_COPP_STATISTICS_MAP_TOTAL_PKTS_PASSED      "total_packets_passed"
+#define SYSTEM_COPP_STATISTICS_MAP_TOTAL_BYTES_PASSED     "total_bytes_passed"
+#define SYSTEM_COPP_STATISTICS_MAP_TOTAL_PKTS_DROPPED     "total_packets_dropped"
+#define SYSTEM_COPP_STATISTICS_MAP_TOTAL_BYTES_DROPPED    "total_bytes_dropped"
+
 #endif /* OPENSWITCH_IDL_HEADER */
