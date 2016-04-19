@@ -423,6 +423,7 @@ enum ovsrec_interface_hw_bond_config_enabled_e {
 #define PORT_OTHER_CONFIG_MAP_LACP_TIME                 "lacp-time"
 
 #define PORT_OTHER_CONFIG_LACP_FALLBACK                 "lacp-fallback-ab"
+#define PORT_OTHER_CONFIG_LACP_FALLBACK_ENABLED         "true"
 
 #define PORT_OTHER_CONFIG_LACP_TIME_SLOW                "slow"
 #define PORT_OTHER_CONFIG_LACP_TIME_FAST                "fast"
@@ -451,6 +452,24 @@ enum ovsrec_interface_hw_bond_config_enabled_e {
 #define PORT_LACP_STATUS_BOND_STATUS_DEFAULTED          "defaulted"
 
 #define PORT_CONFIG_ADMIN_DOWN                          "down"
+
+/* DHCP-Relay statistics */
+#define PORT_DHCP_RELAY_STATISTICS_MAP_VALID_V4CLIENT_REQUESTS \
+                                   "valid_v4client_requests"
+#define PORT_DHCP_RELAY_STATISTICS_MAP_DROPPED_V4CLIENT_REQUESTS \
+                                   "dropped_v4client_requests"
+#define PORT_DHCP_RELAY_STATISTICS_MAP_VALID_V4SERVER_RESPONSES \
+                                   "valid_v4server_responses"
+#define PORT_DHCP_RELAY_STATISTICS_MAP_DROPPED_V4SERVER_RESPONSES \
+                                   "dropped_v4server_responses"
+#define PORT_DHCP_RELAY_STATISTICS_MAP_VALID_V4CLIENT_REQUESTS_WITH_OPTION82 \
+                                   "valid_v4client_requests_with_option82"
+#define PORT_DHCP_RELAY_STATISTICS_MAP_DROPPED_V4CLIENT_REQUESTS_WITH_OPTION82 \
+                                   "dropped_v4client_requests_with_option82"
+#define PORT_DHCP_RELAY_STATISTICS_MAP_VALID_V4SERVER_RESPONSES_WITH_OPTION82 \
+                                   "valid_v4server_responses_with_option82"
+#define PORT_DHCP_RELAY_STATISTICS_MAP_DROPPED_V4SERVER_RESPONSES_WITH_OPTION82 \
+                                   "dropped_v4server_responses_with_option82"
 
 enum ovsrec_port_config_admin_e {
     PORT_ADMIN_CONFIG_DOWN,
@@ -912,5 +931,11 @@ enum ospf_nbr_statistics_e {
 #define SYSTEM_NTP_STATUS_UPTIME                        "uptime"
 
 /************************************* NTP END ****************************************/
+
+/* CoPP Statistics Column */
+#define SYSTEM_COPP_STATISTICS_MAP_TOTAL_PKTS_PASSED      "total_packets_passed"
+#define SYSTEM_COPP_STATISTICS_MAP_TOTAL_BYTES_PASSED     "total_bytes_passed"
+#define SYSTEM_COPP_STATISTICS_MAP_TOTAL_PKTS_DROPPED     "total_packets_dropped"
+#define SYSTEM_COPP_STATISTICS_MAP_TOTAL_BYTES_DROPPED    "total_bytes_dropped"
 
 #endif /* OPENSWITCH_IDL_HEADER */
